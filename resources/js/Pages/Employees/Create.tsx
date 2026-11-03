@@ -1,0 +1,781 @@
+import { useState } from 'react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { 
+    ArrowLeft, 
+    ArrowRight, 
+    User, 
+    Briefcase, 
+    Calendar, 
+    CreditCard, 
+    CheckCircle2, 
+    Building2,
+    ShieldCheck
+} from 'lucide-react';
+
+interface Department {
+    id: number;
+    name: string;
+}
+
+interface Props {
+    departments: Department[];
+}
+
+export default function Create({ departments }: Props) {
+    const [step, setStep] = useState(1);
+
+    const { data, setData, post, processing, errors } = useForm({
+        // Step 1: Personal
+        full_name: '',
+        gender: 'Male',
+        marital_status: 'Single',
+        education_status: '',
+        phone: '',
+        email: '',
+        region: 'Addis Ababa',
+        city: 'Addis Ababa',
+        sub_city: 'Bole',
+        woreda: '',
+        house_no: '',
+        emergency_contact_name: '',
+        emergency_contact_relationship: '',
+        emergency_contact_phone: '',
+
+        // Step 2: Assignment
+        file_no: '',
+        department_id: departments.length > 0 ? String(departments[0].id) : '',
+        position: '',
+        work_place: 'Project',
+        employment_type: 'Non-Managerial',
+        contract_type: 'Permanent',
+        status: 'Probation',
+        grade: 'IV',
+        step: '1',
+
+        // Step 3: Dates & Milestones
+        employment_date: new Date().toISOString().split('T')[0],
+        employment_date_ec: '20/02/2018',
+        birth_date: '1995-05-15',
+        birth_date_ec: '07/09/1987',
+        contract_end_date: '',
+
+        // Step 4: Compensation & Banking
+        basic_salary: '18500.00',
+        responsibility_allowance: '0',
+        project_allowance: '2500',
+        position_allowance: '0',
+        hardship_allowance: '1500',
+        transport_allowance: '1200',
+        house_allowance: '3000',
+        mobile_allowance: '0',
+        food_allowance: '0',
+        bank_name: 'Commercial Bank of Ethiopia (CBE)',
+        bank_account_no: '',
+        tin_no: '',
+        social_security_no: '',
+        poessa_no: '',
+        psssa_no: '',
+        plate_number: '',
+        remarks: 'Registered via HR onboarding workflow.',
+    });
+
+    const nextStep = () => setStep((s) => Math.min(4, s + 1));
+    const prevStep = () => setStep((s) => Math.max(1, s - 1));
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post(route('employees.store'));
+    };
+
+    const steps = [
+        { num: 1, title: 'Personal & Contacts', icon: User },
+        { num: 2, title: 'Role & Assignment', icon: Briefcase },
+        { num: 3, title: 'Dual Dates & Milestones', icon: Calendar },
+        { num: 4, title: 'Compensation & Banking', icon: CreditCard },
+    ];
+
+    return (
+        <AuthenticatedLayout
+            title="Register New Personnel"
+            subtitle="Multi-step onboarding form compliant with Ethiopian Labour Proclamation 1156/2019 and POESSA reporting."
+        >
+            <Head title="Onboard Personnel - Elhadar Engineering HRMS" />
+
+            {/* Back to Directory */}
+            <div className="mb-4">
+                <Link href={route('employees.index')}>
+                    <Button variant="outline" size="sm" className="gap-2 text-xs font-semibold text-[#008254] border-[#d8d9da] hover:bg-[#effcf8]">
+                        <ArrowLeft className="w-3.5 h-3.5" /> Back to Staff Directory
+                    </Button>
+                </Link>
+            </div>
+
+            {/* Step Wizard Progress Bar */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                {steps.map((st) => {
+                    const Icon = st.icon;
+                    const isActive = step === st.num;
+                    const isDone = step > st.num;
+                    return (
+                        <div
+                            key={st.num}
+                            onClick={() => setStep(st.num)}
+                            className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                                isActive
+                                    ? 'bg-[#effcf8] border-[#008254] shadow-xs'
+                                    : isDone
+                                    ? 'bg-white border-[#b7ecda] text-[#008254]'
+                                    : 'bg-white border-[#d8d9da] text-[#64666a]'
+                            }`}
+                        >
+                            <div className="flex items-center gap-2.5">
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                                    isActive
+                                        ? 'bg-[#008254] text-white'
+                                        : isDone
+                                        ? 'bg-[#e3faf2] text-[#008254]'
+                                        : 'bg-[#f7f7f7] text-[#64666a]'
+                                }`}>
+                                    {isDone ? <CheckCircle2 className="w-4 h-4 text-[#008254]" /> : st.num}
+                                </div>
+                                <div>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider block text-[#64666a]">
+                                        Step {st.num}
+                                    </span>
+                                    <span className="text-xs font-bold text-black block truncate">
+                                        {st.title}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Multi-Step Form Container */}
+            <Card className="border-[#d8d9da] bg-white">
+                <form onSubmit={handleSubmit}>
+                    {/* Step 1: Personal & Demographics */}
+                    {step === 1 && (
+                        <div className="p-6 space-y-4">
+                            <CardHeader className="p-0 pb-4 border-b border-[#ebebec]">
+                                <CardTitle className="text-base">Step 1: Personal Profile & Demographics</CardTitle>
+                                <CardDescription>Capture official identification and residential address hierarchy</CardDescription>
+                            </CardHeader>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">
+                                        Full Name (Tripartite) <span className="text-[#de2828]">*</span>
+                                    </label>
+                                    <Input
+                                        required
+                                        value={data.full_name}
+                                        onChange={(e) => setData('full_name', e.target.value)}
+                                        placeholder="First Father Grandfather"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                    {errors.full_name && <p className="text-xs text-[#de2828] mt-1">{errors.full_name}</p>}
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">
+                                        Gender <span className="text-[#de2828]">*</span>
+                                    </label>
+                                    <select
+                                        value={data.gender}
+                                        onChange={(e) => setData('gender', e.target.value)}
+                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
+                                    >
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">
+                                        Marital Status
+                                    </label>
+                                    <select
+                                        value={data.marital_status}
+                                        onChange={(e) => setData('marital_status', e.target.value)}
+                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
+                                    >
+                                        <option value="Single">Single</option>
+                                        <option value="Married">Married</option>
+                                        <option value="Divorced">Divorced</option>
+                                        <option value="Widowed">Widowed</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">
+                                        Educational Attainment
+                                    </label>
+                                    <Input
+                                        value={data.education_status}
+                                        onChange={(e) => setData('education_status', e.target.value)}
+                                        placeholder="e.g. BSc in Civil Engineering"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">
+                                        Mobile Phone (+251)
+                                    </label>
+                                    <Input
+                                        value={data.phone}
+                                        onChange={(e) => setData('phone', e.target.value)}
+                                        placeholder="0911234567"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">
+                                        Official Email
+                                    </label>
+                                    <Input
+                                        type="email"
+                                        value={data.email}
+                                        onChange={(e) => setData('email', e.target.value)}
+                                        placeholder="name@elhadar.com"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-2 border-t border-[#ebebec]">
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">Region</label>
+                                    <Input
+                                        value={data.region}
+                                        onChange={(e) => setData('region', e.target.value)}
+                                        placeholder="Addis Ababa"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">City</label>
+                                    <Input
+                                        value={data.city}
+                                        onChange={(e) => setData('city', e.target.value)}
+                                        placeholder="Addis Ababa"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">Sub-City (K/Ketema)</label>
+                                    <Input
+                                        value={data.sub_city}
+                                        onChange={(e) => setData('sub_city', e.target.value)}
+                                        placeholder="Bole"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">Woreda</label>
+                                    <Input
+                                        value={data.woreda}
+                                        onChange={(e) => setData('woreda', e.target.value)}
+                                        placeholder="Woreda 03"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">House Number</label>
+                                    <Input
+                                        value={data.house_no}
+                                        onChange={(e) => setData('house_no', e.target.value)}
+                                        placeholder="H-401"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-[#ebebec]">
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">Emergency Contact Name</label>
+                                    <Input
+                                        value={data.emergency_contact_name}
+                                        onChange={(e) => setData('emergency_contact_name', e.target.value)}
+                                        placeholder="Family or next of kin"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">Relationship</label>
+                                    <Input
+                                        value={data.emergency_contact_relationship}
+                                        onChange={(e) => setData('emergency_contact_relationship', e.target.value)}
+                                        placeholder="e.g. Spouse, Brother, Father"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">Emergency Telephone</label>
+                                    <Input
+                                        value={data.emergency_contact_phone}
+                                        onChange={(e) => setData('emergency_contact_phone', e.target.value)}
+                                        placeholder="0911998877"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 2: Role & Department Assignment */}
+                    {step === 2 && (
+                        <div className="p-6 space-y-4">
+                            <CardHeader className="p-0 pb-4 border-b border-[#ebebec]">
+                                <CardTitle className="text-base">Step 2: Department, Position & Workplace</CardTitle>
+                                <CardDescription>Establish physical filing code, organizational hierarchy, and contract model</CardDescription>
+                            </CardHeader>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">
+                                        File Number (Filing Index) <span className="text-[#de2828]">*</span>
+                                    </label>
+                                    <Input
+                                        required
+                                        value={data.file_no}
+                                        onChange={(e) => setData('file_no', e.target.value)}
+                                        placeholder="e.g. A-101, B-012"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10 font-bold"
+                                    />
+                                    {errors.file_no && <p className="text-xs text-[#de2828] mt-1">{errors.file_no}</p>}
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">
+                                        Department <span className="text-[#de2828]">*</span>
+                                    </label>
+                                    <select
+                                        required
+                                        value={data.department_id}
+                                        onChange={(e) => setData('department_id', e.target.value)}
+                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
+                                    >
+                                        {departments.map((dept) => (
+                                            <option key={dept.id} value={dept.id}>{dept.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">
+                                        Position / Job Title <span className="text-[#de2828]">*</span>
+                                    </label>
+                                    <Input
+                                        required
+                                        value={data.position}
+                                        onChange={(e) => setData('position', e.target.value)}
+                                        placeholder="e.g. Project Electrical Engineer"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                    {errors.position && <p className="text-xs text-[#de2828] mt-1">{errors.position}</p>}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">
+                                        Work Place <span className="text-[#de2828]">*</span>
+                                    </label>
+                                    <select
+                                        value={data.work_place}
+                                        onChange={(e) => setData('work_place', e.target.value)}
+                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
+                                    >
+                                        <option value="Project">Project Site</option>
+                                        <option value="Head Office">Head Office (H.O)</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">
+                                        Employment Classification <span className="text-[#de2828]">*</span>
+                                    </label>
+                                    <select
+                                        value={data.employment_type}
+                                        onChange={(e) => setData('employment_type', e.target.value)}
+                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
+                                    >
+                                        <option value="Non-Managerial">Non-Managerial (60 Working Days Probation)</option>
+                                        <option value="Managerial">Managerial (90 Calendar Days Probation)</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">
+                                        Contract Model <span className="text-[#de2828]">*</span>
+                                    </label>
+                                    <select
+                                        value={data.contract_type}
+                                        onChange={(e) => setData('contract_type', e.target.value)}
+                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
+                                    >
+                                        <option value="Permanent">Permanent</option>
+                                        <option value="Contract">Fixed-Term Contract</option>
+                                        <option value="Daily">Daily / Casual</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">
+                                        Initial Status <span className="text-[#de2828]">*</span>
+                                    </label>
+                                    <select
+                                        value={data.status}
+                                        onChange={(e) => setData('status', e.target.value)}
+                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
+                                    >
+                                        <option value="Probation">Probation (Under Evaluation)</option>
+                                        <option value="Permanent">Permanent (Confirmed)</option>
+                                        <option value="Contract">Fixed Contract</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">Salary Grade</label>
+                                    <Input
+                                        value={data.grade}
+                                        onChange={(e) => setData('grade', e.target.value)}
+                                        placeholder="e.g. IV, VII"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">Salary Step</label>
+                                    <Input
+                                        value={data.step}
+                                        onChange={(e) => setData('step', e.target.value)}
+                                        placeholder="e.g. 1, 2"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 3: Dual Calendar Dates & Milestones */}
+                    {step === 3 && (
+                        <div className="p-6 space-y-4">
+                            <CardHeader className="p-0 pb-4 border-b border-[#ebebec]">
+                                <CardTitle className="text-base">Step 3: Dual Calendar Dates (E.C. &amp; G.C.)</CardTitle>
+                                <CardDescription>Record dates in Ethiopian Calendar with Gregorian synchronization</CardDescription>
+                            </CardHeader>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                                <div className="p-4 rounded-xs bg-[#effcf8] border border-[#b7ecda] space-y-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-[#008254] block">
+                                        Date of Employment
+                                    </span>
+                                    <div>
+                                        <label className="block text-xs font-bold text-black mb-1">
+                                            Ethiopian Calendar Date (E.C) <span className="text-[#de2828]">*</span>
+                                        </label>
+                                        <Input
+                                            required
+                                            value={data.employment_date_ec}
+                                            onChange={(e) => setData('employment_date_ec', e.target.value)}
+                                            placeholder="dd/mm/yyyy E.C (e.g. 20/02/2018)"
+                                            className="bg-white border-[#d8d9da] text-xs h-10"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-black mb-1">
+                                            Gregorian Equivalent (G.C) <span className="text-[#de2828]">*</span>
+                                        </label>
+                                        <Input
+                                            type="date"
+                                            required
+                                            value={data.employment_date}
+                                            onChange={(e) => setData('employment_date', e.target.value)}
+                                            className="bg-white border-[#d8d9da] text-xs h-10"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="p-4 rounded-xs bg-[#f7f7f7] border border-[#ebebec] space-y-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-[#64666a] block">
+                                        Date of Birth (For 60-Year Retirement Engine)
+                                    </span>
+                                    <div>
+                                        <label className="block text-xs font-bold text-black mb-1">
+                                            Birth Date in Ethiopian Calendar (E.C)
+                                        </label>
+                                        <Input
+                                            value={data.birth_date_ec}
+                                            onChange={(e) => setData('birth_date_ec', e.target.value)}
+                                            placeholder="dd/mm/yyyy E.C"
+                                            className="bg-white border-[#d8d9da] text-xs h-10"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-black mb-1">
+                                            Birth Date in Gregorian (G.C)
+                                        </label>
+                                        <Input
+                                            type="date"
+                                            value={data.birth_date}
+                                            onChange={(e) => setData('birth_date', e.target.value)}
+                                            className="bg-white border-[#d8d9da] text-xs h-10"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {data.contract_type === 'Contract' && (
+                                <div className="p-4 rounded-xs bg-[#fffbeb] border border-[#fef3c7] space-y-2">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-[#b45309] block">
+                                        Fixed-Term Contract End Date (Con.End Day)
+                                    </span>
+                                    <Input
+                                        type="date"
+                                        value={data.contract_end_date}
+                                        onChange={(e) => setData('contract_end_date', e.target.value)}
+                                        className="bg-white border-[#d8d9da] text-xs h-10 max-w-sm"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Step 4: Compensation & Banking */}
+                    {step === 4 && (
+                        <div className="p-6 space-y-4">
+                            <CardHeader className="p-0 pb-4 border-b border-[#ebebec]">
+                                <CardTitle className="text-base">Step 4: Statutory Wage, Allowances & Banking</CardTitle>
+                                <CardDescription>Itemized breakdown of basic salary, allowances, pension shares, and CBE disbursement</CardDescription>
+                            </CardHeader>
+
+                            <div className="p-4 rounded-xs bg-[#effcf8] border border-[#b7ecda] mb-2">
+                                <label className="block text-xs font-bold text-[#00482f] uppercase tracking-wider mb-1">
+                                    Basic Monthly Salary (ETB) <span className="text-[#de2828]">*</span>
+                                </label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    required
+                                    value={data.basic_salary}
+                                    onChange={(e) => setData('basic_salary', e.target.value)}
+                                    placeholder="18500.00"
+                                    className="bg-white border-[#d8d9da] text-sm h-11 font-bold text-[#008254]"
+                                />
+                                <span className="text-[11px] text-[#64666a] mt-1 block">
+                                    Subject to 7% employee pension deduction and 11% employer contribution per Proclamation 1268/2022.
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold text-black mb-1">Hardship Allowance</label>
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.hardship_allowance}
+                                        onChange={(e) => setData('hardship_allowance', e.target.value)}
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-black mb-1">Project Site Allowance</label>
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.project_allowance}
+                                        onChange={(e) => setData('project_allowance', e.target.value)}
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-black mb-1">Position / Role Allowance</label>
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.position_allowance}
+                                        onChange={(e) => setData('position_allowance', e.target.value)}
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-black mb-1">Transport Allowance</label>
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.transport_allowance}
+                                        onChange={(e) => setData('transport_allowance', e.target.value)}
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold text-black mb-1">Housing Allowance</label>
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.house_allowance}
+                                        onChange={(e) => setData('house_allowance', e.target.value)}
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-black mb-1">Mobile Allowance</label>
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.mobile_allowance}
+                                        onChange={(e) => setData('mobile_allowance', e.target.value)}
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-black mb-1">Food Allowance</label>
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.food_allowance}
+                                        onChange={(e) => setData('food_allowance', e.target.value)}
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-black mb-1">Responsibility Allowance</label>
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={data.responsibility_allowance}
+                                        onChange={(e) => setData('responsibility_allowance', e.target.value)}
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-[#ebebec]">
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">Commercial Bank Name</label>
+                                    <Input
+                                        value={data.bank_name}
+                                        onChange={(e) => setData('bank_name', e.target.value)}
+                                        placeholder="Commercial Bank of Ethiopia (CBE)"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">Bank Account Number</label>
+                                    <Input
+                                        value={data.bank_account_no}
+                                        onChange={(e) => setData('bank_account_no', e.target.value)}
+                                        placeholder="1000..."
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10 font-bold"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">Tax ID Number (TIN)</label>
+                                    <Input
+                                        value={data.tin_no}
+                                        onChange={(e) => setData('tin_no', e.target.value)}
+                                        placeholder="0012345678"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">POESSA Pension No</label>
+                                    <Input
+                                        value={data.poessa_no}
+                                        onChange={(e) => setData('poessa_no', e.target.value)}
+                                        placeholder="POESSA-..."
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">PSSSA Pension No</label>
+                                    <Input
+                                        value={data.psssa_no}
+                                        onChange={(e) => setData('psssa_no', e.target.value)}
+                                        placeholder="PSSSA-..."
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">Assigned Vehicle Plate No</label>
+                                    <Input
+                                        value={data.plate_number}
+                                        onChange={(e) => setData('plate_number', e.target.value)}
+                                        placeholder="e.g. 3-A-12345"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-black mb-1">Social Security Number</label>
+                                    <Input
+                                        value={data.social_security_no}
+                                        onChange={(e) => setData('social_security_no', e.target.value)}
+                                        placeholder="SS-..."
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="pt-2 border-t border-[#ebebec]">
+                                <label className="block text-xs font-bold text-black mb-1">Remarks &amp; Onboarding Notes (Section 8)</label>
+                                <textarea
+                                    value={data.remarks}
+                                    onChange={(e) => setData('remarks', e.target.value)}
+                                    rows={2}
+                                    placeholder="Enter any onboarding remarks or statutory notes..."
+                                    className="w-full p-2.5 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Navigation Buttons Footer */}
+                    <div className="p-6 border-t border-[#ebebec] bg-[#f7f7f7] flex justify-between items-center">
+                        {step > 1 ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={prevStep}
+                                className="text-xs border-[#d8d9da] rounded-xs gap-1.5"
+                            >
+                                <ArrowLeft className="w-3.5 h-3.5" /> Previous
+                            </Button>
+                        ) : <div />}
+
+                        {step < 4 ? (
+                            <Button
+                                type="button"
+                                onClick={nextStep}
+                                className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase rounded-xs gap-1.5"
+                            >
+                                Next Step <ArrowRight className="w-3.5 h-3.5" />
+                            </Button>
+                        ) : (
+                            <Button
+                                type="submit"
+                                disabled={processing}
+                                className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase rounded-xs gap-1.5"
+                            >
+                                {processing ? 'Submitting...' : 'Complete Onboarding & Save Employee'}
+                            </Button>
+                        )}
+                    </div>
+                </form>
+            </Card>
+        </AuthenticatedLayout>
+    );
+}

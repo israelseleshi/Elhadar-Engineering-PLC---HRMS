@@ -1,0 +1,73 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # manual trigger for manual deploys / testing
+
+permissions:
+  contents: read
+
+env:
+  DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+  DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+  DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+  DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+
+      - name: Deploy via rsync over SSH
+        run: |
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='storage/logs' \
+            --exclude='public/build' \
+            -e "ssh -p $DEPLOY_PORT -i ~/.ssh/deploy_key" \
+            ./ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH
+
+      - name: Run artisan commands on server
+        run: |
+          ssh -p $DEPLOY_PORT -i ~/.ssh/deploy_key \
+            $DEPLOY_USER@$DEPLOY_HOST <<'EOF'
+            cd $DEPLOY_PATH
+            export $(cat .env | xargs)
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan view:clear
+            php artisan migrate --force
+            php artisan storage:link
+          EOF
+
+      - name: Post-deploy health check
+        run: |
+          for i in {1..10}; do
+            HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" https://your-production-url.test)
+            if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]; then
+              echo "✅ Server healthy (HTTP $HTTP_CODE)"
+              exit 0
+            fi
+            echo "⏳ Server not ready yet (HTTP $HTTP_CODE), retry ${i}/10..."
+            sleep 10
+          done
+          echo "❌ Server did not respond correctly after 10 attempts"
+          exit 1

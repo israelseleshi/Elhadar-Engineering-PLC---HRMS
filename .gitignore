@@ -1,0 +1,92 @@
+# Core Laravel
+.env
+.env.backup
+.env.production
+.env.key
+vendor/
+node_modules/
+/public/hot
+/public/storage
+/storage/*.key
+/storage/framework/views
+/storage/logs/*.log
+/bootstrap/cache/.phpunit.result.cache
+
+# Dependencies
+composer.lock
+yarn.lock
+pnpm-lock.yaml
+npm-shrinkwrap.json
+
+# Testing
+.phpunit.result.cache
+tests/_output/
+
+# IDE & Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# OS / system
+.DS_Store
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+.phpunit.result.cache
+auth.json
+
+# Sensitive / private data
+# Never commit production keys, credentials, or personal data
+*.pem
+*.key
+*.pfx
+credentials.json
+service-account.json
+credit_cards.txt
+passwords.txt
+secrets.txt
+
+# System / deploy artifacts
+elhadar_deploy.tar.gz
+update_2019.tar.gz
+
+# Logs
+*.log
+storage/logs/*.log
+
+# Deployed build
+public/build
+public/img
+
+# ─────────────────────────────────────────────
+# Confidential project files (must NEVER be committed)
+# ─────────────────────────────────────────────
+
+# Employee login credentials (temporary passwords for 297+ staff, incl. HR admin)
+EMPLOYEE_LOGIN_CREDENTIALS.md
+
+# Master HR Excel sheets (contain real employee PII, salaries, bank accounts, national IDs)
+# Put these outside the repo or in docs/ only after redaction
+public/20-02-2019\ Master\ List.xlsx
+public/30-01-2019\ Master\ List.xlsx
+*.xlsx
+*.xls
+*.csv
+
+# Mapping / data dictionary files (linked to real staff records)
+mapping_summary.txt
+
+# Backup / local work copies with sensitive content
+*.bak
+*.orig
+*~
