@@ -98,10 +98,22 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Add server to known hosts
+      - name: Add server to known hosts and configure SSH multiplexing
         run: |
           mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
           ssh-keyscan -p $DEPLOY_PORT -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+          cat << 'EOF' > ~/.ssh/config
+          Host *
+            StrictHostKeyChecking no
+            ControlMaster auto
+            ControlPath ~/.ssh/cm-%r@%h:%p
+            ControlPersist 10m
+            ServerAliveInterval 15
+            ServerAliveCountMax 3
+            ConnectTimeout 30
+          EOF
+          chmod 600 ~/.ssh/config
 
       - name: Deploy via rsync over SSH
         run: |
@@ -121,7 +133,7 @@ jobs:
 
       - name: Run artisan commands on server
         run: |
-          ssh -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST <<EOF
+          ssh -T -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST <<EOF
             set -e
             cd $DEPLOY_PATH
             
@@ -134,9 +146,9 @@ jobs:
             php artisan view:clear
             
             # Ensure storage symlink exists
-            php artisan storage:link || true
+            [ -L public/storage ] || php artisan storage:link || true
             
-            # Cache config and routes for production performance
+            # Cache config, routes, and views for production performance
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
