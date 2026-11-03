@@ -46,6 +46,11 @@ jobs:
       - name: Install Node dependencies
         run: npm install
 
+      - name: Prepare storage directories
+        run: |
+          mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions storage/logs bootstrap/cache
+          chmod -R 775 storage bootstrap/cache
+
       - name: Run PHP tests
         run: php artisan test --compact
 
