@@ -34,8 +34,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 22
 
       - name: Validate composer.json
         run: composer validate --strict
@@ -44,7 +43,7 @@ jobs:
         run: composer install --no-interaction --prefer-dist --no-progress
 
       - name: Install Node dependencies
-        run: npm ci
+        run: npm install
 
       - name: Run PHP tests
         run: php artisan test --compact
@@ -78,15 +77,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 22
 
       - name: Install Production Composer dependencies
         run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Install Node dependencies & Build Frontend
         run: |
-          npm ci
+          npm install
           npm run build
 
       - name: Setup SSH key
