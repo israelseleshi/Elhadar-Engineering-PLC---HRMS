@@ -1,28 +1,93 @@
-name: Deploy
+name: CI/CD Pipeline
 
 on:
   push:
     branches: [main]
-  workflow_dispatch:  # manual trigger for manual deploys / testing
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-env:
-  DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-  DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
-  DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-  DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
 jobs:
-  deploy:
+  test:
+    name: Run Tests
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    env:
+      APP_ENV: testing
+      APP_DEBUG: false
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /tmp/testing.sqlite
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Install Composer dependencies (including dev)
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Run PHP tests
+        run: php artisan test --compact
+
+      - name: Verify frontend build
+        run: npm run build
+
+  deploy:
+    name: Deploy to Production
+    needs: test
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/home/charisme/elhadar_hrms' }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, mysql
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Production Composer dependencies
+        run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install Node dependencies & Build Frontend
+        run: |
+          npm ci
+          npm run build
 
       - name: Setup SSH key
         uses: webfactory/ssh-agent@v0.9.0
@@ -32,41 +97,60 @@ jobs:
       - name: Add server to known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+          ssh-keyscan -p $DEPLOY_PORT -H $DEPLOY_HOST >> ~/.ssh/known_hosts
 
       - name: Deploy via rsync over SSH
         run: |
+          # Rsync application to server.
+          # Crucial exclusions to prevent data loss:
+          #   - .env* (preserve live production database credentials & app key)
+          #   - storage/ (preserve uploaded documents, photos, logs, sessions)
           rsync -avz --delete \
             --exclude='.git' \
             --exclude='.github' \
+            --exclude='.env*' \
+            --exclude='storage' \
             --exclude='node_modules' \
-            --exclude='storage/logs' \
-            --exclude='public/build' \
+            --exclude='tests' \
             -e "ssh -p $DEPLOY_PORT" \
             ./ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH
 
       - name: Run artisan commands on server
         run: |
-          ssh -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST <<'EOF'
+          ssh -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST <<EOF
+            set -e
             cd $DEPLOY_PATH
-            export $(cat .env | xargs)
+            
+            # Run migrations on production database
+            php artisan migrate --force
+            
+            # Clear stale caches
             php artisan config:clear
             php artisan cache:clear
             php artisan view:clear
-            php artisan migrate --force
-            php artisan storage:link
+            
+            # Ensure storage symlink exists
+            php artisan storage:link || true
+            
+            # Cache config and routes for production performance
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
           EOF
 
       - name: Post-deploy health check
         run: |
+          TARGET_URL="https://${DEPLOY_HOST}/"
+          echo "Checking health at $TARGET_URL ..."
           for i in {1..10}; do
-            HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" https://${DEPLOY_HOST}${DEPLOY_PATH}/)
+            HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" -L "$TARGET_URL")
             if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]; then
-              echo "Server healthy (HTTP $HTTP_CODE)"
+              echo "✅ Application healthy (HTTP $HTTP_CODE)"
               exit 0
             fi
-            echo "Server not ready yet (HTTP $HTTP_CODE), retry ${i}/10..."
-            sleep 10
+            echo "⏳ Waiting for response (HTTP $HTTP_CODE), retry ${i}/10..."
+            sleep 6
           done
-          echo "Server did not respond correctly after 10 attempts"
+          echo "❌ Application did not respond as healthy within 60 seconds"
           exit 1
+
