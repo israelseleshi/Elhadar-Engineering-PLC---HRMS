@@ -42,13 +42,12 @@ jobs:
             --exclude='node_modules' \
             --exclude='storage/logs' \
             --exclude='public/build' \
-            -e "ssh -p $DEPLOY_PORT -i ~/.ssh/deploy_key" \
+            -e "ssh -p $DEPLOY_PORT" \
             ./ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH
 
       - name: Run artisan commands on server
         run: |
-          ssh -p $DEPLOY_PORT -i ~/.ssh/deploy_key \
-            $DEPLOY_USER@$DEPLOY_HOST <<'EOF'
+          ssh -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST <<'EOF'
             cd $DEPLOY_PATH
             export $(cat .env | xargs)
             php artisan config:clear
@@ -61,13 +60,13 @@ jobs:
       - name: Post-deploy health check
         run: |
           for i in {1..10}; do
-            HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" https://your-production-url.test)
+            HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" https://${DEPLOY_HOST}${DEPLOY_PATH}/)
             if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]; then
-              echo "✅ Server healthy (HTTP $HTTP_CODE)"
+              echo "Server healthy (HTTP $HTTP_CODE)"
               exit 0
             fi
-            echo "⏳ Server not ready yet (HTTP $HTTP_CODE), retry ${i}/10..."
+            echo "Server not ready yet (HTTP $HTTP_CODE), retry ${i}/10..."
             sleep 10
           done
-          echo "❌ Server did not respond correctly after 10 attempts"
+          echo "Server did not respond correctly after 10 attempts"
           exit 1
