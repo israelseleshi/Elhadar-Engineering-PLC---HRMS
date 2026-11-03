@@ -17,8 +17,9 @@ jobs:
     env:
       APP_ENV: testing
       APP_DEBUG: false
+      APP_KEY: base64:czjuWr7u7U1lODaswUYYKseLMGHKQbw3n1MyVllLxJ8=
       DB_CONNECTION: sqlite
-      DB_DATABASE: /tmp/testing.sqlite
+      DB_DATABASE: ':memory:'
 
     steps:
       - name: Checkout code
