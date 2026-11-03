@@ -16,6 +16,24 @@ class ExcelImportTest extends TestCase
 
     public function test_excel_master_list_imports_cleanly(): void
     {
+        $hasMasterFile = false;
+        foreach ([
+            public_path('20-02-2019 Master List.xlsx'),
+            public_path('30-01-2019 Master List.xlsx'),
+            database_path('data/20-02-2019 Master List.xlsx'),
+            database_path('data/30-01-2019 Master List.xlsx'),
+            database_path('data/EL-HADAR_ENG_HR_Master_List.xlsx'),
+        ] as $path) {
+            if (file_exists($path)) {
+                $hasMasterFile = true;
+                break;
+            }
+        }
+
+        if (! $hasMasterFile) {
+            $this->markTestSkipped('Master Excel file not present in repository (excluded for confidentiality).');
+        }
+
         $this->artisan('hrms:import-excel')
             ->assertSuccessful();
 
