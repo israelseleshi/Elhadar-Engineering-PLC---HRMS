@@ -159,18 +159,30 @@ class ImportTerminatedEmployeesCommand extends Command
                 $employee = Employee::where('file_no', $fileNo)->first()
                     ?? Employee::where('full_name', $fullName)->first();
 
+                // Resolve Workplace (ENUM: 'Project' or 'Head Office')
+                $workPlaceRaw = trim((string) ($row['Work Place'] ?? ''));
+                $workPlace = (stripos($workPlaceRaw, 'head') !== false || stripos($workPlaceRaw, 'h.o') !== false || stripos($workPlaceRaw, 'ho') !== false)
+                    ? 'Head Office'
+                    : 'Project';
+
+                // Resolve Contract Type (ENUM: 'Permanent', 'Contract', 'Daily')
+                $contractRaw = trim((string) ($row['Term of Employment'] ?? ''));
+                $contractType = (stripos($contractRaw, 'contract') !== false)
+                    ? 'Contract'
+                    : ((stripos($contractRaw, 'daily') !== false) ? 'Daily' : 'Permanent');
+
                 $employeeData = [
                     'file_no' => $fileNo,
                     'full_name' => $fullName,
                     'gender' => $gender,
                     'marital_status' => $row['Marital Status'] ?? null,
                     'employment_type' => $this->resolveEmploymentType($row['Job Title'] ?? ''),
-                    'contract_type' => $row['Term of Employment'] ?? 'Permanent',
+                    'contract_type' => $contractType,
                     'status' => 'Separated',
                     'remarks' => $reason,
                     'department_id' => $department->id,
                     'position' => $row['Job Title'] ?? 'Staff',
-                    'work_place' => $row['Work Place'] ?? 'Head Office',
+                    'work_place' => $workPlace,
                     'grade' => $row['Job Grade'] ?? null,
                     'step' => $row['Steps'] ?? null,
                     'education_status' => $row['Educational Qualification'] ?? null,
