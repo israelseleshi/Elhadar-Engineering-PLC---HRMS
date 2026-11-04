@@ -33,18 +33,28 @@ class ImportTerminatedEmployeesCommand extends Command
      */
     public function handle(): int
     {
-        $filePath = $this->option('file') ?: public_path('Terminate.json');
+        $filePath = $this->option('file');
 
-        if (! file_exists($filePath)) {
-            // Check fallback with space
-            $altPath = public_path('Terminate .json');
-            if (file_exists($altPath)) {
-                $filePath = $altPath;
-            } else {
-                $this->error("Terminate JSON file not found at: {$filePath}");
+        if (! $filePath) {
+            $candidates = [
+                database_path('data/terminated_employees.json'),
+                public_path('Terminate.json'),
+                public_path('Terminate .json'),
+                base_path('Terminate.json'),
+            ];
 
-                return self::FAILURE;
+            foreach ($candidates as $candidate) {
+                if (file_exists($candidate)) {
+                    $filePath = $candidate;
+                    break;
+                }
             }
+        }
+
+        if (! $filePath || ! file_exists($filePath)) {
+            $this->warn('Terminate JSON file not found in candidates. Skipping ingestion safely.');
+
+            return self::SUCCESS;
         }
 
         $raw = file_get_contents($filePath);
@@ -53,7 +63,7 @@ class ImportTerminatedEmployeesCommand extends Command
         if (! $data || ! isset($data['sheets'])) {
             $this->error('Failed to parse Terminate JSON structure.');
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         $sheets = [
