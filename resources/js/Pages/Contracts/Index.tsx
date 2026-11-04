@@ -248,14 +248,14 @@ export default function Index({ contracts, filters, stats }: Props) {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-24">File No</TableHead>
-                            <TableHead>Staff Name</TableHead>
+                            <TableHead className="w-24">File no</TableHead>
+                            <TableHead>Staff name</TableHead>
                             <TableHead>Department</TableHead>
-                            <TableHead>Work Place</TableHead>
-                            <TableHead>Expiration Date</TableHead>
-                            <TableHead className="text-center">Days Left</TableHead>
+                            <TableHead>Work place</TableHead>
+                            <TableHead>Expiration date</TableHead>
+                            <TableHead className="text-center">Days left</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
+                            <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>

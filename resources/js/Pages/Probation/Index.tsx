@@ -211,14 +211,14 @@ export default function Index({ candidates, filters, stats }: Props) {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-24">File No</TableHead>
-                            <TableHead>Staff Name</TableHead>
+                            <TableHead className="w-24">File no</TableHead>
+                            <TableHead>Staff name</TableHead>
                             <TableHead>Department</TableHead>
-                            <TableHead>Employment Date (E.C)</TableHead>
-                            <TableHead>Deadline Date</TableHead>
-                            <TableHead className="text-center">Working Days Left</TableHead>
+                            <TableHead>Employment date (E.C)</TableHead>
+                            <TableHead>Deadline date</TableHead>
+                            <TableHead className="text-center">Working days left</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
+                            <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>

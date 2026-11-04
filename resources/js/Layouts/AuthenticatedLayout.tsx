@@ -76,6 +76,7 @@ export default function AuthenticatedLayout({
             { name: 'Leave Ledger', href: route('leave.index'), routeName: 'leave.*', icon: CalendarDays },
             { name: 'Training Registry', href: route('training.index'), routeName: 'training.*', icon: GraduationCap },
             { name: 'Promotions Ledger', href: route('promotions.index'), routeName: 'promotions.*', icon: TrendingUp },
+            { name: 'New Employees', href: route('new-employees.index'), routeName: 'new-employees.*', icon: UserPlus },
             { name: 'Separations & Exits', href: route('separations.index'), routeName: 'separations.*', icon: UserMinus },
             { name: 'Statutory Settings', href: route('settings.index'), routeName: 'settings.*', icon: Sliders },
             { name: 'Security Audit Log', href: route('audit.index'), routeName: 'audit.*', icon: Activity },

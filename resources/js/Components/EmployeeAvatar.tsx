@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 interface Props {
     name: string;
     src?: string | null;
-    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
     className?: string;
 }
 
@@ -14,6 +14,7 @@ const sizeClasses: Record<string, { container: string; text: string }> = {
     lg: { container: 'w-14 h-14 rounded-full', text: 'text-lg font-bold' },
     xl: { container: 'w-16 h-16 rounded-full', text: 'text-2xl font-bold' },
     '2xl': { container: 'w-24 h-24 rounded-full', text: 'text-3xl font-bold' },
+    '3xl': { container: 'w-36 h-36 rounded-full', text: 'text-5xl font-bold' },
 };
 
 export default function EmployeeAvatar({ name, src, size = 'md', className = '' }: Props) {

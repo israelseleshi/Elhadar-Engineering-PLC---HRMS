@@ -124,6 +124,14 @@ class SystemSettingController extends Controller
             'description' => 'Current operating Ethiopian Fiscal Calendar period applied across payroll and leave cycles.',
             'unit' => 'E.C.',
         ],
+        'new_hire_cutoff_date' => [
+            'value' => '2026-07-08',
+            'type' => 'string',
+            'category' => 'Corporate & Fiscal Parameters',
+            'article' => 'Fiscal Directive',
+            'description' => 'Earliest employment date (G.C.) included in the New Employees onboarding roster; defaults to Hamle 1, 2018 E.C.',
+            'unit' => 'Date',
+        ],
         'company_registered_name' => [
             'value' => 'Elhadar Engineering PLC',
             'type' => 'string',

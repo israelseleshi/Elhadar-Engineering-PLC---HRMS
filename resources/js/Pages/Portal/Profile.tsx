@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
-import { Head, useForm, router } from '@inertiajs/react';
+import { Head, useForm, router, usePage } from '@inertiajs/react';
 import PortalLayout from '@/Layouts/PortalLayout';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import EmployeeAvatar from '@/Components/EmployeeAvatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
@@ -102,6 +103,13 @@ export default function Profile({ employee, tenure, annualLeaveEntitlement, reti
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
+    const user = usePage().props.auth.user;
+    const isEmployee = user?.role === 'Employee';
+
+    // Employees keep the focused self-service shell; HR/admin roles keep the
+    // full operational sidebar so this page behaves like any other admin page.
+    const Layout = isEmployee ? PortalLayout : AuthenticatedLayout;
+
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file || !employee) return;
@@ -157,7 +165,7 @@ export default function Profile({ employee, tenure, annualLeaveEntitlement, reti
 
     if (!employee) {
         return (
-            <PortalLayout title="Employee Self-Service">
+            <Layout title="Employee Self-Service">
                 <Head title="Self-Service Portal - Elhadar Engineering HRMS" />
                 <Card className="border-[#d8d9da] bg-white p-8 text-center">
                     <AlertCircle className="w-12 h-12 text-[#64666a] mx-auto mb-3" />
@@ -166,14 +174,14 @@ export default function Profile({ employee, tenure, annualLeaveEntitlement, reti
                         Please contact HR Administration to link your user account to an employee profile.
                     </p>
                 </Card>
-            </PortalLayout>
+            </Layout>
         );
     }
 
     const salary = employee.current_salary;
 
     return (
-        <PortalLayout
+        <Layout
             title="Employee Self-Service Portal"
             subtitle="Review your verified personnel records, payroll allowances, and report data discrepancies."
         >
@@ -454,9 +462,9 @@ export default function Profile({ employee, tenure, annualLeaveEntitlement, reti
                             <table className="w-full text-left text-xs border-collapse">
                                 <thead className="bg-[#f7f7f7] sticky top-0 z-20 shadow-[0_1px_0_0_#ebebec]">
                                     <tr className="border-b border-[#ebebec] text-[#64666a] uppercase">
-                                        <th className="py-2.5 px-3 font-bold bg-[#f7f7f7] sticky top-0 z-20 shadow-[inset_0_-1px_0_0_#ebebec]">Field Name</th>
-                                        <th className="py-2.5 px-3 font-bold bg-[#f7f7f7] sticky top-0 z-20 shadow-[inset_0_-1px_0_0_#ebebec]">Current Record</th>
-                                        <th className="py-2.5 px-3 font-bold bg-[#f7f7f7] sticky top-0 z-20 shadow-[inset_0_-1px_0_0_#ebebec]">Proposed Correction</th>
+                                        <th className="py-2.5 px-3 font-bold bg-[#f7f7f7] sticky top-0 z-20 shadow-[inset_0_-1px_0_0_#ebebec]">Field name</th>
+                                        <th className="py-2.5 px-3 font-bold bg-[#f7f7f7] sticky top-0 z-20 shadow-[inset_0_-1px_0_0_#ebebec]">Current record</th>
+                                        <th className="py-2.5 px-3 font-bold bg-[#f7f7f7] sticky top-0 z-20 shadow-[inset_0_-1px_0_0_#ebebec]">Proposed correction</th>
                                         <th className="py-2.5 px-3 font-bold bg-[#f7f7f7] sticky top-0 z-20 shadow-[inset_0_-1px_0_0_#ebebec]">Explanation</th>
                                         <th className="py-2.5 px-3 font-bold text-right bg-[#f7f7f7] sticky top-0 z-20 shadow-[inset_0_-1px_0_0_#ebebec]">Status</th>
                                     </tr>
@@ -633,6 +641,6 @@ export default function Profile({ employee, tenure, annualLeaveEntitlement, reti
                     </div>
                 </div>
             )}
-        </PortalLayout>
+        </Layout>
     );
 }

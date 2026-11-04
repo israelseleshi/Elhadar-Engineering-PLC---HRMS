@@ -255,8 +255,8 @@ export default function Index({ auditLogs, filters, stats, distinctActions }: Pr
                                     <TableHead className="text-xs font-bold text-black">Timestamp</TableHead>
                                     <TableHead className="text-xs font-bold text-black">Action</TableHead>
                                     <TableHead className="text-xs font-bold text-black">Operator</TableHead>
-                                    <TableHead className="text-xs font-bold text-black">Audited Resource</TableHead>
-                                    <TableHead className="text-xs font-bold text-black">IP Address</TableHead>
+                                    <TableHead className="text-xs font-bold text-black">Audited resource</TableHead>
+                                    <TableHead className="text-xs font-bold text-black">IP address</TableHead>
                                     <TableHead className="text-xs font-bold text-black text-right">Details</TableHead>
                                 </TableRow>
                             </TableHeader>

@@ -207,12 +207,12 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
             {/* Header Profile Dossier Card */}
             <Card className="border-[#d8d9da] bg-white mb-6 overflow-hidden">
                 <div className="p-6 lg:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div className="flex items-start gap-4">
-                        <div className="relative group">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                        <div className="relative group shrink-0">
                             <EmployeeAvatar
                                 name={employee.full_name}
                                 src={employee.profile_photo_url}
-                                size="xl"
+                                size="2xl"
                             />
                             <button
                                 type="button"
@@ -221,17 +221,17 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                                 title="Upload new photo"
                                 className="absolute inset-0 rounded-full bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white cursor-pointer"
                             >
-                                <Camera className="w-5 h-5" />
-                                <span className="text-[9px] font-semibold mt-0.5">{isUploading ? 'Saving...' : 'Change'}</span>
+                                <Camera className="w-6 h-6" />
+                                <span className="text-[10px] font-semibold mt-1">{isUploading ? 'Saving...' : 'Change'}</span>
                             </button>
                             {employee.profile_photo_url && (
                                 <button
                                     type="button"
                                     onClick={handleDeletePhoto}
                                     title="Remove photo"
-                                    className="absolute -bottom-1 -right-1 bg-white p-1 rounded-full border border-red-200 text-red-600 hover:bg-red-50 shadow-xs transition-colors"
+                                    className="absolute bottom-0 right-0 bg-white p-1 rounded-full border border-red-200 text-red-600 hover:bg-red-50 shadow-xs transition-colors cursor-pointer"
                                 >
-                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <Trash2 className="w-4 h-4" />
                                 </button>
                             )}
                             <input

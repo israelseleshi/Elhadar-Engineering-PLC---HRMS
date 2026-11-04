@@ -59,10 +59,10 @@ function TabsTrigger({ value, className, children, ...props }: TabsTriggerProps)
       type="button"
       onClick={() => ctx.setActiveTab(value)}
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap pb-3 text-sm font-semibold ring-offset-background transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 border-b-2 -mb-px",
+        "inline-flex items-center justify-center whitespace-nowrap rounded-t-sm pb-3 text-sm font-semibold ring-offset-background transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 border-b-2 -mb-px",
         isActive
-          ? "border-[#008254] text-[#008254]"
-          : "border-transparent text-[#64666a] hover:text-[#000000]",
+          ? "border-[#008254] bg-[#008254] text-white shadow-xs"
+          : "border-transparent text-[#64666a] hover:bg-[#effcf8] hover:text-[#008254]",
         className
       )}
       {...props}

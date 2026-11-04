@@ -425,13 +425,13 @@ export default function Index({ stats, recentImports }: Props) {
                                     <TableHeader className="bg-[#f7f7f7]">
                                         <TableRow>
                                             <TableHead className="text-xs font-bold text-black">Row</TableHead>
-                                            <TableHead className="text-xs font-bold text-black">File No</TableHead>
-                                            <TableHead className="text-xs font-bold text-black">Full Name</TableHead>
+                                            <TableHead className="text-xs font-bold text-black">File no</TableHead>
+                                            <TableHead className="text-xs font-bold text-black">Full name</TableHead>
                                             <TableHead className="text-xs font-bold text-black">Department</TableHead>
                                             <TableHead className="text-xs font-bold text-black">Position</TableHead>
-                                            <TableHead className="text-xs font-bold text-black">Work Site</TableHead>
-                                            <TableHead className="text-xs font-bold text-black">Basic Salary</TableHead>
-                                            <TableHead className="text-xs font-bold text-black">Status / Note</TableHead>
+                                            <TableHead className="text-xs font-bold text-black">Work site</TableHead>
+                                            <TableHead className="text-xs font-bold text-black">Basic salary</TableHead>
+                                            <TableHead className="text-xs font-bold text-black">Status / note</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -509,7 +509,7 @@ export default function Index({ stats, recentImports }: Props) {
                                     <TableHead className="text-xs font-bold text-black">Timestamp</TableHead>
                                     <TableHead className="text-xs font-bold text-black">Action</TableHead>
                                     <TableHead className="text-xs font-bold text-black">Operator</TableHead>
-                                    <TableHead className="text-xs font-bold text-black">IP Address</TableHead>
+                                    <TableHead className="text-xs font-bold text-black">IP address</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>

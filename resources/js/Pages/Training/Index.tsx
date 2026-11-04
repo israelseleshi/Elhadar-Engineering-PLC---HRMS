@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import ViewToggle, { useViewMode } from '@/Components/ViewToggle';
 import { 
     Table, 
     TableBody, 
@@ -14,14 +15,10 @@ import {
     TableRow 
 } from '@/Components/ui/table';
 import { 
-    Award, 
     Star, 
     Search, 
     Eye, 
     Plus, 
-    GraduationCap,
-    CheckCircle2,
-    Calendar
 } from 'lucide-react';
 
 interface TrainingItem {
@@ -73,6 +70,7 @@ interface Props {
 export default function Index({ records, filters, stats, employees }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [impactScore, setImpactScore] = useState(filters.impact_score || '');
+    const [viewMode, setViewMode] = useViewMode('training');
     const [showModal, setShowModal] = useState(false);
 
     const { data, setData, post, processing, reset, errors } = useForm({
@@ -116,57 +114,6 @@ export default function Index({ records, filters, stats, employees }: Props) {
         >
             <Head title="Training Registry - Elhadar Engineering HRMS" />
 
-            {/* Quick Metrics Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <Card className="border-[#d8d9da] bg-white">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
-                                Total Certifications
-                            </p>
-                            <p className="text-2xl font-bold text-black mt-0.5">
-                                {stats.total_certifications}
-                            </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#effcf8] text-[#008254] flex items-center justify-center font-bold">
-                            <Award className="w-5 h-5" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-[#d8d9da] bg-white">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
-                                Average Impact Score
-                            </p>
-                            <p className="text-2xl font-bold text-[#008254] mt-0.5">
-                                {stats.average_impact_score} / 5.0
-                            </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#e3faf2] text-[#008254] flex items-center justify-center font-bold">
-                            <Star className="w-5 h-5" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-[#d8d9da] bg-white">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
-                                Certified Staff Members
-                            </p>
-                            <p className="text-2xl font-bold text-black mt-0.5">
-                                {stats.certified_staff_count}
-                            </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#e8fdac] text-[#00482f] flex items-center justify-center font-bold">
-                            <GraduationCap className="w-5 h-5" />
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
             {/* Filter and Action Bar */}
             <Card className="border-[#d8d9da] bg-white mb-6">
                 <CardContent className="p-4">
@@ -202,29 +149,33 @@ export default function Index({ records, filters, stats, employees }: Props) {
                             </select>
                         </div>
 
-                        <Button 
-                            onClick={() => setShowModal(true)}
-                            className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase rounded-xs h-10 px-4 gap-2 shrink-0"
-                        >
-                            <Plus className="w-4 h-4" />
-                            Log Training Record
-                        </Button>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <ViewToggle value={viewMode} onChange={setViewMode} />
+                            <Button 
+                                onClick={() => setShowModal(true)}
+                                className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase rounded-xs h-10 px-4 gap-2 shrink-0"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Log Training Record
+                            </Button>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
 
             {/* Training Table */}
             <Card className="border-[#d8d9da] bg-white overflow-hidden shadow-sm">
+                {viewMode === 'table' ? (
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-24">File No</TableHead>
-                            <TableHead>Staff Name</TableHead>
-                            <TableHead>Course / Certificate</TableHead>
+                            <TableHead className="w-24">File no</TableHead>
+                            <TableHead>Staff name</TableHead>
+                            <TableHead>Course / certificate</TableHead>
                             <TableHead>Institution</TableHead>
-                            <TableHead className="text-center">Impact Score</TableHead>
-                            <TableHead>Date / Period</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
+                            <TableHead className="text-center">Impact score</TableHead>
+                            <TableHead>Date / period</TableHead>
+                            <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -279,6 +230,64 @@ export default function Index({ records, filters, stats, employees }: Props) {
                         )}
                     </TableBody>
                 </Table>
+                ) : (
+                    <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
+                        {records.data.length === 0 ? (
+                            <div className="col-span-full py-12 text-center text-xs text-[#64666a]">
+                                No training certifications logged yet matching your filters.
+                            </div>
+                        ) : (
+                            records.data.map((record) => (
+                                <div
+                                    key={record.id}
+                                    className="rounded-xs border border-[#ebebec] bg-[#f7f7f7] p-4 transition-colors hover:border-[#b7ecda] hover:bg-white"
+                                >
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <p className="truncate text-sm font-bold text-black">{record.training_name}</p>
+                                            <p className="mt-0.5 text-[11px] font-semibold text-[#008254]">
+                                                {record.employee.file_no} · {record.employee.full_name}
+                                            </p>
+                                            <p className="truncate text-[11px] text-[#64666a]">
+                                                {record.employee.department?.name || 'Operations'}
+                                            </p>
+                                        </div>
+                                        <span className="inline-flex shrink-0 items-center gap-1 rounded-xs border border-[#b7ecda] bg-[#effcf8] px-2 py-0.5 text-[11px] font-bold text-[#008254]">
+                                            <Star className="h-3 w-3 fill-[#008254]" />
+                                            {record.performance_impact_score}/5
+                                        </span>
+                                    </div>
+
+                                    <div className="mt-3 space-y-1 text-[11px] text-[#64666a]">
+                                        <p className="truncate">
+                                            <span className="font-semibold text-[#3d4045]">Institution:</span> {record.institution}
+                                        </p>
+                                        {record.certificate_number && (
+                                            <p className="truncate">
+                                                <span className="font-semibold text-[#3d4045]">Cert #:</span> {record.certificate_number}
+                                            </p>
+                                        )}
+                                        <p>
+                                            <span className="font-semibold text-[#3d4045]">Date:</span>{' '}
+                                            {record.end_date || record.start_date || 'Certified'}
+                                        </p>
+                                    </div>
+
+                                    <Link href={route('employees.show', record.employee.id)} className="mt-3 block">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-full border-[#d8d9da] hover:bg-[#effcf8] text-[#008254] font-semibold text-xs h-8 gap-1.5 rounded-xs"
+                                        >
+                                            <Eye className="w-3.5 h-3.5" />
+                                            View Profile
+                                        </Button>
+                                    </Link>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
 
                 {/* Pagination */}
                 {records.last_page > 1 && (

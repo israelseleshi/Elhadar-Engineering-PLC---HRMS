@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import ViewToggle, { useViewMode } from '@/Components/ViewToggle';
 import { 
     Table, 
     TableBody, 
@@ -15,14 +16,9 @@ import {
     TableRow 
 } from '@/Components/ui/table';
 import { 
-    Calendar, 
-    CalendarDays, 
     Search, 
     Eye, 
     MinusCircle, 
-    CheckCircle2, 
-    Clock,
-    Scale,
     Compass
 } from 'lucide-react';
 
@@ -34,35 +30,6 @@ const leaveTourSteps: TourStep[] = [
         badge: 'Labour Proc. 1156/2019',
         placement: 'bottom',
         tip: 'The statutory baseline is 16 working days for the first full year of service, scaling upward with continuous tenure.',
-    },
-    {
-        target: '[data-tour="leave-metrics"]',
-        title: 'Workforce Leave Liability Ribbon',
-        content: 'High-level executive metrics tracking cumulative leave liabilities, average annual entitlements across the roster, and the total active staff enrolled in the real-time calculation engine.',
-        badge: 'Executive Summary',
-        placement: 'bottom',
-    },
-    {
-        target: '[data-tour="metric-liability"]',
-        title: 'Total Outstanding Leave Liability',
-        content: 'The aggregate sum of all earned, untaken leave days currently owed to active personnel. Under Article 80 of Proclamation 1156/2019, unused statutory leave represents a legally binding financial severance liability upon employee exit.',
-        badge: 'Statutory Liability',
-        placement: 'bottom',
-        tip: 'High balances indicate employees overdue for mandatory annual rest scheduling.',
-    },
-    {
-        target: '[data-tour="metric-average"]',
-        title: 'Average Tenure-Scaled Entitlement',
-        content: 'The average annual leave days earned per employee across the workforce. As engineers and site personnel accumulate service with Elhadar Engineering, their statutory leave entitlement progressively increases.',
-        badge: 'Tenure Scaling',
-        placement: 'bottom',
-    },
-    {
-        target: '[data-tour="metric-staff"]',
-        title: 'Active Tracked Workforce',
-        content: 'Total number of active personnel enrolled in the real-time leave ledger. Both permanent staff and project contract personnel receive automated entitlement calculations based on their verified Ethiopian Calendar start dates.',
-        badge: 'Enrolled Staff',
-        placement: 'bottom',
     },
     {
         target: '[data-tour="leave-search"]',
@@ -154,6 +121,7 @@ interface Props {
 export default function Index({ employees, filters, stats, currentYear }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [selectedStaff, setSelectedStaff] = useState<StaffLeave | null>(null);
+    const [viewMode, setViewMode] = useViewMode('leave');
     const [isTourOpen, setIsTourOpen] = useState(false);
 
     useEffect(() => {
@@ -205,6 +173,17 @@ export default function Index({ employees, filters, stats, currentYear }: Props)
         });
     };
 
+    const getBalanceClass = (remaining: number) => {
+        if (remaining <= 3) {
+            return 'bg-[#fee2e2] text-[#de2828]';
+        }
+        if (remaining <= 8) {
+            return 'bg-[#fef9c3] text-[#854d0e]';
+        }
+
+        return 'bg-[#effcf8] text-[#008254]';
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -231,57 +210,6 @@ export default function Index({ employees, filters, stats, currentYear }: Props)
         >
             <Head title="Leave Ledger - Elhadar Engineering HRMS" />
 
-            {/* Quick Metrics Bar */}
-            <div data-tour="leave-metrics" className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <Card data-tour="metric-liability" className="border-[#d8d9da] bg-white">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
-                                Total Leave Liability
-                            </p>
-                            <p className="text-2xl font-bold text-black mt-0.5">
-                                {stats.total_leave_liability_days} Days
-                            </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#effcf8] text-[#008254] flex items-center justify-center font-bold">
-                            <CalendarDays className="w-5 h-5" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card data-tour="metric-average" className="border-[#d8d9da] bg-white">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
-                                Average Entitlement
-                            </p>
-                            <p className="text-2xl font-bold text-[#008254] mt-0.5">
-                                {stats.average_entitlement} Days / Yr
-                            </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#e3faf2] text-[#008254] flex items-center justify-center font-bold">
-                            <Scale className="w-5 h-5" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card data-tour="metric-staff" className="border-[#d8d9da] bg-white">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
-                                Active Tracked Staff
-                            </p>
-                            <p className="text-2xl font-bold text-black mt-0.5">
-                                {stats.staff_tracked_count}
-                            </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#e8fdac] text-[#00482f] flex items-center justify-center font-bold">
-                            <Clock className="w-5 h-5" />
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
             {/* Filter and Search Bar */}
             <Card data-tour="leave-search" className="border-[#d8d9da] bg-white mb-6">
                 <CardContent className="p-4">
@@ -299,8 +227,11 @@ export default function Index({ employees, filters, stats, currentYear }: Props)
                             />
                         </div>
 
-                        <div className="text-xs text-[#64666a]">
-                            Active Statutory Leave Cycle: <strong>{currentYear}</strong> G.C.
+                        <div className="flex items-center gap-3">
+                            <div className="text-xs text-[#64666a]">
+                                Active Statutory Leave Cycle: <strong>{currentYear}</strong> G.C.
+                            </div>
+                            <ViewToggle value={viewMode} onChange={setViewMode} />
                         </div>
                     </div>
                 </CardContent>
@@ -308,17 +239,18 @@ export default function Index({ employees, filters, stats, currentYear }: Props)
 
             {/* Leave Ledger Table */}
             <Card data-tour="leave-table" className="border-[#d8d9da] bg-white overflow-hidden shadow-sm">
+                {viewMode === 'table' ? (
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-24">File No</TableHead>
-                            <TableHead>Staff Name</TableHead>
+                            <TableHead className="w-24">File no</TableHead>
+                            <TableHead>Staff name</TableHead>
                             <TableHead>Department</TableHead>
-                            <TableHead>Employment Date (E.C)</TableHead>
-                            <TableHead className="text-center" data-tour="col-entitlement">Statutory Entitlement</TableHead>
-                            <TableHead className="text-center">Days Taken</TableHead>
-                            <TableHead className="text-center">Remaining Balance</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
+                            <TableHead>Employment date (E.C)</TableHead>
+                            <TableHead className="text-center" data-tour="col-entitlement">Statutory entitlement</TableHead>
+                            <TableHead className="text-center">Days taken</TableHead>
+                            <TableHead className="text-center">Remaining balance</TableHead>
+                            <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -391,6 +323,80 @@ export default function Index({ employees, filters, stats, currentYear }: Props)
                         )}
                     </TableBody>
                 </Table>
+                ) : (
+                    <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
+                        {employees.data.length === 0 ? (
+                            <div className="col-span-full py-12 text-center text-xs text-[#64666a]">
+                                No personnel records found matching your query.
+                            </div>
+                        ) : (
+                            employees.data.map((emp, index) => (
+                                <div
+                                    key={emp.id}
+                                    className="rounded-xs border border-[#ebebec] bg-[#f7f7f7] p-4 transition-colors hover:border-[#b7ecda] hover:bg-white"
+                                >
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <p className="truncate text-sm font-bold text-black">{emp.full_name}</p>
+                                            <p className="text-[11px] font-semibold text-[#008254]">{emp.file_no}</p>
+                                            <p className="truncate text-[11px] text-[#64666a]">
+                                                {emp.position} · {emp.department?.name || 'General Operations'}
+                                            </p>
+                                        </div>
+                                        <span
+                                            data-tour={index === 0 ? 'balance-badge' : undefined}
+                                            className={`inline-flex shrink-0 items-center rounded-xs px-2 py-0.5 text-[11px] font-bold ${getBalanceClass(emp.display_remaining)}`}
+                                        >
+                                            {emp.display_remaining} Days
+                                        </span>
+                                    </div>
+
+                                    <div className="mt-3 grid grid-cols-3 gap-2 border-t border-[#ebebec] pt-3 text-center">
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-wide text-[#64666a]">Entitled</p>
+                                            <p className="text-sm font-bold text-black">{emp.statutory_entitlement}</p>
+                                        </div>
+                                        <div className="border-x border-[#ebebec]">
+                                            <p className="text-[10px] font-bold uppercase tracking-wide text-[#64666a]">Taken</p>
+                                            <p className="text-sm font-bold text-[#3d4045]">{emp.display_taken}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-wide text-[#64666a]">Remaining</p>
+                                            <p className="text-sm font-bold text-black">{emp.display_remaining}</p>
+                                        </div>
+                                    </div>
+
+                                    <p className="mt-2 text-[11px] text-[#64666a]">
+                                        Employed: {emp.employment_date_ec} E.C.
+                                    </p>
+
+                                    <div className="mt-3 flex gap-2">
+                                        <Button
+                                            data-tour={index === 0 ? 'first-deduct-btn' : undefined}
+                                            onClick={() => openAdjustModal(emp)}
+                                            size="sm"
+                                            className="flex-1 bg-[#008254] hover:bg-[#006642] text-white font-bold text-xs h-8 gap-1.5 rounded-xs"
+                                        >
+                                            <MinusCircle className="w-3.5 h-3.5" />
+                                            Deduct Leave
+                                        </Button>
+                                        <Link href={route('employees.show', emp.id)}>
+                                            <Button
+                                                data-tour={index === 0 ? 'first-profile-btn' : undefined}
+                                                variant="outline"
+                                                size="sm"
+                                                className="border-[#d8d9da] hover:bg-[#effcf8] text-[#008254] font-semibold text-xs h-8 gap-1.5 rounded-xs"
+                                            >
+                                                <Eye className="w-3.5 h-3.5" />
+                                                Profile
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
 
                 {/* Pagination */}
                 {employees.last_page > 1 && (

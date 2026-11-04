@@ -565,12 +565,12 @@ export default function Dashboard({
                             <Table>
                                 <TableHeader className="bg-[#f7f7f7]">
                                     <TableRow>
-                                        <TableHead className="text-xs font-bold uppercase py-2">Staff Member</TableHead>
-                                        <TableHead className="text-xs font-bold uppercase py-2">Field</TableHead>
-                                        <TableHead className="text-xs font-bold uppercase py-2">Current Record</TableHead>
-                                        <TableHead className="text-xs font-bold uppercase py-2">Requested Value</TableHead>
-                                        <TableHead className="text-xs font-bold uppercase py-2">Explanation</TableHead>
-                                        <TableHead className="text-xs font-bold uppercase py-2 text-right">HR Action</TableHead>
+                                        <TableHead className="text-xs font-bold py-2">Staff member</TableHead>
+                                        <TableHead className="text-xs font-bold py-2">Field</TableHead>
+                                        <TableHead className="text-xs font-bold py-2">Current record</TableHead>
+                                        <TableHead className="text-xs font-bold py-2">Requested value</TableHead>
+                                        <TableHead className="text-xs font-bold py-2">Explanation</TableHead>
+                                        <TableHead className="text-xs font-bold py-2 text-right"><span className="sr-only">Actions</span></TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>

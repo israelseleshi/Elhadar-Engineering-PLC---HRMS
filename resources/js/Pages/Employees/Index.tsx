@@ -7,6 +7,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import EmployeeAvatar from '@/Components/EmployeeAvatar';
+import ViewToggle, { useViewMode } from '@/Components/ViewToggle';
 import { formatDate } from '@/lib/utils';
 import { 
     Table, 
@@ -17,15 +18,12 @@ import {
     TableRow 
 } from '@/Components/ui/table';
 import { 
-    Users, 
-    Building2, 
     MapPin, 
     Eye, 
     Search, 
     ShieldCheck, 
     Filter, 
     CheckCircle2, 
-    Briefcase,
     Calendar,
     ChevronLeft,
     ChevronRight,
@@ -112,41 +110,6 @@ const staffDirectoryTourSteps: TourStep[] = [
         tip: 'Automatically calculates 7% employee and 11% employer pension obligations.'
     },
     {
-        target: '[data-tour="metrics-ribbon"]',
-        title: 'Real-Time Workforce Metrics Ribbon',
-        content: 'High-level headcount breakdown segmented by employment classification and geographic deployment.',
-        badge: 'NerdWallet Spec Block',
-        placement: 'bottom',
-    },
-    {
-        target: '[data-tour="metric-permanent"]',
-        title: 'Active Permanent Staff',
-        content: 'Shows all confirmed permanent employees enrolled in the statutory 7% employee and 11% employer pension scheme under Pension Proclamation No. 1268/2022.',
-        badge: 'Proc. 1268/2022',
-        placement: 'bottom',
-    },
-    {
-        target: '[data-tour="metric-projects"]',
-        title: 'Project Site Deployments',
-        content: 'Tracks all field personnel stationed at active construction sites (e.g., Lalibela Water Works). Site-deployed staff automatically receive project and hardship allowances.',
-        badge: 'Field Operations',
-        placement: 'bottom',
-    },
-    {
-        target: '[data-tour="metric-headoffice"]',
-        title: 'Corporate Head Office Roster',
-        content: 'Executive, administrative, design engineering, and financial personnel stationed permanently at headquarters.',
-        badge: 'Head Office',
-        placement: 'bottom',
-    },
-    {
-        target: '[data-tour="metric-contracts"]',
-        title: 'Probation & Fixed-Term Pipeline',
-        content: 'Monitors staff undergoing 60-working-day statutory probation evaluations and project contractors nearing contract expiration.',
-        badge: 'Labour Proc. 1156/2019',
-        placement: 'bottom',
-    },
-    {
         target: '[data-tour="search-input"]',
         title: 'Instant Multi-Field Search',
         content: 'Search by Ethiopian tripartite name (e.g. "Abay Sewmehon"), mobile phone number, or physical filing cabinet code (e.g. "A-001", "B-010"). Press Enter to filter.',
@@ -205,6 +168,7 @@ export default function Index({ employees, filters, stats, departments, workplac
     const [departmentId, setDepartmentId] = useState(filters.department_id || '');
     const [workPlace, setWorkPlace] = useState(filters.work_place || '');
     const [status, setStatus] = useState(filters.status || '');
+    const [viewMode, setViewMode] = useViewMode('employees');
     const [isTourOpen, setIsTourOpen] = useState(false);
 
     // Export & Excel Sync Modal State
@@ -426,73 +390,6 @@ export default function Index({ employees, filters, stats, departments, workplac
         >
             <Head title="Staff Directory - Elhadar Engineering HRMS" />
 
-            {/* Quick Metrics Bar (NerdWallet Style Spec Blocks) */}
-            <div data-tour="metrics-ribbon" className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <Card data-tour="metric-permanent" className="border-[#d8d9da] bg-white">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
-                                Active Permanent
-                            </p>
-                            <p className="text-2xl font-bold text-black mt-0.5">
-                                {stats.permanent_count}
-                            </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#effcf8] text-[#008254] flex items-center justify-center font-bold">
-                            <Users className="w-5 h-5" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card data-tour="metric-projects" className="border-[#d8d9da] bg-white">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
-                                Project Sites
-                            </p>
-                            <p className="text-2xl font-bold text-black mt-0.5">
-                                {stats.project_count}
-                            </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#e3faf2] text-[#008254] flex items-center justify-center font-bold">
-                            <MapPin className="w-5 h-5" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card data-tour="metric-headoffice" className="border-[#d8d9da] bg-white">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
-                                Head Office
-                            </p>
-                            <p className="text-2xl font-bold text-black mt-0.5">
-                                {stats.head_office_count}
-                            </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#effcf8] text-[#008254] flex items-center justify-center font-bold">
-                            <Building2 className="w-5 h-5" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card data-tour="metric-contracts" className="border-[#d8d9da] bg-white">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
-                                Probation / Contract
-                            </p>
-                            <p className="text-2xl font-bold text-black mt-0.5">
-                                {stats.probation_count + stats.contract_count}
-                            </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#e8fdac] text-[#00482f] flex items-center justify-center font-bold">
-                            <Briefcase className="w-5 h-5" />
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
             {/* Consolidated Lifecycle Filter Tabs */}
             <div data-tour="lifecycle-tabs" className="flex flex-wrap items-center gap-2 mb-4">
                 {[
@@ -526,6 +423,10 @@ export default function Index({ employees, filters, stats, departments, workplac
                         </button>
                     );
                 })}
+
+                <div className="ml-auto">
+                    <ViewToggle value={viewMode} onChange={setViewMode} />
+                </div>
             </div>
 
             {/* Filter and Search Bar */}
@@ -608,19 +509,20 @@ export default function Index({ employees, filters, stats, departments, workplac
 
             {/* Comparison Data Table (Strictly Styled per NerdWallet DESIGN.md) */}
             <Card data-tour="data-table" className="border-[#d8d9da] bg-white overflow-hidden shadow-sm">
+                {viewMode === 'table' ? (
                 <Table>
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-14 text-center">Photo</TableHead>
-                            <TableHead className="w-24">File No</TableHead>
-                            <TableHead>Staff Name</TableHead>
+                            <TableHead className="w-24">File no</TableHead>
+                            <TableHead>Staff name</TableHead>
                             <TableHead>Department</TableHead>
                             <TableHead>Position</TableHead>
-                            <TableHead>Work Place</TableHead>
-                            <TableHead>Employment Date (E.C)</TableHead>
-                            <TableHead className="text-right">Total Salary</TableHead>
+                            <TableHead>Work place</TableHead>
+                            <TableHead>Employment date (E.C)</TableHead>
+                            <TableHead className="text-right">Total salary</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
+                            <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -723,6 +625,65 @@ export default function Index({ employees, filters, stats, departments, workplac
                         )}
                     </TableBody>
                 </Table>
+                ) : (
+                    <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
+                        {employees.data.length === 0 ? (
+                            <div className="col-span-full py-12 text-center text-xs text-[#64666a]">
+                                No personnel records found matching your filter criteria.
+                            </div>
+                        ) : (
+                            employees.data.map((emp) => (
+                                <div
+                                    key={emp.id}
+                                    className="rounded-xs border border-[#ebebec] bg-[#f7f7f7] p-4 transition-colors hover:border-[#b7ecda] hover:bg-white"
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <EmployeeAvatar name={emp.full_name} src={emp.profile_photo_url} size="md" />
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-bold text-black">{emp.full_name}</p>
+                                            <p className="text-[11px] font-semibold text-[#008254]">
+                                                {emp.file_no} · {emp.gender}
+                                            </p>
+                                            <p className="mt-1.5 truncate text-xs font-medium text-[#3d4045]">{emp.position}</p>
+                                            <p className="truncate text-[11px] text-[#64666a]">
+                                                {emp.department?.name || 'General Operations'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#64666a]">
+                                        <span className="inline-flex items-center gap-1">
+                                            <MapPin className="h-3 w-3" />
+                                            {emp.work_place}
+                                        </span>
+                                        <span className="inline-flex items-center gap-1">
+                                            <Calendar className="h-3 w-3" />
+                                            {emp.employment_date_ec} E.C.
+                                        </span>
+                                    </div>
+
+                                    <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#ebebec] pt-3">
+                                        {getStatusBadge(emp.status)}
+                                        <span className="text-xs font-bold text-black">
+                                            {formatCurrency(emp.current_salary?.total_salary || emp.current_salary?.basic_salary)}
+                                        </span>
+                                    </div>
+
+                                    <Link href={route('employees.show', emp.id)} className="mt-3 block">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-full border-[#d8d9da] hover:bg-[#effcf8] text-[#008254] font-semibold text-xs h-8 gap-1.5 rounded-xs"
+                                        >
+                                            <Eye className="w-3.5 h-3.5" />
+                                            View Profile
+                                        </Button>
+                                    </Link>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
 
                 {/* Pagination */}
                 {employees.last_page > 1 && (
@@ -870,10 +831,10 @@ export default function Index({ employees, filters, stats, departments, workplac
                                 {/* Preview Samples Table */}
                                 <div className="border border-[#d8d9da] rounded-xs overflow-hidden max-h-56 overflow-y-auto">
                                     <table className="w-full text-left text-xs">
-                                        <thead className="bg-[#f7f7f7] text-[#64666a] uppercase border-b border-[#d8d9da]">
+                                        <thead className="bg-[#f7f7f7] text-[#64666a] border-b border-[#d8d9da]">
                                             <tr>
-                                                <th className="p-2 font-bold">File No</th>
-                                                <th className="p-2 font-bold">Full Name</th>
+                                                <th className="p-2 font-bold">File no</th>
+                                                <th className="p-2 font-bold">Full name</th>
                                                 <th className="p-2 font-bold">Department</th>
                                                 <th className="p-2 font-bold">Position</th>
                                                 <th className="p-2 font-bold">Salary</th>

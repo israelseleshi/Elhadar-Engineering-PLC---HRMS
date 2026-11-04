@@ -8,6 +8,7 @@ use App\Http\Controllers\EmployeePhotoController;
 use App\Http\Controllers\EmployeeSalaryController;
 use App\Http\Controllers\ExcelImportExportController;
 use App\Http\Controllers\LeaveBalanceController;
+use App\Http\Controllers\NewEmployeeController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\ProbationController;
 use App\Http\Controllers\ProfileController;
@@ -85,6 +86,9 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::middleware('role:HRAdmin,SysAdmin,Manager')->group(function () {
         Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
         Route::get('/employees/{employee}', [EmployeeController::class, 'show'])->name('employees.show');
+
+        // New Employees Onboarding Roster (placeholder page)
+        Route::get('/new-employees', [NewEmployeeController::class, 'index'])->name('new-employees.index');
         Route::get('/probation', [ProbationController::class, 'index'])->name('probation.index');
         Route::get('/contracts', [ContractController::class, 'index'])->name('contracts.index');
         Route::get('/training', [TrainingController::class, 'index'])->name('training.index');

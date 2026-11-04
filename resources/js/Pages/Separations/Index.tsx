@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import ViewToggle, { useViewMode } from '@/Components/ViewToggle';
 import { 
     Table, 
     TableBody, 
@@ -14,14 +15,9 @@ import {
     TableRow 
 } from '@/Components/ui/table';
 import { 
-    UserMinus, 
-    Coins, 
-    AlertCircle, 
     Search, 
     Eye, 
-    CheckCircle2, 
-    Calculator,
-    Clock
+    Calculator
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -74,6 +70,7 @@ interface Props {
 export default function Index({ separations, filters, stats, activeEmployees }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [separationType, setSeparationType] = useState(filters.separation_type || '');
+    const [viewMode, setViewMode] = useViewMode('separations');
     const [showModal, setShowModal] = useState(false);
     const [previewCalc, setPreviewCalc] = useState<{
         years_service: number;
@@ -145,63 +142,23 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
         return typeStr.replace(/_/g, ' ');
     };
 
+    const getSeparationVariant = (typeStr: string) => {
+        if (typeStr.includes('Without_Cause') || typeStr === 'Layoff') {
+            return 'destructive' as const;
+        }
+        if (typeStr === 'Retirement') {
+            return 'mint' as const;
+        }
+
+        return 'secondary' as const;
+    };
+
     return (
         <AuthenticatedLayout
             title="Separations & Severance Ledger"
             subtitle="Manage personnel exits and automated statutory severance calculations per Ethiopian Labour Proclamation 1156/2019 (Arts. 39–41)."
         >
             <Head title="Separations & Severance - Elhadar Engineering HRMS" />
-
-            {/* Quick Metrics Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <Card className="border-[#d8d9da] bg-white">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
-                                Total Separations
-                            </p>
-                            <p className="text-2xl font-bold text-black mt-0.5">
-                                {stats.total_separations}
-                            </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#effcf8] text-[#008254] flex items-center justify-center font-bold">
-                            <UserMinus className="w-5 h-5" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-[#d8d9da] bg-white">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
-                                Severance Disbursed
-                            </p>
-                            <p className="text-2xl font-bold text-[#008254] mt-0.5">
-                                {formatCurrency(stats.total_severance_paid)}
-                            </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#e3faf2] text-[#008254] flex items-center justify-center font-bold">
-                            <CheckCircle2 className="w-5 h-5" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-[#d8d9da] bg-white">
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
-                                Pending Liability
-                            </p>
-                            <p className="text-2xl font-bold text-[#b45309] mt-0.5">
-                                {formatCurrency(stats.pending_severance_liability)}
-                            </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#fef3c7] text-[#b45309] flex items-center justify-center font-bold">
-                            <Coins className="w-5 h-5" />
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
 
             {/* Filter and Action Bar */}
             <Card className="border-[#d8d9da] bg-white mb-6">
@@ -240,31 +197,35 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                             </select>
                         </div>
 
-                        <Button 
-                            onClick={() => setShowModal(true)}
-                            className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase rounded-xs h-10 px-4 gap-2 shrink-0"
-                        >
-                            <Calculator className="w-4 h-4" />
-                            Record Exit &amp; Estimate Severance
-                        </Button>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <ViewToggle value={viewMode} onChange={setViewMode} />
+                            <Button 
+                                onClick={() => setShowModal(true)}
+                                className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase rounded-xs h-10 px-4 gap-2 shrink-0"
+                            >
+                                <Calculator className="w-4 h-4" />
+                                Record Exit &amp; Estimate Severance
+                            </Button>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
 
             {/* Separations Table */}
             <Card className="border-[#d8d9da] bg-white overflow-hidden shadow-sm">
+                {viewMode === 'table' ? (
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-24">File No</TableHead>
-                            <TableHead>Staff Name</TableHead>
+                            <TableHead className="w-24">File no</TableHead>
+                            <TableHead>Staff name</TableHead>
                             <TableHead>Department</TableHead>
-                            <TableHead>Separation Type</TableHead>
-                            <TableHead>Effective Date</TableHead>
-                            <TableHead className="text-center">Service (Years)</TableHead>
-                            <TableHead className="text-right">Severance Pay</TableHead>
+                            <TableHead>Separation type</TableHead>
+                            <TableHead>Effective date</TableHead>
+                            <TableHead className="text-center">Service (years)</TableHead>
+                            <TableHead className="text-right">Severance pay</TableHead>
                             <TableHead className="text-center">Disbursement</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
+                            <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -339,6 +300,83 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                         )}
                     </TableBody>
                 </Table>
+                ) : (
+                    <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
+                        {separations.data.length === 0 ? (
+                            <div className="col-span-full py-12 text-center text-xs text-[#64666a]">
+                                No employee separation records found matching your query.
+                            </div>
+                        ) : (
+                            separations.data.map((item) => (
+                                <div
+                                    key={item.id}
+                                    className="rounded-xs border border-[#ebebec] bg-[#f7f7f7] p-4 transition-colors hover:border-[#b7ecda] hover:bg-white"
+                                >
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <p className="truncate text-sm font-bold text-black">{item.employee.full_name}</p>
+                                            <p className="text-[11px] font-semibold text-[#008254]">
+                                                {item.employee.file_no} · {item.employee.department?.name || 'Operations'}
+                                            </p>
+                                        </div>
+                                        <Badge variant={getSeparationVariant(item.separation_type)} className="shrink-0">
+                                            {formatType(item.separation_type)}
+                                        </Badge>
+                                    </div>
+
+                                    <div className="mt-3 grid grid-cols-3 gap-2 border-t border-[#ebebec] pt-3 text-center">
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-wide text-[#64666a]">Service</p>
+                                            <p className="text-sm font-bold text-black">{item.completed_years_service} Yrs</p>
+                                        </div>
+                                        <div className="border-x border-[#ebebec]">
+                                            <p className="text-[10px] font-bold uppercase tracking-wide text-[#64666a]">Effective</p>
+                                            <p className="text-[11px] font-bold text-[#3d4045]">{item.effective_date}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-wide text-[#64666a]">Payout</p>
+                                            <p className="text-[11px] font-bold text-black">
+                                                {item.severance_amount > 0 ? formatCurrency(item.severance_amount) : '0.00'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {item.reason && (
+                                        <p className="mt-2 line-clamp-2 text-[11px] text-[#64666a]">{item.reason}</p>
+                                    )}
+
+                                    <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#ebebec] pt-3">
+                                        <Badge variant={item.severance_paid ? 'mint' : 'outline'}>
+                                            {item.severance_paid ? 'Disbursed' : 'Unpaid / Accrued'}
+                                        </Badge>
+                                    </div>
+
+                                    <div className="mt-2 flex gap-2">
+                                        {!item.severance_paid && item.severance_amount > 0 && (
+                                            <Button
+                                                onClick={() => handleMarkPaid(item.id)}
+                                                size="sm"
+                                                className="flex-1 bg-[#008254] hover:bg-[#006642] text-white font-bold text-xs h-8 rounded-xs"
+                                            >
+                                                Disburse
+                                            </Button>
+                                        )}
+                                        <Link href={route('employees.show', item.employee.id)} className="flex-1">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="w-full border-[#d8d9da] hover:bg-[#effcf8] text-[#008254] font-semibold text-xs h-8 gap-1.5 rounded-xs"
+                                            >
+                                                <Eye className="w-3.5 h-3.5" />
+                                                Profile
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
 
                 {/* Pagination */}
                 {separations.last_page > 1 && (
