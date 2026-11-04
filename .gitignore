@@ -74,10 +74,15 @@ public/img
 # Employee login credentials (temporary passwords for 297+ staff, incl. HR admin)
 EMPLOYEE_LOGIN_CREDENTIALS.md
 
-# Master HR Excel sheets (contain real employee PII, salaries, bank accounts, national IDs)
-# Put these outside the repo or in docs/ only after redaction
-public/20-02-2019\ Master\ List.xlsx
-public/30-01-2019\ Master\ List.xlsx
+# Master HR Excel & JSON data files (contain real employee PII, salaries, bank accounts, national IDs)
+/public/*.xlsx
+/public/*.xls
+/public/*.csv
+/public/*.json
+public/*.xlsx
+public/*.xls
+public/*.csv
+public/*.json
 *.xlsx
 *.xls
 *.csv
