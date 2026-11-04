@@ -7,7 +7,25 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Com
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import { formatDate } from '@/lib/utils';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from '@/Components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/Components/ui/alert-dialog';
+import { formatDate, formatEthPhone } from '@/lib/utils';
 import { 
     Building2, 
     MapPin, 
@@ -21,7 +39,8 @@ import {
     Award,
     ShieldAlert,
     Camera,
-    Trash2
+    Trash2,
+    Phone
 } from 'lucide-react';
 
 interface DiscrepancyReport {
@@ -100,6 +119,7 @@ interface Props {
 
 export default function Profile({ employee, tenure, annualLeaveEntitlement, retirementInfo, discrepancyReports }: Props) {
     const [showModal, setShowModal] = useState(false);
+    const [deletePhotoOpen, setDeletePhotoOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
@@ -130,11 +150,15 @@ export default function Profile({ employee, tenure, annualLeaveEntitlement, reti
 
     const handleDeletePhoto = () => {
         if (!employee) return;
-        if (confirm('Are you sure you want to remove your profile photo?')) {
-            router.delete(route('employees.photo.destroy', employee.id), {
-                preserveScroll: true,
-            });
-        }
+        setDeletePhotoOpen(true);
+    };
+
+    const confirmDeletePhoto = () => {
+        if (!employee) return;
+        router.delete(route('employees.photo.destroy', employee.id), {
+            preserveScroll: true,
+            onFinish: () => setDeletePhotoOpen(false),
+        });
     };
 
     const { data, setData, post, processing, reset, errors } = useForm({
@@ -252,6 +276,15 @@ export default function Profile({ employee, tenure, annualLeaveEntitlement, reti
                                 </span>
                                 <span>•</span>
                                 <span>{employee.position}</span>
+                                {employee.phone && (
+                                    <>
+                                        <span>•</span>
+                                        <span className="flex items-center gap-1.5 font-semibold text-[#008254]">
+                                            <Phone className="w-3.5 h-3.5" />
+                                            {formatEthPhone(employee.phone)}
+                                        </span>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -400,7 +433,7 @@ export default function Profile({ employee, tenure, annualLeaveEntitlement, reti
                     <CardContent className="space-y-3 pt-2 text-xs">
                         <div>
                             <span className="text-[#64666a] block">Primary Telephone</span>
-                            <span className="font-bold text-black text-sm">{employee.phone || '—'}</span>
+                            <span className="font-bold text-black text-sm">{formatEthPhone(employee.phone) || employee.phone || '—'}</span>
                         </div>
                         <div>
                             <span className="text-[#64666a] block">Official Email</span>
@@ -495,152 +528,172 @@ export default function Profile({ employee, tenure, annualLeaveEntitlement, reti
                 </CardContent>
             </Card>
 
-            {/* Discrepancy Reporting Modal */}
-            {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-                    <div className="bg-white rounded-lg border border-[#d8d9da] shadow-lg max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-150">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-base font-bold text-black">Report Data Discrepancy</h3>
-                            <button 
-                                onClick={() => setShowModal(false)}
-                                className="text-[#64666a] hover:text-black text-sm font-bold"
+            {/* Discrepancy Reporting Modal (Shadcn Dialog) */}
+            <Dialog open={showModal} onOpenChange={setShowModal}>
+                <DialogContent className="max-w-md bg-white border-[#d8d9da] p-6 max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="text-base font-bold text-black flex items-center gap-2">
+                            <Send className="w-4 h-4 text-[#008254]" />
+                            Report Data Discrepancy
+                        </DialogTitle>
+                        <DialogDescription className="text-xs text-[#64666a]">
+                            Submit an official correction request to HR Administration. Your submission will be audited and reviewed.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+                        <div>
+                            <label className="block text-xs font-bold text-black mb-1">
+                                Field with Discrepancy
+                            </label>
+                            <select
+                                value={data.field_name}
+                                onChange={(e) => setData('field_name', e.target.value)}
+                                className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
                             >
-                                ✕
-                            </button>
+                                <optgroup label="Personal & Identity">
+                                    <option value="Full Name">Full Name</option>
+                                    <option value="Gender">Gender</option>
+                                    <option value="DOB (E.C)">Date of Birth (E.C)</option>
+                                    <option value="DOB (G.C)">Date of Birth (G.C)</option>
+                                    <option value="Marital Status">Marital Status</option>
+                                    <option value="Phone Number">Phone Number</option>
+                                    <option value="Email Address">Email Address</option>
+                                </optgroup>
+                                <optgroup label="Residence & Emergency">
+                                    <option value="Region">Region</option>
+                                    <option value="City">City / Town</option>
+                                    <option value="Sub-City">Sub-City</option>
+                                    <option value="Woreda">Woreda</option>
+                                    <option value="House No">House Number</option>
+                                    <option value="Emergency Contact Name">Emergency Contact Name</option>
+                                    <option value="Emergency Contact Relationship">Emergency Contact Relationship</option>
+                                    <option value="Emergency Contact Phone">Emergency Contact Phone</option>
+                                </optgroup>
+                                <optgroup label="Pension, Tax & Banking">
+                                    <option value="POESSA Pension No">POESSA Pension No</option>
+                                    <option value="PSSSA Pension No">PSSSA Pension No</option>
+                                    <option value="Social Security Scheme No">Social Security Scheme No</option>
+                                    <option value="Tax ID (TIN)">Tax ID (TIN)</option>
+                                    <option value="Commercial Bank Name">Commercial Bank Name</option>
+                                    <option value="Commercial Bank Account">Commercial Bank Account</option>
+                                </optgroup>
+                                <optgroup label="Education & Credentials">
+                                    <option value="Education Attainment Level">Education Attainment Level</option>
+                                    <option value="Institution / University">Institution / University</option>
+                                    <option value="Graduation Year (E.C.)">Graduation Year (E.C.)</option>
+                                    <option value="Professional License">Professional License / Certificate</option>
+                                    <option value="Cost Sharing Obligation Status">Cost Sharing Obligation Status</option>
+                                </optgroup>
+                                <optgroup label="Operations & Deployment">
+                                    <option value="Position Title">Position Title</option>
+                                    <option value="Department">Department</option>
+                                    <option value="Workplace / Deployment Site">Workplace / Deployment Site</option>
+                                    <option value="Vehicle Plate Number">Vehicle Plate Number</option>
+                                    <option value="Company Experience">Company Experience</option>
+                                    <option value="Previous Experience">Previous Relevant Experience</option>
+                                </optgroup>
+                                <optgroup label="Compensation & Allowances">
+                                    <option value="Basic Salary">Basic Salary</option>
+                                    <option value="Responsibility Allowance">Responsibility Allowance</option>
+                                    <option value="Hardship Allowance">Hardship Allowance</option>
+                                    <option value="Desert Allowance">Desert Allowance</option>
+                                    <option value="Daily / Per Diem Allowance">Daily / Per Diem Allowance</option>
+                                    <option value="Transportation / Fuel Allowance">Transportation / Fuel Allowance</option>
+                                    <option value="Housing Allowance">Housing Allowance</option>
+                                </optgroup>
+                                <optgroup label="General">
+                                    <option value="Other">Other Information</option>
+                                </optgroup>
+                            </select>
                         </div>
-                        <p className="text-xs text-[#64666a] mb-4">
-                            Submit a correction request to HR Administration. Your submission will be audited and reviewed.
-                        </p>
 
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-bold text-black mb-1">
-                                    Field with Discrepancy
-                                </label>
-                                <select
-                                    value={data.field_name}
-                                    onChange={(e) => setData('field_name', e.target.value)}
-                                    className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                                >
-                                    <optgroup label="Personal & Identity">
-                                        <option value="Full Name">Full Name</option>
-                                        <option value="Gender">Gender</option>
-                                        <option value="DOB (E.C)">Date of Birth (E.C)</option>
-                                        <option value="DOB (G.C)">Date of Birth (G.C)</option>
-                                        <option value="Marital Status">Marital Status</option>
-                                        <option value="Phone Number">Phone Number</option>
-                                        <option value="Email Address">Email Address</option>
-                                    </optgroup>
-                                    <optgroup label="Residence & Emergency">
-                                        <option value="Region">Region</option>
-                                        <option value="City">City / Town</option>
-                                        <option value="Sub-City">Sub-City</option>
-                                        <option value="Woreda">Woreda</option>
-                                        <option value="House No">House Number</option>
-                                        <option value="Emergency Contact Name">Emergency Contact Name</option>
-                                        <option value="Emergency Contact Relationship">Emergency Contact Relationship</option>
-                                        <option value="Emergency Contact Phone">Emergency Contact Phone</option>
-                                    </optgroup>
-                                    <optgroup label="Pension, Tax & Banking">
-                                        <option value="POESSA Pension No">POESSA Pension No</option>
-                                        <option value="PSSSA Pension No">PSSSA Pension No</option>
-                                        <option value="Social Security Scheme No">Social Security Scheme No</option>
-                                        <option value="Tax ID (TIN)">Tax ID (TIN)</option>
-                                        <option value="Commercial Bank Name">Commercial Bank Name</option>
-                                        <option value="Commercial Bank Account">Commercial Bank Account</option>
-                                    </optgroup>
-                                    <optgroup label="Education & Credentials">
-                                        <option value="Education Attainment Level">Education Attainment Level</option>
-                                        <option value="Institution / University">Institution / University</option>
-                                        <option value="Graduation Year (E.C.)">Graduation Year (E.C.)</option>
-                                        <option value="Professional License">Professional License / Certificate</option>
-                                        <option value="Cost Sharing Obligation Status">Cost Sharing Obligation Status</option>
-                                    </optgroup>
-                                    <optgroup label="Operations & Deployment">
-                                        <option value="Position Title">Position Title</option>
-                                        <option value="Department">Department</option>
-                                        <option value="Workplace / Deployment Site">Workplace / Deployment Site</option>
-                                        <option value="Vehicle Plate Number">Vehicle Plate Number</option>
-                                        <option value="Company Experience">Company Experience</option>
-                                        <option value="Previous Experience">Previous Relevant Experience</option>
-                                    </optgroup>
-                                    <optgroup label="Compensation & Allowances">
-                                        <option value="Basic Salary">Basic Salary</option>
-                                        <option value="Responsibility Allowance">Responsibility Allowance</option>
-                                        <option value="Hardship Allowance">Hardship Allowance</option>
-                                        <option value="Desert Allowance">Desert Allowance</option>
-                                        <option value="Daily / Per Diem Allowance">Daily / Per Diem Allowance</option>
-                                        <option value="Transportation / Fuel Allowance">Transportation / Fuel Allowance</option>
-                                        <option value="Housing Allowance">Housing Allowance</option>
-                                    </optgroup>
-                                    <optgroup label="General">
-                                        <option value="Other">Other Information</option>
-                                    </optgroup>
-                                </select>
-                            </div>
+                        <div>
+                            <label className="block text-xs font-bold text-black mb-1">
+                                Current Value in System (Optional)
+                            </label>
+                            <Input
+                                value={data.current_value}
+                                onChange={(e) => setData('current_value', e.target.value)}
+                                placeholder="Value shown right now..."
+                                className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                            />
+                        </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-black mb-1">
-                                    Current Value in System (Optional)
-                                </label>
-                                <Input
-                                    value={data.current_value}
-                                    onChange={(e) => setData('current_value', e.target.value)}
-                                    placeholder="Value shown right now..."
-                                    className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
-                                />
-                            </div>
+                        <div>
+                            <label className="block text-xs font-bold text-black mb-1">
+                                Proposed Correct Value <span className="text-[#de2828]">*</span>
+                            </label>
+                            <Input
+                                required
+                                value={data.proposed_value}
+                                onChange={(e) => setData('proposed_value', e.target.value)}
+                                placeholder="Enter the correct information..."
+                                className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                            />
+                            {errors.proposed_value && (
+                                <p className="text-xs text-[#de2828] mt-1">{errors.proposed_value}</p>
+                            )}
+                        </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-black mb-1">
-                                    Proposed Correct Value <span className="text-[#de2828]">*</span>
-                                </label>
-                                <Input
-                                    required
-                                    value={data.proposed_value}
-                                    onChange={(e) => setData('proposed_value', e.target.value)}
-                                    placeholder="Enter the correct information..."
-                                    className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
-                                />
-                                {errors.proposed_value && (
-                                    <p className="text-xs text-[#de2828] mt-1">{errors.proposed_value}</p>
-                                )}
-                            </div>
+                        <div>
+                            <label className="block text-xs font-bold text-black mb-1">
+                                Explanation / Supporting Details
+                            </label>
+                            <textarea
+                                value={data.explanation}
+                                onChange={(e) => setData('explanation', e.target.value)}
+                                rows={3}
+                                placeholder="Provide context or document reference for HR verification..."
+                                className="w-full rounded-xs border border-[#d8d9da] bg-[#f7f7f7] p-2.5 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
+                            />
+                        </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-black mb-1">
-                                    Explanation / Supporting Details
-                                </label>
-                                <textarea
-                                    value={data.explanation}
-                                    onChange={(e) => setData('explanation', e.target.value)}
-                                    rows={3}
-                                    placeholder="Provide context or document reference for HR verification..."
-                                    className="w-full rounded-xs border border-[#d8d9da] bg-[#f7f7f7] p-2.5 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                                />
-                            </div>
+                        <DialogFooter className="flex justify-end gap-2 pt-2 border-t border-[#ebebec]">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setShowModal(false)}
+                                className="text-xs border-[#d8d9da] rounded-xs"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={processing}
+                                className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase rounded-xs"
+                            >
+                                {processing ? 'Submitting...' : 'Submit Request'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
 
-                            <div className="flex justify-end gap-2 pt-2 border-t border-[#ebebec]">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setShowModal(false)}
-                                    className="text-xs border-[#d8d9da] rounded-xs"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase rounded-xs"
-                                >
-                                    {processing ? 'Submitting...' : 'Submit Request'}
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            {/* Remove Profile Photo Confirmation Dialog */}
+            <AlertDialog open={deletePhotoOpen} onOpenChange={setDeletePhotoOpen}>
+                <AlertDialogContent className="bg-white border-[#d8d9da]">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-base font-bold text-black">
+                            Remove Profile Photo?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-xs text-[#64666a]">
+                            Are you sure you want to delete your profile photo? Your avatar will revert to your name initials.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-2 sm:gap-0">
+                        <AlertDialogCancel className="text-xs h-9 border-[#d8d9da] hover:bg-[#f7f7f7]">
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDeletePhoto}
+                            className="text-xs h-9 bg-red-600 hover:bg-red-700 text-white font-semibold"
+                        >
+                            Delete Photo
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </Layout>
     );
 }

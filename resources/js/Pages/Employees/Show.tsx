@@ -2,10 +2,21 @@ import { useRef, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import EmployeeAvatar from '@/Components/EmployeeAvatar';
+import { formatEthPhone } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/Components/ui/alert-dialog';
 import { 
     ArrowLeft, 
     Calendar, 
@@ -144,6 +155,7 @@ interface Props {
 export default function Show({ employee, tenure, annualLeaveEntitlement, retirementInfo }: Props) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [deletePhotoOpen, setDeletePhotoOpen] = useState(false);
     const [remarksExpanded, setRemarksExpanded] = useState(Boolean(employee.remarks));
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,11 +177,14 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
     };
 
     const handleDeletePhoto = () => {
-        if (confirm(`Are you sure you want to remove the profile photo for ${employee.full_name}?`)) {
-            router.delete(route('employees.photo.destroy', employee.id), {
-                preserveScroll: true,
-            });
-        }
+        setDeletePhotoOpen(true);
+    };
+
+    const confirmDeletePhoto = () => {
+        router.delete(route('employees.photo.destroy', employee.id), {
+            preserveScroll: true,
+            onFinish: () => setDeletePhotoOpen(false),
+        });
     };
 
     const formatCurrency = (val?: number) => {
@@ -284,6 +299,15 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                                 </span>
                                 <span>•</span>
                                 <span>{employee.position}</span>
+                                {employee.phone && (
+                                    <>
+                                        <span>•</span>
+                                        <span className="flex items-center gap-1.5 font-semibold text-[#008254]">
+                                            <Phone className="w-3.5 h-3.5" />
+                                            {formatEthPhone(employee.phone)}
+                                        </span>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -963,7 +987,7 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                             <CardContent className="space-y-3 pt-2 text-xs">
                                 <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
                                     <span className="text-[#64666a]">Primary Telephone No:</span>
-                                    <span className="font-bold text-black text-sm">{employee.phone || '—'}</span>
+                                    <span className="font-bold text-black text-sm">{formatEthPhone(employee.phone) || employee.phone || '—'}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
                                     <span className="text-[#64666a]">E-mail Address:</span>
@@ -1045,6 +1069,31 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                     </Card>
                 </TabsContent>
             </Tabs>
+
+            {/* Delete Profile Portrait Confirmation Dialog */}
+            <AlertDialog open={deletePhotoOpen} onOpenChange={setDeletePhotoOpen}>
+                <AlertDialogContent className="bg-white border-[#d8d9da]">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-base font-bold text-black">
+                            Remove Profile Photo?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-xs text-[#64666a]">
+                            Are you sure you want to remove the profile photo for <strong className="text-black">{employee.full_name}</strong>? This will revert the dossier avatar to default initials.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-2 sm:gap-0">
+                        <AlertDialogCancel className="text-xs h-9 border-[#d8d9da] hover:bg-[#f7f7f7]">
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDeletePhoto}
+                            className="text-xs h-9 bg-red-600 hover:bg-red-700 text-white font-semibold"
+                        >
+                            Delete Photo
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AuthenticatedLayout>
     );
 }

@@ -5,6 +5,14 @@ import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from '@/Components/ui/dialog';
 import ViewToggle, { useViewMode } from '@/Components/ViewToggle';
 import { 
     Table, 
@@ -316,116 +324,114 @@ export default function Index({ records, filters, stats, employees }: Props) {
                 )}
             </Card>
 
-            {/* Log Training Modal */}
-            {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-                    <div className="bg-white rounded-lg border border-[#d8d9da] shadow-lg max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-150">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-base font-bold text-black">Log Certified Training Record</h3>
-                            <button 
-                                onClick={() => setShowModal(false)}
-                                className="text-[#64666a] hover:text-black text-sm font-bold"
+            {/* Log Training Modal (Shadcn Dialog) */}
+            <Dialog open={showModal} onOpenChange={setShowModal}>
+                <DialogContent className="max-w-md bg-white border-[#d8d9da] p-6 max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="text-base font-bold text-black flex items-center gap-2">
+                            <Plus className="w-4 h-4 text-[#008254]" />
+                            Log Certified Training Record
+                        </DialogTitle>
+                        <DialogDescription className="text-xs text-[#64666a]">
+                            Register formal vocational, engineering, or safety accreditation for staff.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+                        <div>
+                            <label className="block text-xs font-bold text-black mb-1">
+                                Employee Candidate <span className="text-[#de2828]">*</span>
+                            </label>
+                            <select
+                                required
+                                value={data.employee_id}
+                                onChange={(e) => setData('employee_id', e.target.value)}
+                                className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
                             >
-                                ✕
-                            </button>
+                                {employees.map((emp) => (
+                                    <option key={emp.id} value={emp.id}>
+                                        {emp.file_no} — {emp.full_name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-bold text-black mb-1">
+                                Training Course / Certificate Title <span className="text-[#de2828]">*</span>
+                            </label>
+                            <Input
+                                required
+                                value={data.training_name}
+                                onChange={(e) => setData('training_name', e.target.value)}
+                                placeholder="e.g. Structural Concrete Safety Certification"
+                                className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-black mb-1">
+                                Training Institution / Provider <span className="text-[#de2828]">*</span>
+                            </label>
+                            <Input
+                                required
+                                value={data.institution}
+                                onChange={(e) => setData('institution', e.target.value)}
+                                placeholder="e.g. Ethiopian Institute of Architecture, Building & Construction"
+                                className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-xs font-bold text-black mb-1">
-                                    Employee Candidate <span className="text-[#de2828]">*</span>
+                                    Certificate Number
+                                </label>
+                                <Input
+                                    value={data.certificate_number}
+                                    onChange={(e) => setData('certificate_number', e.target.value)}
+                                    placeholder="CERT-2025-081"
+                                    className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-black mb-1">
+                                    Performance Impact (1-5)
                                 </label>
                                 <select
-                                    required
-                                    value={data.employee_id}
-                                    onChange={(e) => setData('employee_id', e.target.value)}
+                                    value={data.performance_impact_score}
+                                    onChange={(e) => setData('performance_impact_score', e.target.value)}
                                     className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
                                 >
-                                    {employees.map((emp) => (
-                                        <option key={emp.id} value={emp.id}>
-                                            {emp.file_no} — {emp.full_name}
-                                        </option>
-                                    ))}
+                                    <option value="5">5 - Transformational</option>
+                                    <option value="4">4 - High Productivity Gain</option>
+                                    <option value="3">3 - Moderate Standard</option>
+                                    <option value="2">2 - Basic Compliance</option>
+                                    <option value="1">1 - Minimal Impact</option>
                                 </select>
                             </div>
+                        </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-black mb-1">
-                                    Training Course / Certificate Title <span className="text-[#de2828]">*</span>
-                                </label>
-                                <Input
-                                    required
-                                    value={data.training_name}
-                                    onChange={(e) => setData('training_name', e.target.value)}
-                                    placeholder="e.g. Structural Concrete Safety Certification"
-                                    className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-black mb-1">
-                                    Training Institution / Provider <span className="text-[#de2828]">*</span>
-                                </label>
-                                <Input
-                                    required
-                                    value={data.institution}
-                                    onChange={(e) => setData('institution', e.target.value)}
-                                    placeholder="e.g. Ethiopian Institute of Architecture, Building & Construction"
-                                    className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
-                                        Certificate Number
-                                    </label>
-                                    <Input
-                                        value={data.certificate_number}
-                                        onChange={(e) => setData('certificate_number', e.target.value)}
-                                        placeholder="CERT-2025-081"
-                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
-                                        Performance Impact (1-5)
-                                    </label>
-                                    <select
-                                        value={data.performance_impact_score}
-                                        onChange={(e) => setData('performance_impact_score', e.target.value)}
-                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                                    >
-                                        <option value="5">5 - Transformational</option>
-                                        <option value="4">4 - High Productivity Gain</option>
-                                        <option value="3">3 - Moderate Standard</option>
-                                        <option value="2">2 - Basic Compliance</option>
-                                        <option value="1">1 - Minimal Impact</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="flex justify-end gap-2 pt-2 border-t border-[#ebebec]">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setShowModal(false)}
-                                    className="text-xs border-[#d8d9da] rounded-xs"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase rounded-xs"
-                                >
-                                    {processing ? 'Registering...' : 'Register Certificate'}
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+                        <DialogFooter className="flex justify-end gap-2 pt-2 border-t border-[#ebebec]">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setShowModal(false)}
+                                className="text-xs border-[#d8d9da] rounded-xs"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={processing}
+                                className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase rounded-xs"
+                            >
+                                {processing ? 'Registering...' : 'Register Certificate'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </AuthenticatedLayout>
     );
 }

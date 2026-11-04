@@ -19,9 +19,14 @@ class UpdateEmployeeRequest extends FormRequest
         return [
             // Personal & Identity
             'file_no' => ['required', 'string', 'max:20', Rule::unique('employees', 'file_no')->ignore($employeeId)],
+            'employee_id_no' => ['nullable', 'string', 'max:50', Rule::unique('employees', 'employee_id_no')->ignore($employeeId)],
             'full_name' => ['required', 'string', 'max:255'],
             'gender' => ['required', 'in:Male,Female'],
             'education_status' => ['nullable', 'string', 'max:150'],
+            'institution' => ['nullable', 'string', 'max:150'],
+            'graduation_year_ec' => ['nullable', 'string', 'max:20'],
+            'professional_license' => ['nullable', 'string', 'max:150'],
+            'cost_sharing_status' => ['nullable', 'string', 'max:50'],
             'marital_status' => ['nullable', 'string', 'max:30'],
             'phone' => ['nullable', 'string', 'max:30'],
             'email' => ['nullable', 'email', 'max:100'],
@@ -49,7 +54,19 @@ class UpdateEmployeeRequest extends FormRequest
             'employment_date_ec' => ['required', 'string', 'max:20'],
             'birth_date' => ['nullable', 'date'],
             'birth_date_ec' => ['nullable', 'string', 'max:20'],
+            'probation_end_date' => ['nullable', 'date'],
+            'probation_status' => ['nullable', 'string', 'max:50'],
+            'permanent_status_date' => ['nullable', 'date'],
             'contract_end_date' => ['nullable', 'date'],
+            'retirement_date' => ['nullable', 'date'],
+
+            // Experience & Performance
+            'previous_experience' => ['nullable', 'string', 'max:255'],
+            'company_experience' => ['nullable', 'string', 'max:255'],
+            'total_experience' => ['nullable', 'string', 'max:255'],
+            'performance_score_round_1' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'performance_score_round_2' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'disciplinary_action' => ['nullable', 'string', 'max:255'],
 
             // Banking & Tax
             'bank_name' => ['nullable', 'string', 'max:100'],

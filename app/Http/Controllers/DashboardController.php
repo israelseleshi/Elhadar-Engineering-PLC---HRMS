@@ -6,6 +6,7 @@ use App\Models\DataCorrectionReport;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\EmployeeSalary;
+use App\Services\ProbationCalculationService;
 use App\Services\RetirementCalculationService;
 use App\Services\TurnoverCalculationService;
 use Carbon\Carbon;
@@ -16,7 +17,8 @@ class DashboardController extends Controller
 {
     public function __construct(
         protected RetirementCalculationService $retirementService,
-        protected TurnoverCalculationService $turnoverService
+        protected TurnoverCalculationService $turnoverService,
+        protected ProbationCalculationService $probationService
     ) {}
 
     public function index(): Response
@@ -46,9 +48,10 @@ class DashboardController extends Controller
             $now->copy()->endOfMonth()
         );
 
-        // Year-to-Date Turnover Metrics
+        // Ethiopian Fiscal Year-to-Date Turnover Metrics (Hamle 1 / July 8 to Current Day)
+        $fiscalYearStart = $this->turnoverService->getFiscalYearStartDate($now);
         $ytdTurnoverStats = $this->turnoverService->calculateTurnover(
-            $now->copy()->startOfYear(),
+            $fiscalYearStart,
             $now->copy()->endOfDay()
         );
 
@@ -65,9 +68,7 @@ class DashboardController extends Controller
             ->with('department')
             ->get()
             ->map(function ($emp) {
-                $daysRemaining = $emp->probation_end_date
-                    ? Carbon::now()->diffInDays(Carbon::parse($emp->probation_end_date), false)
-                    : null;
+                $daysRemaining = $this->probationService->getDaysRemaining($emp);
 
                 return [
                     'id' => $emp->id,

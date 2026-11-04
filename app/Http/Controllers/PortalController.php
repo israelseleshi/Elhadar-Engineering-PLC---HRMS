@@ -28,7 +28,7 @@ class PortalController extends Controller
     public function profile(Request $request): Response
     {
         $user = $request->user();
-        $employee = $user->employee;
+        $employee = Employee::where('user_id', $user->id)->first();
 
         // Fallback to first available employee for HR Admin accounts or demonstrations
         if (! $employee) {

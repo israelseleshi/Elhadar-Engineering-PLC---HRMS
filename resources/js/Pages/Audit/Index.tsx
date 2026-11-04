@@ -5,7 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import Modal from '@/Components/Modal';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from '@/Components/ui/dialog';
 import { 
     Table, 
     TableBody, 
@@ -347,21 +354,18 @@ export default function Index({ auditLogs, filters, stats, distinctActions }: Pr
                 </CardContent>
             </Card>
 
-            {/* Interactive Before/After State Diff Inspector Modal */}
-            <Modal show={diffModalOpen} onClose={() => setDiffModalOpen(false)} maxWidth="2xl">
-                <div className="bg-white p-6 rounded-xs">
-                    <div className="flex items-center justify-between pb-3 border-b border-[#ebebec] mb-4">
-                        <h3 className="text-base font-bold text-black flex items-center gap-2">
+            {/* Interactive Before/After State Diff Inspector Modal (Shadcn Dialog) */}
+            <Dialog open={diffModalOpen} onOpenChange={setDiffModalOpen}>
+                <DialogContent className="max-w-2xl bg-white border-[#d8d9da] p-6 max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="text-base font-bold text-black flex items-center gap-2">
                             <FileDiff className="w-4 h-4 text-[#008254]" />
                             Audit Event #{selectedLog?.id} State Inspector
-                        </h3>
-                        <button
-                            onClick={() => setDiffModalOpen(false)}
-                            className="text-[#64666a] hover:text-black p-1"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
-                    </div>
+                        </DialogTitle>
+                        <DialogDescription className="text-xs text-[#64666a]">
+                            Immutable ledger state difference recorded for this action.
+                        </DialogDescription>
+                    </DialogHeader>
 
                     {selectedLog && (
                         <div className="space-y-4 py-2">
@@ -427,7 +431,7 @@ export default function Index({ auditLogs, filters, stats, distinctActions }: Pr
                         </div>
                     )}
 
-                    <div className="border-t border-[#ebebec] pt-3 mt-4 flex justify-end">
+                    <DialogFooter className="border-t border-[#ebebec] pt-3 mt-4 flex justify-end">
                         <Button
                             variant="outline"
                             onClick={() => setDiffModalOpen(false)}
@@ -435,9 +439,9 @@ export default function Index({ auditLogs, filters, stats, distinctActions }: Pr
                         >
                             Close Inspector
                         </Button>
-                    </div>
-                </div>
-            </Modal>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AuthenticatedLayout>
     );
 }

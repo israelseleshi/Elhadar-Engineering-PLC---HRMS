@@ -27,6 +27,15 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = [
+        'phone',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -40,6 +49,31 @@ class User extends Authenticatable
     public function employee(): HasOne
     {
         return $this->hasOne(Employee::class);
+    }
+
+    /**
+     * Get the user's phone number in standard Ethiopian format (+2519XXXXXXXX).
+     */
+    public function getPhoneAttribute(): ?string
+    {
+        $raw = $this->employee?->phone;
+        if (! $raw) {
+            return null;
+        }
+
+        $digits = preg_replace('/[^0-9]/', '', $raw);
+        if (empty($digits)) {
+            return null;
+        }
+
+        if (str_starts_with($digits, '251')) {
+            $digits = substr($digits, 3);
+        }
+        if (str_starts_with($digits, '0')) {
+            $digits = substr($digits, 1);
+        }
+
+        return ! empty($digits) ? '+251'.$digits : null;
     }
 
     public function isSysAdmin(): bool

@@ -139,6 +139,9 @@ jobs:
             
             # Run migrations on production database
             php artisan migrate --force
+
+            # Ingest terminated personnel dataset
+            php artisan hrms:import-terminated-employees --no-interaction
             
             # Clear stale caches
             php artisan config:clear

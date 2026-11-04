@@ -5,6 +5,16 @@ import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/Components/ui/alert-dialog';
 import { 
     Table, 
     TableBody, 
@@ -65,6 +75,7 @@ interface Props {
 export default function Index({ candidates, filters, stats }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || 'Probation');
+    const [candidateToConfirm, setCandidateToConfirm] = useState<Candidate | null>(null);
 
     const handleFilter = (updates: Record<string, string>) => {
         router.get(
@@ -79,9 +90,15 @@ export default function Index({ candidates, filters, stats }: Props) {
     };
 
     const handleConfirm = (candidate: Candidate) => {
-        if (confirm(`Confirm ${candidate.full_name} (${candidate.file_no}) as a Permanent employee under Ethiopian Labour Proclamation 1156/2019?`)) {
-            router.post(route('probation.confirm', candidate.id));
-        }
+        setCandidateToConfirm(candidate);
+    };
+
+    const executePermanentConfirm = () => {
+        if (!candidateToConfirm) return;
+        router.post(route('probation.confirm', candidateToConfirm.id), {}, {
+            preserveScroll: true,
+            onFinish: () => setCandidateToConfirm(null),
+        });
     };
 
     return (
@@ -326,6 +343,37 @@ export default function Index({ candidates, filters, stats }: Props) {
                     </div>
                 )}
             </Card>
+
+            {/* Statutory Permanent Confirmation Dialog */}
+            <AlertDialog open={Boolean(candidateToConfirm)} onOpenChange={(open) => !open && setCandidateToConfirm(null)}>
+                <AlertDialogContent className="bg-white border-[#d8d9da]">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-base font-bold text-black flex items-center gap-2">
+                            <CheckCircle2 className="w-5 h-5 text-[#008254]" />
+                            Confirm Permanent Appointment
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-xs text-[#64666a] space-y-2">
+                            <p>
+                                Are you sure you want to officially confirm <strong className="text-black">{candidateToConfirm?.full_name} ({candidateToConfirm?.file_no})</strong> as a Permanent Employee?
+                            </p>
+                            <p className="bg-[#effcf8] border border-[#b7ecda] p-2.5 rounded-sm text-[#008254] font-medium text-[11px]">
+                                Legal Reference: Ethiopian Labour Proclamation 1156/2019. This converts the probationary tenure to permanent status and seals statutory pension & seniority entitlements.
+                            </p>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-2 sm:gap-0">
+                        <AlertDialogCancel className="text-xs h-9 border-[#d8d9da] hover:bg-[#f7f7f7]">
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={executePermanentConfirm}
+                            className="text-xs h-9 bg-[#008254] hover:bg-[#006a44] text-white font-bold"
+                        >
+                            Approve Permanent Appointment
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AuthenticatedLayout>
     );
 }

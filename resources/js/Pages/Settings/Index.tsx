@@ -5,6 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/Components/ui/alert-dialog';
+import { toast } from 'sonner';
 import { 
     Scale, 
     ShieldCheck, 
@@ -43,16 +54,20 @@ export default function Index({ groupedSettings }: Props) {
     });
 
     const [saving, setSaving] = useState(false);
-    const [savedNotice, setSavedNotice] = useState(false);
+    const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
 
     const handleChange = (key: string, value: string) => {
         setFormData((prev) => ({ ...prev, [key]: value }));
-        setSavedNotice(false);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        setConfirmSaveOpen(true);
+    };
+
+    const executeSave = () => {
         setSaving(true);
+        setConfirmSaveOpen(false);
 
         router.put(route('settings.update'), {
             settings: formData,
@@ -60,10 +75,12 @@ export default function Index({ groupedSettings }: Props) {
             preserveScroll: true,
             onSuccess: () => {
                 setSaving(false);
-                setSavedNotice(true);
-                setTimeout(() => setSavedNotice(false), 4000);
+                toast.success('Statutory parameters successfully updated and archived to audit log.');
             },
-            onError: () => setSaving(false),
+            onError: () => {
+                setSaving(false);
+                toast.error('Failed to update statutory parameters.');
+            },
         });
     };
 
@@ -162,18 +179,9 @@ export default function Index({ groupedSettings }: Props) {
 
                 {/* Bottom Sticky Action Bar */}
                 <div className="sticky bottom-4 z-20 p-4 bg-white border border-[#d8d9da] shadow-lg rounded-xs flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        {savedNotice && (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#008254] bg-[#effcf8] px-3 py-1.5 rounded-xs border border-[#008254]/30">
-                                <CheckCircle2 className="w-4 h-4" /> Changes successfully saved and audited!
-                            </span>
-                        )}
-                        {!savedNotice && (
-                            <span className="text-xs text-[#64666a]">
-                                Review parameters carefully before committing changes.
-                            </span>
-                        )}
-                    </div>
+                    <span className="text-xs text-[#64666a]">
+                        Review parameters carefully before committing changes. All modifications create an immutable audit record.
+                    </span>
 
                     <Button
                         type="submit"
@@ -194,6 +202,37 @@ export default function Index({ groupedSettings }: Props) {
                     </Button>
                 </div>
             </form>
+
+            {/* Save Statutory Parameters Confirmation Dialog */}
+            <AlertDialog open={confirmSaveOpen} onOpenChange={setConfirmSaveOpen}>
+                <AlertDialogContent className="bg-white border-[#d8d9da]">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-base font-bold text-black flex items-center gap-2">
+                            <Scale className="w-5 h-5 text-[#008254]" />
+                            Update Global Statutory Parameters?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-xs text-[#64666a] space-y-2">
+                            <p>
+                                Are you sure you want to commit these statutory adjustments to the database?
+                            </p>
+                            <p className="bg-[#effcf8] border border-[#b7ecda] p-2.5 rounded-sm text-[#008254] font-medium text-[11px]">
+                                These parameters directly calibrate payroll engine withholding (POESSA pension), working-day probation countdowns, and severance formulas across all personnel dossiers.
+                            </p>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-2 sm:gap-0">
+                        <AlertDialogCancel className="text-xs h-9 border-[#d8d9da] hover:bg-[#f7f7f7]">
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={executeSave}
+                            className="text-xs h-9 bg-[#008254] hover:bg-[#006a44] text-white font-bold"
+                        >
+                            Confirm &amp; Apply Parameters
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AuthenticatedLayout>
     );
 }

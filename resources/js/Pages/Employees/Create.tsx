@@ -1,9 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import { 
     ArrowLeft, 
     ArrowRight, 
@@ -82,6 +89,48 @@ export default function Create({ departments }: Props) {
         plate_number: '',
         remarks: 'Registered via HR onboarding workflow.',
     });
+
+    const [allRegions, setAllRegions] = useState<Array<{ id: string | number; name: string }>>([]);
+    const [allZones, setAllZones] = useState<Array<{ id: string | number; name: string; parent_id: string | number }>>([]);
+    const [allWoredas, setAllWoredas] = useState<Array<{ id: string | number; name: string; parent_id: string | number }>>([]);
+    const [filteredZones, setFilteredZones] = useState<Array<{ id: string | number; name: string; parent_id: string | number }>>([]);
+    const [filteredWoredas, setFilteredWoredas] = useState<Array<{ id: string | number; name: string; parent_id: string | number }>>([]);
+    const [addressLoading, setAddressLoading] = useState(false);
+
+    useEffect(() => {
+        setAddressLoading(true);
+        fetch('https://openadmindata.org/api/v1/countries/et.json')
+            .then((res) => res.json())
+            .then((payload) => {
+                const d = payload?.data || {};
+                setAllRegions((d.region || []).map((r: any) => ({ id: r.id, name: r.name_en })));
+                setAllZones((d.zone || []).map((z: any) => ({ id: z.id, name: z.name_en, parent_id: z.parent_id })));
+                setAllWoredas((d.woreda || []).map((w: any) => ({ id: w.id, name: w.name_en, parent_id: w.parent_id })));
+                setAddressLoading(false);
+            })
+            .catch(() => setAddressLoading(false));
+    }, []);
+
+    useEffect(() => {
+        const region = allRegions.find((r) => r.name === data.region);
+        if (region) {
+            setFilteredZones(allZones.filter((z) => z.parent_id === region.id));
+        } else {
+            setFilteredZones([]);
+        }
+        setData('city', '');
+        setData('sub_city', '');
+    }, [data.region, allRegions, allZones]);
+
+    useEffect(() => {
+        const zone = allZones.find((z) => z.name === data.city);
+        if (zone) {
+            setFilteredWoredas(allWoredas.filter((w) => w.parent_id === zone.id));
+        } else {
+            setFilteredWoredas([]);
+        }
+        setData('sub_city', '');
+    }, [data.city, allZones, allWoredas]);
 
     const nextStep = () => setStep((s) => Math.min(4, s + 1));
     const prevStep = () => setStep((s) => Math.max(1, s - 1));
@@ -253,30 +302,63 @@ export default function Create({ departments }: Props) {
                             <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-2 border-t border-[#ebebec]">
                                 <div>
                                     <label className="block text-xs font-bold text-black mb-1">Region</label>
-                                    <Input
-                                        value={data.region}
-                                        onChange={(e) => setData('region', e.target.value)}
-                                        placeholder="Addis Ababa"
-                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
-                                    />
+                                    <Select
+                                        value={allRegions.find((r) => r.name === data.region)?.id?.toString() ?? undefined}
+                                        onValueChange={(val) => {
+                                            const r = allRegions.find((region) => region.id?.toString() === val);
+                                            if (r) setData('region', r.name);
+                                        }}
+                                        disabled={addressLoading}
+                                    >
+                                        <SelectTrigger className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10">
+                                            <SelectValue placeholder="Region" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {allRegions.map((r) => (
+                                                <SelectItem key={r.id} value={r.id.toString()}>{r.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-black mb-1">City</label>
-                                    <Input
-                                        value={data.city}
-                                        onChange={(e) => setData('city', e.target.value)}
-                                        placeholder="Addis Ababa"
-                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
-                                    />
+                                    <Select
+                                        value={allZones.find((z) => z.name === data.city)?.id?.toString() ?? undefined}
+                                        onValueChange={(val) => {
+                                            const z = allZones.find((zone) => zone.id?.toString() === val);
+                                            if (z) setData('city', z.name);
+                                        }}
+                                        disabled={!filteredZones.length || addressLoading}
+                                    >
+                                        <SelectTrigger className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10">
+                                            <SelectValue placeholder="City" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {filteredZones.map((z) => (
+                                                <SelectItem key={z.id} value={z.id.toString()}>{z.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-black mb-1">Sub-City (K/Ketema)</label>
-                                    <Input
-                                        value={data.sub_city}
-                                        onChange={(e) => setData('sub_city', e.target.value)}
-                                        placeholder="Bole"
-                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
-                                    />
+                                    <Select
+                                        value={allWoredas.find((w) => w.name === data.sub_city)?.id?.toString() ?? undefined}
+                                        onValueChange={(val) => {
+                                            const w = allWoredas.find((woreda) => woreda.id?.toString() === val);
+                                            if (w) setData('sub_city', w.name);
+                                        }}
+                                        disabled={!filteredWoredas.length || addressLoading}
+                                    >
+                                        <SelectTrigger className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10">
+                                            <SelectValue placeholder="Sub-City" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {filteredWoredas.map((w) => (
+                                                <SelectItem key={w.id} value={w.id.toString()}>{w.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-black mb-1">Woreda</label>
@@ -490,7 +572,7 @@ export default function Create({ departments }: Props) {
                                             value={data.employment_date_ec}
                                             onChange={(e) => setData('employment_date_ec', e.target.value)}
                                             placeholder="dd/mm/yyyy E.C (e.g. 20/02/2018)"
-                                            className="bg-white border-[#d8d9da] text-xs h-10"
+                                            className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
                                         />
                                     </div>
                                     <div>
@@ -502,7 +584,7 @@ export default function Create({ departments }: Props) {
                                             required
                                             value={data.employment_date}
                                             onChange={(e) => setData('employment_date', e.target.value)}
-                                            className="bg-white border-[#d8d9da] text-xs h-10"
+                                            className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
                                         />
                                     </div>
                                 </div>
@@ -519,7 +601,7 @@ export default function Create({ departments }: Props) {
                                             value={data.birth_date_ec}
                                             onChange={(e) => setData('birth_date_ec', e.target.value)}
                                             placeholder="dd/mm/yyyy E.C"
-                                            className="bg-white border-[#d8d9da] text-xs h-10"
+                                            className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
                                         />
                                     </div>
                                     <div>
@@ -530,7 +612,7 @@ export default function Create({ departments }: Props) {
                                             type="date"
                                             value={data.birth_date}
                                             onChange={(e) => setData('birth_date', e.target.value)}
-                                            className="bg-white border-[#d8d9da] text-xs h-10"
+                                            className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
                                         />
                                     </div>
                                 </div>
@@ -545,7 +627,7 @@ export default function Create({ departments }: Props) {
                                         type="date"
                                         value={data.contract_end_date}
                                         onChange={(e) => setData('contract_end_date', e.target.value)}
-                                        className="bg-white border-[#d8d9da] text-xs h-10 max-w-sm"
+                                        className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10 max-w-sm"
                                     />
                                 </div>
                             )}
@@ -571,7 +653,7 @@ export default function Create({ departments }: Props) {
                                     value={data.basic_salary}
                                     onChange={(e) => setData('basic_salary', e.target.value)}
                                     placeholder="18500.00"
-                                    className="bg-white border-[#d8d9da] text-sm h-11 font-bold text-[#008254]"
+                                    className="bg-[#f7f7f7] border-[#d8d9da] text-sm h-11 font-bold text-[#008254]"
                                 />
                                 <span className="text-[11px] text-[#64666a] mt-1 block">
                                     Subject to 7% employee pension deduction and 11% employer contribution per Proclamation 1268/2022.

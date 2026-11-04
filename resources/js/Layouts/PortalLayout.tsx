@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { PropsWithChildren, ReactNode, useState } from 'react';
+import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
 import { 
     User, 
     ShieldCheck, 
@@ -12,6 +12,10 @@ import {
 } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import { formatEthPhone } from '@/lib/utils';
+import { Toaster } from '@/Components/ui/sonner';
+import { toast } from 'sonner';
+import { PageProps } from '@/types';
 
 interface Props {
     title?: string;
@@ -23,7 +27,9 @@ export default function PortalLayout({
     subtitle,
     children,
 }: PropsWithChildren<Props>) {
-    const user = usePage().props.auth.user;
+    const { auth, flash } = usePage<PageProps>().props;
+    const user = auth.user;
+    const displayPhone = formatEthPhone(user?.phone) || user?.phone || user?.email;
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -31,6 +37,21 @@ export default function PortalLayout({
         }
         return false;
     });
+
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+        if (flash?.warning) {
+            toast.warning(flash.warning);
+        }
+        if (flash?.info) {
+            toast.info(flash.info);
+        }
+    }, [flash]);
 
     const toggleSidebar = () => {
         if (typeof window !== 'undefined' && window.innerWidth < 1024) {
@@ -163,7 +184,7 @@ export default function PortalLayout({
                             <>
                                 <div
                                     className="w-9 h-9 rounded-full bg-[#008254] text-white flex items-center justify-center text-xs font-bold uppercase shrink-0"
-                                    title={`${user.name} (${user.email})`}
+                                    title={`${user.name} (${displayPhone})`}
                                 >
                                     {user.name.charAt(0)}
                                 </div>
@@ -189,7 +210,7 @@ export default function PortalLayout({
                                                 {user.name}
                                             </p>
                                             <p className="text-xs text-[#64666a] truncate mt-0.5">
-                                                {user.email}
+                                                {displayPhone}
                                             </p>
                                         </div>
                                     </div>
@@ -276,7 +297,7 @@ export default function PortalLayout({
                                             {user.name}
                                         </p>
                                         <p className="text-xs text-[#64666a] truncate mt-0.5">
-                                            {user.email}
+                                            {displayPhone}
                                         </p>
                                     </div>
                                 </div>
@@ -357,7 +378,7 @@ export default function PortalLayout({
                     )}
 
                     {/* Main Content Body */}
-                    <main className="flex-1 p-6 lg:p-8 max-w-7xl mx-auto w-full">
+                    <main className="flex-1 px-3 py-6 lg:px-4 lg:py-8 max-w-7xl mx-auto w-full">
                         {children}
                     </main>
 
@@ -372,6 +393,9 @@ export default function PortalLayout({
                     </footer>
                 </div>
             </div>
+
+            {/* Global ESS Toaster for Flash & Notifications */}
+            <Toaster richColors position="top-right" closeButton />
         </div>
     );
 }

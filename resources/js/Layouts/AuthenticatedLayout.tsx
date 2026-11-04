@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { PropsWithChildren, ReactNode, useState } from 'react';
+import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
 import { 
     LayoutDashboard, 
     Users, 
@@ -27,6 +27,10 @@ import {
 import { Button } from '@/Components/ui/button';
 import SystemTour from '@/Components/SystemTour';
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import { formatEthPhone } from '@/lib/utils';
+import { Toaster } from '@/Components/ui/sonner';
+import { toast } from 'sonner';
+import { PageProps } from '@/types';
 
 interface Props {
     header?: ReactNode;
@@ -40,7 +44,9 @@ export default function AuthenticatedLayout({
     subtitle,
     children,
 }: PropsWithChildren<Props>) {
-    const user = usePage().props.auth.user;
+    const { auth, flash } = usePage<PageProps>().props;
+    const user = auth.user;
+    const displayPhone = formatEthPhone(user?.phone) || user?.phone || user?.email;
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -49,6 +55,21 @@ export default function AuthenticatedLayout({
         return false;
     });
     const [tourOpen, setTourOpen] = useState(false);
+
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+        if (flash?.warning) {
+            toast.warning(flash.warning);
+        }
+        if (flash?.info) {
+            toast.info(flash.info);
+        }
+    }, [flash]);
 
     const toggleSidebar = () => {
         if (typeof window !== 'undefined' && window.innerWidth < 1024) {
@@ -184,7 +205,7 @@ export default function AuthenticatedLayout({
                                 <>
                                     <div
                                         className="w-9 h-9 rounded-full bg-[#008254] text-white flex items-center justify-center text-xs font-bold uppercase shrink-0"
-                                        title={`${user.name} (${user.email})`}
+                                        title={`${user.name} (${displayPhone})`}
                                     >
                                         {user.name.charAt(0)}
                                     </div>
@@ -210,7 +231,7 @@ export default function AuthenticatedLayout({
                                                     {user.name}
                                                 </p>
                                                 <p className="text-xs text-[#64666a] truncate mt-0.5">
-                                                    {user.email}
+                                                    {displayPhone}
                                                 </p>
                                             </div>
                                         </div>
@@ -338,6 +359,19 @@ export default function AuthenticatedLayout({
                                     ))}
                                 </nav>
                                 <div className="pt-4 border-t border-[#ebebec]">
+                                    <div className="flex items-center gap-2.5 mb-3">
+                                        <div className="w-8 h-8 rounded-full bg-[#008254] text-white flex items-center justify-center text-xs font-bold uppercase shrink-0">
+                                            {user.name.charAt(0)}
+                                        </div>
+                                        <div className="overflow-hidden">
+                                            <p className="text-sm font-bold text-black truncate leading-none">
+                                                {user.name}
+                                            </p>
+                                            <p className="text-xs text-[#64666a] truncate mt-0.5">
+                                                {displayPhone}
+                                            </p>
+                                        </div>
+                                    </div>
                                     <Link
                                         href={route('logout')}
                                         method="post"
@@ -374,7 +408,7 @@ export default function AuthenticatedLayout({
                     )}
 
                     {/* Main Content Body */}
-                    <main className="flex-1 p-6 lg:p-8 max-w-7xl mx-auto w-full">
+                    <main className="flex-1 px-3 py-6 lg:px-4 lg:py-8 max-w-7xl mx-auto w-full">
                         {children}
                     </main>
 
@@ -392,6 +426,9 @@ export default function AuthenticatedLayout({
 
             {/* Guided System Tour Modal */}
             <SystemTour open={tourOpen} onClose={() => setTourOpen(false)} />
+
+            {/* Global Toaster for Flash and Client Notifications */}
+            <Toaster richColors position="top-right" closeButton />
         </div>
     );
 }

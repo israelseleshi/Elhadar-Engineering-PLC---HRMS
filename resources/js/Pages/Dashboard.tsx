@@ -5,6 +5,17 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/Components/ui/alert-dialog';
+import { toast } from 'sonner';
 import { 
     Table, 
     TableBody, 
@@ -243,11 +254,27 @@ export default function Dashboard({
     const turnoverColor = ytdRate === 0 ? '#008254' : ytdRate <= 5 ? '#16a34a' : ytdRate <= 10 ? '#d97706' : '#dc2626';
     const turnoverBg   = ytdRate === 0 ? '#effcf8' : ytdRate <= 5 ? '#f0fdf4' : ytdRate <= 10 ? '#fffbeb' : '#fef2f2';
 
+    const [reviewConfirm, setReviewConfirm] = useState<{ id: number; status: 'Approved' | 'Rejected' } | null>(null);
+
     const handleDiscrepancyReview = (id: number, status: 'Approved' | 'Rejected') => {
+        setReviewConfirm({ id, status });
+    };
+
+    const executeDiscrepancyReview = () => {
+        if (!reviewConfirm) return;
+        const { id, status } = reviewConfirm;
+
         router.patch(route('portal.discrepancy.review', id), {
             status,
         }, {
             preserveScroll: true,
+            onSuccess: () => {
+                toast.success(`Discrepancy report ${status.toLowerCase()} successfully.`);
+            },
+            onError: () => {
+                toast.error('Failed to update discrepancy report.');
+            },
+            onFinish: () => setReviewConfirm(null),
         });
     };
 
@@ -388,8 +415,13 @@ export default function Dashboard({
                         <Card className="border-[#ebebec] bg-white shadow-xs hover:shadow-md transition-shadow duration-300 rounded-xl p-5 sm:p-6 flex flex-col justify-between h-full">
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <p className="text-xs font-medium text-slate-500">Employee turnover rate</p>
-                                    <p className="text-3xl sm:text-4xl font-semibold tracking-tight text-emerald-600 mt-2">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                        <p className="text-xs font-medium text-slate-500">Employee turnover rate</p>
+                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                                            ሓምሌ 1 – Today
+                                        </span>
+                                    </div>
+                                    <p className="text-3xl sm:text-4xl font-semibold tracking-tight mt-2" style={{ color: turnoverColor }}>
                                         <AnimatedNumber value={ytdRate} precision={2} suffix="%" delay={0.25} />
                                     </p>
                                 </div>
@@ -397,14 +429,20 @@ export default function Dashboard({
                                     initial={{ scale: 0.8, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
                                     transition={{ duration: 0.5, delay: 0.3, ease: luxuryEase }}
-                                    className="w-10 h-10 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0"
+                                    className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border"
+                                    style={{ backgroundColor: turnoverBg, color: turnoverColor, borderColor: `${turnoverColor}33` }}
                                 >
                                     <TrendingDown className="w-5 h-5" />
                                 </motion.div>
                             </div>
-                            <p className="text-xs text-slate-400 mt-3">
-                                Year to date &middot; {mtdRate.toFixed(2)}% this month
-                            </p>
+                            <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                                <span>
+                                    Avg staff: <strong className="font-semibold text-slate-700">{avgHeadcount}</strong> &middot; <strong className="font-semibold text-slate-700">{ytdSeparations}</strong> {ytdSeparations === 1 ? 'exit' : 'exits'}
+                                </span>
+                                <span className="text-slate-400">
+                                    {mtdRate.toFixed(2)}% this mo.
+                                </span>
+                            </div>
                         </Card>
                     </motion.div>
                 </div>
@@ -1076,6 +1114,51 @@ export default function Dashboard({
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Discrepancy Action Confirmation Dialog */}
+            <AlertDialog open={Boolean(reviewConfirm)} onOpenChange={(open) => !open && setReviewConfirm(null)}>
+                <AlertDialogContent className="bg-white border-[#d8d9da]">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-base font-bold text-black flex items-center gap-2">
+                            {reviewConfirm?.status === 'Approved' ? (
+                                <CheckCircle2 className="w-5 h-5 text-[#008254]" />
+                            ) : (
+                                <AlertTriangle className="w-5 h-5 text-[#de2828]" />
+                            )}
+                            {reviewConfirm?.status} Employee Discrepancy Report?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-xs text-[#64666a] space-y-2">
+                            <p>
+                                Are you sure you want to mark this correction request as <strong className="text-black">{reviewConfirm?.status}</strong>?
+                            </p>
+                            {reviewConfirm?.status === 'Approved' ? (
+                                <p className="bg-[#effcf8] border border-[#b7ecda] p-2.5 rounded-sm text-[#008254] font-medium text-[11px]">
+                                    Approving will apply the requested modification directly to the employee's master record and notify the employee in their self-service portal.
+                                </p>
+                            ) : (
+                                <p className="bg-red-50 border border-red-200 p-2.5 rounded-sm text-red-700 font-medium text-[11px]">
+                                    Rejecting will close the report without altering the employee's profile.
+                                </p>
+                            )}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-2 sm:gap-0">
+                        <AlertDialogCancel className="text-xs h-9 border-[#d8d9da] hover:bg-[#f7f7f7]">
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={executeDiscrepancyReview}
+                            className={`text-xs h-9 text-white font-bold ${
+                                reviewConfirm?.status === 'Approved'
+                                    ? 'bg-[#008254] hover:bg-[#006a44]'
+                                    : 'bg-red-600 hover:bg-red-700'
+                            }`}
+                        >
+                            Confirm {reviewConfirm?.status}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AuthenticatedLayout>
     );
 }
