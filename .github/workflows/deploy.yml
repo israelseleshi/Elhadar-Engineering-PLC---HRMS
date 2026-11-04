@@ -142,6 +142,9 @@ jobs:
 
             # Ingest terminated personnel dataset
             php artisan hrms:import-terminated-employees --no-interaction || true
+
+            # Ingest annual leave ledger
+            php artisan hrms:import-annual-leave --no-interaction || true
             
             # Clear stale caches
             php artisan config:clear
