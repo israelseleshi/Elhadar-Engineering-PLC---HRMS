@@ -17,7 +17,6 @@ jobs:
     env:
       APP_ENV: testing
       APP_DEBUG: false
-      APP_KEY: base64:czjuWr7u7U1lODaswUYYKseLMGHKQbw3n1MyVllLxJ8=
       DB_CONNECTION: sqlite
       DB_DATABASE: ':memory:'
 
@@ -53,6 +52,9 @@ jobs:
         run: |
           mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions storage/logs bootstrap/cache
           chmod -R 775 storage bootstrap/cache
+
+      - name: Set test application key
+        run: echo "APP_KEY=base64:$(php -r 'echo base64_encode(random_bytes(32));')" >> $GITHUB_ENV
 
       - name: Run PHP tests
         run: php artisan test --compact
@@ -136,7 +138,7 @@ jobs:
           ssh -T -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST <<EOF
             set -e
             cd $DEPLOY_PATH
-            
+
             # Run migrations on production database
             php artisan migrate --force
 
@@ -145,15 +147,15 @@ jobs:
 
             # Ingest annual leave ledger
             php artisan hrms:import-annual-leave --no-interaction || true
-            
+
             # Clear stale caches
             php artisan config:clear
             php artisan cache:clear
             php artisan view:clear
-            
+
             # Ensure storage symlink exists
             [ -L public/storage ] || php artisan storage:link || true
-            
+
             # Cache config, routes, and views for production performance
             php artisan config:cache
             php artisan route:cache
@@ -178,4 +180,3 @@ jobs:
           done
           echo "⚠️ External health check returned HTTP $HTTP_CODE. Verifying via SSH..."
           ssh -T -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST "cd $DEPLOY_PATH && php artisan route:list --path=login"
-
