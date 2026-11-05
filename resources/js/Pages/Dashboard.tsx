@@ -415,11 +415,8 @@ export default function Dashboard({
                         <Card className="border-[#ebebec] bg-white shadow-xs hover:shadow-md transition-shadow duration-300 rounded-xl p-5 sm:p-6 flex flex-col justify-between h-full">
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                    <div className="flex items-center gap-2">
                                         <p className="text-xs font-medium text-slate-500">Employee turnover rate</p>
-                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                                            ሓምሌ 1 – Today
-                                        </span>
                                     </div>
                                     <p className="text-3xl sm:text-4xl font-semibold tracking-tight mt-2" style={{ color: turnoverColor }}>
                                         <AnimatedNumber value={ytdRate} precision={2} suffix="%" delay={0.25} />
