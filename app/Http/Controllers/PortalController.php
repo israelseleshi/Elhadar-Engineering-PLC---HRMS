@@ -30,8 +30,8 @@ class PortalController extends Controller
         $user = $request->user();
         $employee = Employee::where('user_id', $user->id)->first();
 
-        // Fallback to first available employee for HR Admin accounts or demonstrations
-        if (! $employee) {
+        // Admin-only fallback for convenience; employees/managers must be linked to their own record.
+        if (! $employee && in_array($user->role, ['HRAdmin', 'SysAdmin'], true)) {
             $employee = Employee::first();
         }
 
@@ -76,7 +76,11 @@ class PortalController extends Controller
     public function reportDiscrepancy(StoreDiscrepancyRequest $request): RedirectResponse
     {
         $user = $request->user();
-        $employee = $user->employee ?? Employee::firstOrFail();
+        $employee = $user->employee;
+        if (! $employee && in_array($user->role, ['HRAdmin', 'SysAdmin'], true)) {
+            $employee = Employee::firstOrFail();
+        }
+        abort_unless($employee, 403, 'Your account is not linked to an employee profile.');
 
         $employee->dataCorrectionReports()->create([
             'field_name' => $request->validated('field_name'),
