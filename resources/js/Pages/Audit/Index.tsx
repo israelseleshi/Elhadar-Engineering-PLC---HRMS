@@ -132,6 +132,33 @@ export default function Index({ auditLogs, filters, stats, distinctActions }: Pr
         return Array.from(keys);
     };
 
+    const isPhotoField = (key: string) => key === 'profile_photo_path' || key === 'profile_photo_url';
+    const photoFileName = (value: any) => {
+        if (value === null || value === undefined || value === '') return 'No photo';
+        const s = String(value);
+        const parts = s.split(/[\\/]/);
+        return parts[parts.length - 1] || s;
+    };
+    const renderAuditValue = (key: string, value: any, action: string, side: 'old' | 'new') => {
+        if (!isPhotoField(key)) {
+            return <>{value !== null && value !== undefined ? String(value) : '—'}</>;
+        }
+        if (value === null || value === undefined || value === '') {
+            if (side === 'old' && (action.includes('PHOTO_UPDATE') || action.includes('PHOTO_REMOVE'))) return <>No previous photo</>;
+            if (side === 'new' && action.includes('PHOTO_REMOVE')) return <>Photo removed</>;
+            return <>No photo</>;
+        }
+        const file = photoFileName(value);
+        const src = `/storage/${String(value).replace(/^\/+/, '')}`;
+        const label = action.includes('PHOTO_REMOVE') && side === 'old' ? `Previous photo (${file})` : `Profile photo (${file})`;
+        return (
+            <span className="inline-flex items-center gap-2 max-w-full">
+                <img src={src} alt="" className="w-8 h-8 rounded-full object-cover border border-[#d8d9da] shrink-0 bg-white" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                <span className="truncate" title={file}>{label}</span>
+            </span>
+        );
+    };
+
     return (
         <AuthenticatedLayout
             title="Immutable Security Audit Log & Changes Inspector"
@@ -409,12 +436,12 @@ export default function Index({ auditLogs, filters, stats, distinctActions }: Pr
                                             <div key={key} className={`p-3 text-xs flex items-center justify-between gap-4 ${isDifferent ? 'bg-[#effcf8]/30' : ''}`}>
                                                 <span className="font-mono font-semibold text-black shrink-0">{key}</span>
                                                 <div className="flex items-center gap-4 text-right">
-                                                    <span className="font-mono text-[#de2828] bg-[#fdf2f2] px-2 py-0.5 rounded-xs line-through text-[11px] max-w-xs truncate">
-                                                        {oldV !== null && oldV !== undefined ? String(oldV) : '—'}
+                                                    <span className={`font-mono text-[#de2828] bg-[#fdf2f2] px-2 py-0.5 rounded-xs line-through text-[11px] max-w-xs ${isPhotoField(key) ? '' : 'truncate'}`}>
+                                                        {renderAuditValue(key, oldV, selectedLog.action, 'old')}
                                                     </span>
                                                     <ArrowRight className="w-3.5 h-3.5 text-[#64666a] shrink-0" />
-                                                    <span className="font-mono text-[#008254] bg-[#effcf8] px-2 py-0.5 rounded-xs font-semibold text-[11px] max-w-xs truncate">
-                                                        {newV !== null && newV !== undefined ? String(newV) : '—'}
+                                                    <span className={`font-mono text-[#008254] bg-[#effcf8] px-2 py-0.5 rounded-xs font-semibold text-[11px] max-w-xs ${isPhotoField(key) ? '' : 'truncate'}`}>
+                                                        {renderAuditValue(key, newV, selectedLog.action, 'new')}
                                                     </span>
                                                 </div>
                                             </div>
