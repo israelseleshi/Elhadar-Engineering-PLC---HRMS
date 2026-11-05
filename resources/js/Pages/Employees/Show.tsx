@@ -287,26 +287,21 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                             <h1 className="text-2xl font-bold text-black tracking-tight">
                                 {employee.full_name}
                             </h1>
-                            <div className="flex flex-wrap items-center gap-4 text-xs text-[#3d4045] mt-1.5 font-medium">
+                            <div className="flex flex-col gap-1.5 text-xs text-[#3d4045] mt-1.5 font-medium">
                                 <span className="flex items-center gap-1.5">
-                                    <Building2 className="w-3.5 h-3.5 text-[#008254]" />
+                                    <Building2 className="w-3.5 h-3.5 text-[#008254] shrink-0" />
                                     {employee.department?.name || 'General Engineering'}
                                 </span>
-                                <span>•</span>
                                 <span className="flex items-center gap-1.5">
-                                    <MapPin className="w-3.5 h-3.5 text-[#008254]" />
+                                    <MapPin className="w-3.5 h-3.5 text-[#008254] shrink-0" />
                                     {employee.work_place}
                                 </span>
-                                <span>•</span>
                                 <span>{employee.position}</span>
                                 {employee.phone && (
-                                    <>
-                                        <span>•</span>
-                                        <span className="flex items-center gap-1.5 font-semibold text-[#008254]">
-                                            <Phone className="w-3.5 h-3.5" />
-                                            {formatEthPhone(employee.phone)}
-                                        </span>
-                                    </>
+                                    <span className="flex items-center gap-1.5 font-semibold text-[#008254]">
+                                        <Phone className="w-3.5 h-3.5 shrink-0" />
+                                        {formatEthPhone(employee.phone)}
+                                    </span>
                                 )}
                             </div>
                         </div>
