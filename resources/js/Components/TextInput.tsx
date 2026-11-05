@@ -5,6 +5,8 @@ import {
     useImperativeHandle,
     useRef,
 } from 'react';
+import { Input } from '@/Components/ui/input';
+import { cn } from '@/lib/utils';
 
 export default forwardRef(function TextInput(
     {
@@ -28,13 +30,13 @@ export default forwardRef(function TextInput(
     }, [isFocused]);
 
     return (
-        <input
+        <Input
             {...props}
             type={type}
-            className={
-                'rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 ' +
+            className={cn(
+                'rounded-md border-gray-300 shadow-sm focus-visible:border-indigo-500 focus-visible:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus-visible:border-indigo-600 dark:focus-visible:ring-indigo-600',
                 className
-            }
+            )}
             ref={localRef}
         />
     );

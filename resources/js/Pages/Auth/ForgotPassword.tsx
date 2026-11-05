@@ -2,6 +2,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { ArrowLeft } from 'lucide-react';
@@ -38,12 +39,12 @@ export default function ForgotPassword({ status }: { status?: string }) {
                     <InputLabel htmlFor="email" value="Email Address" />
 
                     <div className="mt-1">
-                        <input
+                        <Input
                             id="email"
                             type="email"
                             name="email"
                             value={data.email}
-                            className="block w-full rounded-xs border border-[#d8d9da] bg-white text-sm shadow-sm focus:border-[#008254] focus:ring-[#008254] px-3 py-2"
+                            className="block w-full rounded-xs border-[#d8d9da] bg-white text-sm shadow-sm focus-visible:ring-[#008254] focus-visible:border-[#008254]"
                             autoFocus
                             onChange={(e) => setData('email', e.target.value)}
                         />

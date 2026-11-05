@@ -1,9 +1,10 @@
-import Checkbox from '@/Components/Checkbox';
+import { Checkbox } from '@/Components/ui/checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PasswordInput from '@/Components/PasswordInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 import { Lock, ArrowRight, Phone, Mail } from 'lucide-react';
@@ -152,18 +153,15 @@ export default function Login({
                             className="text-xs font-semibold text-black"
                         />
 
-                        <div className="mt-1 flex rounded-xs shadow-xs border border-[#d8d9da] focus-within:border-[#008254] focus-within:ring-1 focus-within:ring-[#008254] bg-white overflow-hidden">
-                            <span className="inline-flex items-center px-3 bg-[#f7f7f7] border-r border-[#d8d9da] text-xs font-bold text-[#3d4045] select-none tracking-wider">
-                                <span className="mr-1.5 text-sm">🇪🇹</span> +251
-                            </span>
-                            <input
+                        <div className="mt-1">
+                            <Input
                                 id="phone"
                                 type="tel"
                                 name="phone"
                                 inputMode="numeric"
                                 value={phoneNumber}
                                 placeholder="9XXXXXXXX"
-                                className="block w-full border-0 focus:ring-0 text-sm px-3 py-2 text-black placeholder:text-[#9e9e9e] font-medium tracking-wider"
+                                className="border-[#d8d9da] bg-white text-sm text-black placeholder:text-[#9e9e9e] font-medium tracking-wider"
                                 autoComplete="tel-national"
                                 autoFocus
                                 onChange={handlePhoneChange}
@@ -183,17 +181,14 @@ export default function Login({
                             className="text-xs font-semibold text-black"
                         />
 
-                        <div className="mt-1 flex rounded-xs shadow-xs border border-[#d8d9da] focus-within:border-[#008254] focus-within:ring-1 focus-within:ring-[#008254] bg-white overflow-hidden">
-                            <span className="inline-flex items-center pl-3 text-[#64666a]">
-                                <Mail className="w-4 h-4" />
-                            </span>
-                            <input
+                        <div className="mt-1">
+                            <Input
                                 id="email"
                                 type="email"
                                 name="email"
                                 value={emailAddress}
                                 placeholder="Enter your email"
-                                className="block w-full border-0 focus:ring-0 text-sm px-3 py-2 text-black placeholder:text-[#9e9e9e]"
+                                className="border-[#d8d9da] bg-white text-sm text-black placeholder:text-[#9e9e9e]"
                                 autoComplete="username"
                                 autoFocus
                                 onChange={handleEmailChange}
@@ -243,10 +238,8 @@ export default function Login({
                         <Checkbox
                             name="remember"
                             checked={data.remember}
-                            className="rounded-xs text-[#008254] focus:ring-[#008254] border-[#d8d9da] shrink-0"
-                            onChange={(e) =>
-                                setData('remember', (e.target.checked || false) as false)
-                            }
+                            className="rounded-xs text-[#008254] focus-visible:ring-[#008254] border-[#d8d9da] shrink-0 data-[state=checked]:bg-[#008254] data-[state=checked]:text-white"
+                            onCheckedChange={(checked) => setData('remember', checked === true)}
                         />
                         <span className="ms-2 text-xs text-[#595959]">
                             Keep me signed in

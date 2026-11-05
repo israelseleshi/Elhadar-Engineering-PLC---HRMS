@@ -6,6 +6,7 @@ import { formatEthPhone } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import {
     AlertDialog,
@@ -249,7 +250,7 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                                     <Trash2 className="w-4 h-4" />
                                 </button>
                             )}
-                            <input
+                            <Input
                                 type="file"
                                 ref={fileInputRef}
                                 className="hidden"

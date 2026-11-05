@@ -8,6 +8,7 @@ import { Input } from '@/Components/ui/input';
 import EmployeeAvatar from '@/Components/EmployeeAvatar';
 import ViewToggle, { useViewMode } from '@/Components/ViewToggle';
 import { formatDate } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import {
     Table,
     TableBody,
@@ -242,54 +243,24 @@ export default function Index({ newHires, filters, stats, departments, workplace
                         </div>
 
                         <div>
-                            <select
-                                value={departmentId}
-                                onChange={(e) => {
-                                    setDepartmentId(e.target.value);
-                                    handleFilter({ department_id: e.target.value });
-                                }}
-                                className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                            >
-                                <option value="">All Departments ({departments.length})</option>
-                                {departments.map((d) => (
-                                    <option key={d.id} value={d.id}>{d.name}</option>
-                                ))}
-                            </select>
+                            <Select value={departmentId || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setDepartmentId(next); handleFilter({ department_id: next }); }}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder={`All Departments (${departments.length})`} /></SelectTrigger><SelectContent><SelectItem value="__all__">All Departments ({departments.length})</SelectItem>{departments.map((d) => (<SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>))}</SelectContent></Select>
                         </div>
 
                         <div>
-                            <select
-                                value={workPlace}
-                                onChange={(e) => {
-                                    setWorkPlace(e.target.value);
-                                    handleFilter({ work_place: e.target.value });
-                                }}
-                                className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                            >
-                                <option value="">All Workplaces ({workplaces.length > 0 ? workplaces.length : 'All'})</option>
-                                <option value="H.O">Head Office (H.O)</option>
-                                <option value="Project">All Project Sites</option>
-                                {workplaces.filter(w => w !== 'H.O' && w !== 'Head Office').map((w) => (
-                                    <option key={w} value={w}>{w}</option>
-                                ))}
-                            </select>
+                            <Select value={workPlace || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setWorkPlace(next); handleFilter({ work_place: next }); }}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder="All Workplaces" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Workplaces ({workplaces.length > 0 ? workplaces.length : 'All'})</SelectItem><SelectItem value="H.O">Head Office (H.O)</SelectItem><SelectItem value="Project">All Project Sites</SelectItem>{workplaces.filter(w => w !== 'H.O' && w !== 'Head Office').map((w) => (<SelectItem key={w} value={w}>{w}</SelectItem>))}</SelectContent></Select>
                         </div>
 
                         <div className="flex flex-wrap gap-2">
-                            <select
-                                value={status}
-                                onChange={(e) => {
-                                    setStatus(e.target.value);
-                                    handleFilter({ status: e.target.value });
-                                }}
-                                className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                            >
-                                <option value="">All Statuses</option>
-                                <option value="Permanent">Permanent</option>
-                                <option value="Contract">Contract</option>
-                                <option value="Probation">Probation</option>
-                                <option value="Separated">Separated</option>
-                            </select>
+                            <Select value={status || '__all__'} onValueChange={(v) => { const next = v === '__all__' ? '' : v; setStatus(next); handleFilter({ status: next }); }}>
+                                <SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="__all__">All Statuses</SelectItem>
+                                    <SelectItem value="Permanent">Permanent</SelectItem>
+                                    <SelectItem value="Contract">Contract</SelectItem>
+                                    <SelectItem value="Probation">Probation</SelectItem>
+                                    <SelectItem value="Separated">Separated</SelectItem>
+                                </SelectContent>
+                            </Select>
 
                             <Button
                                 onClick={() => handleFilter({ search })}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Input } from '@/Components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -229,7 +230,7 @@ export default function Index({ stats, recentImports }: Props) {
                                 Supports multi-sheet Elhadar HR formats. Max file size: 10MB.
                             </p>
                             <label className="inline-block">
-                                <input
+                                <Input
                                     type="file"
                                     accept=".xlsx,.xls,.csv"
                                     onChange={handleFileChange}

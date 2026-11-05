@@ -14,6 +14,7 @@ import {
     DialogFooter,
 } from '@/Components/ui/dialog';
 import ViewToggle, { useViewMode } from '@/Components/ViewToggle';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { 
     Table, 
     TableBody, 
@@ -140,21 +141,13 @@ export default function Index({ records, filters, stats, employees }: Props) {
                                 />
                             </div>
 
-                            <select
-                                value={impactScore}
-                                onChange={(e) => {
-                                    setImpactScore(e.target.value);
-                                    handleFilter({ impact_score: e.target.value });
-                                }}
-                                className="h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                            >
-                                <option value="">All Impact Ratings</option>
-                                <option value="5">Score 5: Exceptional Impact</option>
-                                <option value="4">Score 4: High Impact</option>
-                                <option value="3">Score 3: Moderate Impact</option>
-                                <option value="2">Score 2: Minimal Impact</option>
-                                <option value="1">Score 1: Low Impact</option>
-                            </select>
+                            <Select value={impactScore || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setImpactScore(next); handleFilter({ impact_score: next }); }}><SelectTrigger className="h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder="All Impact Ratings" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Impact Ratings</SelectItem><option value="">All Impact Ratings</option>
+                                <SelectItem value="5">Score 5: Exceptional Impact</SelectItem>
+                                <SelectItem value="4">Score 4: High Impact</SelectItem>
+                                <SelectItem value="3">Score 3: Moderate Impact</SelectItem>
+                                <SelectItem value="2">Score 2: Minimal Impact</SelectItem>
+                                <SelectItem value="1">Score 1: Low Impact</SelectItem>
+                            </SelectContent></Select>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
@@ -342,18 +335,7 @@ export default function Index({ records, filters, stats, employees }: Props) {
                             <label className="block text-xs font-bold text-black mb-1">
                                 Employee Candidate <span className="text-[#de2828]">*</span>
                             </label>
-                            <select
-                                required
-                                value={data.employee_id}
-                                onChange={(e) => setData('employee_id', e.target.value)}
-                                className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                            >
-                                {employees.map((emp) => (
-                                    <option key={emp.id} value={emp.id}>
-                                        {emp.file_no} — {emp.full_name}
-                                    </option>
-                                ))}
-                            </select>
+                            <Select value={String(data.employee_id)} onValueChange={(v) => setData('employee_id', v)}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder="Select employee" /></SelectTrigger><SelectContent>{employees.map((emp) => (<SelectItem key={emp.id} value={String(emp.id)}>{emp.file_no} — {emp.full_name}</SelectItem>))}</SelectContent></Select>
                         </div>
 
                         <div>
@@ -398,17 +380,12 @@ export default function Index({ records, filters, stats, employees }: Props) {
                                 <label className="block text-xs font-bold text-black mb-1">
                                     Performance Impact (1-5)
                                 </label>
-                                <select
-                                    value={data.performance_impact_score}
-                                    onChange={(e) => setData('performance_impact_score', e.target.value)}
-                                    className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                                >
-                                    <option value="5">5 - Transformational</option>
-                                    <option value="4">4 - High Productivity Gain</option>
-                                    <option value="3">3 - Moderate Standard</option>
-                                    <option value="2">2 - Basic Compliance</option>
-                                    <option value="1">1 - Minimal Impact</option>
-                                </select>
+                                <Select value={String(data.performance_impact_score)} onValueChange={(v) => setData('performance_impact_score', v)}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="5">5 - Transformational</SelectItem>
+                                    <SelectItem value="4">4 - High Productivity Gain</SelectItem>
+                                    <SelectItem value="3">3 - Moderate Standard</SelectItem>
+                                    <SelectItem value="2">2 - Basic Compliance</SelectItem>
+                                    <SelectItem value="1">1 - Minimal Impact</SelectItem>
+                                </SelectContent></Select>
                             </div>
                         </div>
 

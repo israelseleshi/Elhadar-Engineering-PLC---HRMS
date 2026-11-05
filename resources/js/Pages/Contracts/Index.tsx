@@ -4,6 +4,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { Textarea } from '@/Components/ui/textarea';
 import { Input } from '@/Components/ui/input';
 import {
     Dialog,
@@ -451,12 +452,12 @@ export default function Index({ contracts, filters, stats }: Props) {
                             <label className="block text-xs font-bold text-black mb-1">
                                 Summary Terms & Conditions
                             </label>
-                            <textarea
+                            <Textarea
                                 value={data.terms_summary}
                                 onChange={(e) => setData('terms_summary', e.target.value)}
                                 rows={2}
                                 placeholder="Special project site obligations, perdiem, or responsibilities..."
-                                className="w-full rounded-xs border border-[#d8d9da] bg-[#f7f7f7] p-2.5 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
+                                className="w-full rounded-xs border border-[#d8d9da] bg-[#f7f7f7] p-2.5 text-xs text-[#3d4045] focus-visible:ring-[#008254]"
                             />
                         </div>
 

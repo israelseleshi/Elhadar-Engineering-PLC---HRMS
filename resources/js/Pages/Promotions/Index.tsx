@@ -4,8 +4,10 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
+import { Textarea } from '@/Components/ui/textarea';
 import ViewToggle, { useViewMode } from '@/Components/ViewToggle';
+import { Input } from '@/Components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { 
     Table, 
     TableBody, 
@@ -351,28 +353,7 @@ export default function Index({ promotions, filters, stats, activeEmployees }: P
                                 <label className="block text-xs font-bold text-black mb-1">
                                     Promoted Employee <span className="text-[#de2828]">*</span>
                                 </label>
-                                <select
-                                    required
-                                    value={data.employee_id}
-                                    onChange={(e) => {
-                                        setData('employee_id', e.target.value);
-                                        const found = activeEmployees.find(emp => String(emp.id) === e.target.value);
-                                        if (found && found.current_salary) {
-                                            setData(prev => ({
-                                                ...prev,
-                                                employee_id: e.target.value,
-                                                new_basic_salary: String(found.current_salary?.basic_salary ? found.current_salary.basic_salary + 2000 : ''),
-                                            }));
-                                        }
-                                    }}
-                                    className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                                >
-                                    {activeEmployees.map((emp) => (
-                                        <option key={emp.id} value={emp.id}>
-                                            {emp.file_no} — {emp.full_name} ({emp.position})
-                                        </option>
-                                    ))}
-                                </select>
+                                <Select value={String(data.employee_id)} onValueChange={(v) => { setData('employee_id', v); const found = activeEmployees.find(emp => String(emp.id) === v); if (found?.current_salary) { setData(prev => ({ ...prev, employee_id: v, new_basic_salary: String(found.current_salary?.basic_salary ? found.current_salary.basic_salary + 2000 : ''), })); } }}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder="Select employee" /></SelectTrigger><SelectContent>{activeEmployees.map((emp) => (<SelectItem key={emp.id} value={String(emp.id)}>{emp.file_no} — {emp.full_name} ({emp.position})</SelectItem>))}</SelectContent></Select>
                             </div>
 
                             {selectedEmployeeObj && (
@@ -473,12 +454,12 @@ export default function Index({ promotions, filters, stats, activeEmployees }: P
                                 <label className="block text-xs font-bold text-black mb-1">
                                     Promotional Remarks / Executive Resolution
                                 </label>
-                                <textarea
+                                <Textarea
                                     value={data.remarks}
                                     onChange={(e) => setData('remarks', e.target.value)}
                                     rows={2}
                                     placeholder="Approved during Q3 performance appraisal review..."
-                                    className="w-full rounded-xs border border-[#d8d9da] bg-[#f7f7f7] p-2.5 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
+                                    className="w-full rounded-xs border border-[#d8d9da] bg-[#f7f7f7] p-2.5 text-xs text-[#3d4045] focus-visible:ring-[#008254]"
                                 />
                             </div>
 

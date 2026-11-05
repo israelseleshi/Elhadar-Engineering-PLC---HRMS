@@ -7,6 +7,8 @@ import {
     useState,
 } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { Input } from '@/Components/ui/input';
+import { cn } from '@/lib/utils';
 
 export default forwardRef(function PasswordInput(
     {
@@ -32,13 +34,13 @@ export default forwardRef(function PasswordInput(
 
     return (
         <div className="relative">
-            <input
+            <Input
                 {...props}
                 type={visible ? 'text' : 'password'}
-                className={
-                    'block w-full rounded-xs border border-[#d8d9da] bg-white pr-10 text-sm shadow-sm focus:border-[#008254] focus:ring-[#008254] ' +
+                className={cn(
+                    'block w-full rounded-xs border-[#d8d9da] bg-white pr-10 text-sm shadow-sm focus-visible:ring-[#008254] focus-visible:border-[#008254]',
                     className
-                }
+                )}
                 ref={localRef}
             />
             <button

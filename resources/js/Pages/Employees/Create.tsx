@@ -3,6 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
+import { Textarea } from '@/Components/ui/textarea';
 import { Input } from '@/Components/ui/input';
 import {
     Select,
@@ -235,30 +236,14 @@ export default function Create({ departments }: Props) {
                                     <label className="block text-xs font-bold text-black mb-1">
                                         Gender <span className="text-[#de2828]">*</span>
                                     </label>
-                                    <select
-                                        value={data.gender}
-                                        onChange={(e) => setData('gender', e.target.value)}
-                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                                    >
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                    </select>
+                                    <Select value={data.gender} onValueChange={(v) => setData('gender', v)}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">Male</SelectItem><SelectItem value="Female">Female</SelectItem></SelectContent></Select>
                                 </div>
 
                                 <div>
                                     <label className="block text-xs font-bold text-black mb-1">
                                         Marital Status
                                     </label>
-                                    <select
-                                        value={data.marital_status}
-                                        onChange={(e) => setData('marital_status', e.target.value)}
-                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                                    >
-                                        <option value="Single">Single</option>
-                                        <option value="Married">Married</option>
-                                        <option value="Divorced">Divorced</option>
-                                        <option value="Widowed">Widowed</option>
-                                    </select>
+                                    <Select value={data.marital_status} onValueChange={(v) => setData('marital_status', v)}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Single">Single</SelectItem><SelectItem value="Married">Married</SelectItem><SelectItem value="Divorced">Divorced</SelectItem><SelectItem value="Widowed">Widowed</SelectItem></SelectContent></Select>
                                 </div>
                             </div>
 
@@ -439,16 +424,7 @@ export default function Create({ departments }: Props) {
                                     <label className="block text-xs font-bold text-black mb-1">
                                         Department <span className="text-[#de2828]">*</span>
                                     </label>
-                                    <select
-                                        required
-                                        value={data.department_id}
-                                        onChange={(e) => setData('department_id', e.target.value)}
-                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                                    >
-                                        {departments.map((dept) => (
-                                            <option key={dept.id} value={dept.id}>{dept.name}</option>
-                                        ))}
-                                    </select>
+                                    <Select value={String(data.department_id)} onValueChange={(v) => setData('department_id', v)}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder="Select department" /></SelectTrigger><SelectContent>{departments.map((dept) => (<SelectItem key={dept.id} value={String(dept.id)}>{dept.name}</SelectItem>))}</SelectContent></Select>
                                 </div>
 
                                 <div>
@@ -471,43 +447,21 @@ export default function Create({ departments }: Props) {
                                     <label className="block text-xs font-bold text-black mb-1">
                                         Work Place <span className="text-[#de2828]">*</span>
                                     </label>
-                                    <select
-                                        value={data.work_place}
-                                        onChange={(e) => setData('work_place', e.target.value)}
-                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                                    >
-                                        <option value="Project">Project Site</option>
-                                        <option value="Head Office">Head Office (H.O)</option>
-                                    </select>
+                                    <Select value={data.work_place} onValueChange={(v) => setData('work_place', v)}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Project">Project Site</SelectItem><SelectItem value="Head Office">Head Office (H.O)</SelectItem></SelectContent></Select>
                                 </div>
 
                                 <div>
                                     <label className="block text-xs font-bold text-black mb-1">
                                         Employment Classification <span className="text-[#de2828]">*</span>
                                     </label>
-                                    <select
-                                        value={data.employment_type}
-                                        onChange={(e) => setData('employment_type', e.target.value)}
-                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                                    >
-                                        <option value="Non-Managerial">Non-Managerial (60 Working Days Probation)</option>
-                                        <option value="Managerial">Managerial (90 Calendar Days Probation)</option>
-                                    </select>
+                                    <Select value={data.employment_type} onValueChange={(v) => setData('employment_type', v)}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Non-Managerial">Non-Managerial (60 Working Days Probation)</SelectItem><SelectItem value="Managerial">Managerial (90 Calendar Days Probation)</SelectItem></SelectContent></Select>
                                 </div>
 
                                 <div>
                                     <label className="block text-xs font-bold text-black mb-1">
                                         Contract Model <span className="text-[#de2828]">*</span>
                                     </label>
-                                    <select
-                                        value={data.contract_type}
-                                        onChange={(e) => setData('contract_type', e.target.value)}
-                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                                    >
-                                        <option value="Permanent">Permanent</option>
-                                        <option value="Contract">Fixed-Term Contract</option>
-                                        <option value="Daily">Daily / Casual</option>
-                                    </select>
+                                    <Select value={data.contract_type} onValueChange={(v) => setData('contract_type', v)}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Permanent">Permanent</SelectItem><SelectItem value="Contract">Fixed-Term Contract</SelectItem><SelectItem value="Daily">Daily / Casual</SelectItem></SelectContent></Select>
                                 </div>
                             </div>
 
@@ -516,15 +470,14 @@ export default function Create({ departments }: Props) {
                                     <label className="block text-xs font-bold text-black mb-1">
                                         Initial Status <span className="text-[#de2828]">*</span>
                                     </label>
-                                    <select
-                                        value={data.status}
-                                        onChange={(e) => setData('status', e.target.value)}
-                                        className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                                    >
-                                        <option value="Probation">Probation (Under Evaluation)</option>
-                                        <option value="Permanent">Permanent (Confirmed)</option>
-                                        <option value="Contract">Fixed Contract</option>
-                                    </select>
+                                <Select value={data.status} onValueChange={(v) => setData('status', v)}>
+                                    <SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Probation">Probation (Under Evaluation)</SelectItem>
+                                        <SelectItem value="Permanent">Permanent (Confirmed)</SelectItem>
+                                        <SelectItem value="Contract">Fixed Contract</SelectItem>
+                                    </SelectContent>
+                                </Select>
                                 </div>
 
                                 <div>
@@ -814,12 +767,12 @@ export default function Create({ departments }: Props) {
 
                             <div className="pt-2 border-t border-[#ebebec]">
                                 <label className="block text-xs font-bold text-black mb-1">Remarks &amp; Onboarding Notes (Section 8)</label>
-                                <textarea
+                                <Textarea
                                     value={data.remarks}
                                     onChange={(e) => setData('remarks', e.target.value)}
                                     rows={2}
                                     placeholder="Enter any onboarding remarks or statutory notes..."
-                                    className="w-full p-2.5 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
+                                    className="w-full p-2.5 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045] focus-visible:ring-[#008254]"
                                 />
                             </div>
                         </div>

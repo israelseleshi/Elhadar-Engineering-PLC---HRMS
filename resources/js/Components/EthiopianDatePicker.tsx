@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Calendar, Globe } from 'lucide-react';
 
 interface Props {
@@ -157,26 +158,28 @@ export default function EthiopianDatePicker({
                 <div className="space-y-1">
                     <div className="grid grid-cols-3 gap-2">
                         <div>
-                            <select
-                                value={ecMonth}
-                                onChange={(e) => handleEcChange(ecYear, e.target.value, ecDay)}
-                                className="w-full h-10 border border-[#d8d9da] rounded-xs text-xs px-2 bg-[#f7f7f7]"
-                            >
-                                {ETHIOPIAN_MONTHS.map((m) => (
-                                    <option key={m.num} value={m.num}>{m.name}</option>
-                                ))}
-                            </select>
+                            <Select value={String(ecMonth)} onValueChange={(v) => handleEcChange(ecYear, v, ecDay)}>
+                                <SelectTrigger className="h-10 border-[#d8d9da] rounded-xs text-xs bg-[#f7f7f7]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {ETHIOPIAN_MONTHS.map((m) => (
+                                        <SelectItem key={m.num} value={String(m.num)}>{m.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div>
-                            <select
-                                value={ecDay}
-                                onChange={(e) => handleEcChange(ecYear, ecMonth, e.target.value)}
-                                className="w-full h-10 border border-[#d8d9da] rounded-xs text-xs px-2 bg-[#f7f7f7]"
-                            >
-                                {Array.from({ length: parseInt(ecMonth, 10) === 13 ? 6 : 30 }, (_, i) => i + 1).map((d) => (
-                                    <option key={d} value={d}>Day {d}</option>
-                                ))}
-                            </select>
+                            <Select value={String(ecDay)} onValueChange={(v) => handleEcChange(ecYear, ecMonth, v)}>
+                                <SelectTrigger className="h-10 border-[#d8d9da] rounded-xs text-xs bg-[#f7f7f7]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Array.from({ length: parseInt(ecMonth, 10) === 13 ? 6 : 30 }, (_, i) => i + 1).map((d) => (
+                                        <SelectItem key={d} value={String(d)}>Day {d}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div>
                             <Input

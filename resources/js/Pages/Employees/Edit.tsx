@@ -626,7 +626,7 @@ export default function Edit({ employee, departments }: Props) {
                                                 <span>Delete Photo</span>
                                             </Button>
                                         )}
-                                        <input
+                                        <Input
                                             type="file"
                                             ref={fileInputRef}
                                             className="hidden"

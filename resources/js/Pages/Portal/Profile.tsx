@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Com
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Textarea } from '@/Components/ui/textarea';
 import { Input } from '@/Components/ui/input';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import {
     Dialog,
     DialogContent,
@@ -263,7 +265,7 @@ export default function Profile({ employee, tenure, annualLeaveEntitlement, reti
                                     <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                             )}
-                            <input
+                            <Input
                                 type="file"
                                 ref={fileInputRef}
                                 className="hidden"
@@ -1128,66 +1130,26 @@ export default function Profile({ employee, tenure, annualLeaveEntitlement, reti
                             <label className="block text-xs font-bold text-black mb-1">
                                 Field with Discrepancy
                             </label>
-                            <select
-                                value={data.field_name}
-                                onChange={(e) => setData('field_name', e.target.value)}
-                                className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                            >
-                                <optgroup label="Personal & Identity">
-                                    <option value="Full Name">Full Name</option>
-                                    <option value="Gender">Gender</option>
-                                    <option value="DOB (E.C)">Date of Birth (E.C)</option>
-                                    <option value="DOB (G.C)">Date of Birth (G.C)</option>
-                                    <option value="Marital Status">Marital Status</option>
-                                    <option value="Phone Number">Phone Number</option>
-                                    <option value="Email Address">Email Address</option>
-                                </optgroup>
-                                <optgroup label="Residence & Emergency">
-                                    <option value="Region">Region</option>
-                                    <option value="City">City / Town</option>
-                                    <option value="Sub-City">Sub-City</option>
-                                    <option value="Woreda">Woreda</option>
-                                    <option value="House No">House Number</option>
-                                    <option value="Emergency Contact Name">Emergency Contact Name</option>
-                                    <option value="Emergency Contact Relationship">Emergency Contact Relationship</option>
-                                    <option value="Emergency Contact Phone">Emergency Contact Phone</option>
-                                </optgroup>
-                                <optgroup label="Pension, Tax & Banking">
-                                    <option value="POESSA Pension No">POESSA Pension No</option>
-                                    <option value="PSSSA Pension No">PSSSA Pension No</option>
-                                    <option value="Social Security Scheme No">Social Security Scheme No</option>
-                                    <option value="Tax ID (TIN)">Tax ID (TIN)</option>
-                                    <option value="Commercial Bank Name">Commercial Bank Name</option>
-                                    <option value="Commercial Bank Account">Commercial Bank Account</option>
-                                </optgroup>
-                                <optgroup label="Education & Credentials">
-                                    <option value="Education Attainment Level">Education Attainment Level</option>
-                                    <option value="Institution / University">Institution / University</option>
-                                    <option value="Graduation Year (E.C.)">Graduation Year (E.C.)</option>
-                                    <option value="Professional License">Professional License / Certificate</option>
-                                    <option value="Cost Sharing Obligation Status">Cost Sharing Obligation Status</option>
-                                </optgroup>
-                                <optgroup label="Operations & Deployment">
-                                    <option value="Position Title">Position Title</option>
-                                    <option value="Department">Department</option>
-                                    <option value="Workplace / Deployment Site">Workplace / Deployment Site</option>
-                                    <option value="Vehicle Plate Number">Vehicle Plate Number</option>
-                                    <option value="Company Experience">Company Experience</option>
-                                    <option value="Previous Experience">Previous Relevant Experience</option>
-                                </optgroup>
-                                <optgroup label="Compensation & Allowances">
-                                    <option value="Basic Salary">Basic Salary</option>
-                                    <option value="Responsibility Allowance">Responsibility Allowance</option>
-                                    <option value="Hardship Allowance">Hardship Allowance</option>
-                                    <option value="Desert Allowance">Desert Allowance</option>
-                                    <option value="Daily / Per Diem Allowance">Daily / Per Diem Allowance</option>
-                                    <option value="Transportation / Fuel Allowance">Transportation / Fuel Allowance</option>
-                                    <option value="Housing Allowance">Housing Allowance</option>
-                                </optgroup>
-                                <optgroup label="General">
-                                    <option value="Other">Other Information</option>
-                                </optgroup>
-                            </select>
+                            <Select value={data.field_name} onValueChange={(v) => setData('field_name', v)}>
+                                <SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder="Select field" /></SelectTrigger>
+                                <SelectContent>
+                                <SelectGroup><SelectLabel>Personal &amp; Identity</SelectLabel>
+                                    <SelectItem value="Full Name">Full Name</SelectItem><SelectItem value="Gender">Gender</SelectItem><SelectItem value="DOB (E.C)">Date of Birth (E.C)</SelectItem><SelectItem value="DOB (G.C)">Date of Birth (G.C)</SelectItem><SelectItem value="Marital Status">Marital Status</SelectItem><SelectItem value="Phone Number">Phone Number</SelectItem><SelectItem value="Email Address">Email Address</SelectItem>
+                                </SelectGroup>
+                                <SelectGroup><SelectLabel>Residence &amp; Emergency</SelectLabel>
+                                    <SelectItem value="Region / City">Region / City / Woreda</SelectItem><SelectItem value="Emergency Contact Name">Emergency Contact Name</SelectItem><SelectItem value="Emergency Contact Phone">Emergency Contact Phone</SelectItem>
+                                </SelectGroup>
+                                <SelectGroup><SelectLabel>Education &amp; Qualifications</SelectLabel>
+                                    <SelectItem value="Education Attainment">Education Attainment</SelectItem><SelectItem value="Institution">Institution</SelectItem><SelectItem value="Graduation Year">Graduation Year (E.C)</SelectItem><SelectItem value="Professional License">Professional License</SelectItem>
+                                </SelectGroup>
+                                <SelectGroup><SelectLabel>Employment &amp; Experience</SelectLabel>
+                                    <SelectItem value="Department">Department</SelectItem><SelectItem value="Job Title">Job Title</SelectItem><SelectItem value="Work Place">Work Place</SelectItem><SelectItem value="Employment Date">Employment Date</SelectItem><SelectItem value="Previous Experience">Previous Experience</SelectItem>
+                                </SelectGroup>
+                                <SelectGroup><SelectLabel>Financial &amp; Legal IDs</SelectLabel>
+                                    <SelectItem value="TIN Number">TIN Number</SelectItem><SelectItem value="Bank Name">Bank Name</SelectItem><SelectItem value="Commercial Bank Account">Commercial Bank Account</SelectItem><SelectItem value="Social Security No">Social Security No</SelectItem>
+                                </SelectGroup>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div>
@@ -1222,12 +1184,12 @@ export default function Profile({ employee, tenure, annualLeaveEntitlement, reti
                             <label className="block text-xs font-bold text-black mb-1">
                                 Explanation / Supporting Details
                             </label>
-                            <textarea
+                            <Textarea
                                 value={data.explanation}
                                 onChange={(e) => setData('explanation', e.target.value)}
                                 rows={3}
                                 placeholder="Provide context or document reference for HR verification..."
-                                className="w-full rounded-xs border border-[#d8d9da] bg-[#f7f7f7] p-2.5 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
+                                className="w-full rounded-xs border border-[#d8d9da] bg-[#f7f7f7] p-2.5 text-xs text-[#3d4045] focus-visible:ring-[#008254]"
                             />
                         </div>
 

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Calendar } from '@/Components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { cn } from '@/lib/utils';
@@ -242,19 +243,17 @@ export default function Index({ auditLogs, filters, stats, distinctActions }: Pr
                         </div>
 
                         <div>
-                            <select
-                                value={action}
-                                onChange={(e) => {
-                                    setAction(e.target.value);
-                                    handleFilter({ action: e.target.value });
-                                }}
-                                className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                            >
-                                <option value="">All Audit Actions ({distinctActions.length})</option>
-                                {distinctActions.map((act) => (
-                                    <option key={act} value={act}>{act}</option>
-                                ))}
-                            </select>
+                            <Select value={action || '__all__'} onValueChange={(v) => { const next = v === '__all__' ? '' : v; setAction(next); handleFilter({ action: next }); }}>
+                                <SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]">
+                                    <SelectValue placeholder={`All Audit Actions (${distinctActions.length})`} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="__all__">All Audit Actions ({distinctActions.length})</SelectItem>
+                                    {distinctActions.map((act) => (
+                                        <SelectItem key={act} value={act}>{act}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div>

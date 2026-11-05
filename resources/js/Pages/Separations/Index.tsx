@@ -4,7 +4,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
+import { Textarea } from '@/Components/ui/textarea';
 import {
     Dialog,
     DialogContent,
@@ -39,6 +39,9 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Input } from '@/Components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 interface SeparationItem {
     id: number;
     separation_type: string;
@@ -203,23 +206,15 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                 />
                             </div>
 
-                            <select
-                                value={separationType}
-                                onChange={(e) => {
-                                    setSeparationType(e.target.value);
-                                    handleFilter({ separation_type: e.target.value });
-                                }}
-                                className="h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                            >
-                                <option value="">All Separation Types</option>
-                                <option value="Resignation">Resignation</option>
-                                <option value="Termination_Without_Cause">Termination Without Cause</option>
-                                <option value="Termination_With_Cause">Termination With Cause</option>
-                                <option value="Layoff">Workforce Layoff</option>
-                                <option value="Retirement">Statutory Retirement</option>
-                                <option value="Probation_Failed">Probation Failed</option>
-                                <option value="Contract_Expired">Contract Expired</option>
-                            </select>
+                            <Select value={separationType || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setSeparationType(next); handleFilter({ separation_type: next }); }}><SelectTrigger className="h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder="All Separation Types" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Separation Types</SelectItem>
+                                <SelectItem value="Resignation">Resignation</SelectItem>
+                                <SelectItem value="Termination_Without_Cause">Termination Without Cause</SelectItem>
+                                <SelectItem value="Termination_With_Cause">Termination With Cause</SelectItem>
+                                <SelectItem value="Layoff">Workforce Layoff</SelectItem>
+                                <SelectItem value="Retirement">Statutory Retirement</SelectItem>
+                                <SelectItem value="Probation_Failed">Probation Failed</SelectItem>
+                                <SelectItem value="Contract_Expired">Contract Expired</SelectItem>
+                            </SelectContent></Select>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
@@ -448,18 +443,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                             <label className="block text-xs font-bold text-black mb-1">
                                 Exiting Employee <span className="text-[#de2828]">*</span>
                             </label>
-                            <select
-                                required
-                                value={data.employee_id}
-                                onChange={(e) => setData('employee_id', e.target.value)}
-                                className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                            >
-                                {activeEmployees.map((emp) => (
-                                    <option key={emp.id} value={emp.id}>
-                                        {emp.file_no} — {emp.full_name}
-                                    </option>
-                                ))}
-                            </select>
+                            <Select value={String(data.employee_id)} onValueChange={(v) => setData('employee_id', v)}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder="Select employee" /></SelectTrigger><SelectContent>{activeEmployees.map((emp) => (<SelectItem key={emp.id} value={String(emp.id)}>{emp.file_no} — {emp.full_name}</SelectItem>))}</SelectContent></Select>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
@@ -467,20 +451,14 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                 <label className="block text-xs font-bold text-black mb-1">
                                     Separation Type <span className="text-[#de2828]">*</span>
                                 </label>
-                                <select
-                                    required
-                                    value={data.separation_type}
-                                    onChange={(e) => setData('separation_type', e.target.value)}
-                                    className="w-full h-10 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] px-3 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
-                                >
-                                    <option value="Termination_Without_Cause">Termination Without Cause</option>
-                                    <option value="Layoff">Workforce Layoff / Reduction</option>
-                                    <option value="Retirement">Statutory Retirement (Age 60)</option>
-                                    <option value="Resignation">Resignation</option>
-                                    <option value="Termination_With_Cause">Termination With Cause (No Severance)</option>
-                                    <option value="Probation_Failed">Probation Failed (No Severance)</option>
-                                    <option value="Contract_Expired">Contract Expired</option>
-                                </select>
+                                <Select value={data.separation_type} onValueChange={(v) => setData('separation_type', v)}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Termination_Without_Cause">Termination Without Cause</SelectItem>
+                                    <SelectItem value="Layoff">Workforce Layoff / Reduction</SelectItem>
+                                    <SelectItem value="Retirement">Statutory Retirement (Age 60)</SelectItem>
+                                    <SelectItem value="Resignation">Resignation</SelectItem>
+                                    <SelectItem value="Termination_With_Cause">Termination With Cause (No Severance)</SelectItem>
+                                    <SelectItem value="Probation_Failed">Probation Failed (No Severance)</SelectItem>
+                                    <SelectItem value="Contract_Expired">Contract Expired</SelectItem>
+                                </SelectContent></Select>
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-black mb-1">
@@ -500,12 +478,12 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                             <label className="block text-xs font-bold text-black mb-1">
                                 Exit Reason &amp; Reference Notes
                             </label>
-                            <textarea
+                            <Textarea
                                 value={data.reason}
                                 onChange={(e) => setData('reason', e.target.value)}
                                 rows={2}
                                 placeholder="Enter reference memo, board resolution or exit interview notes..."
-                                className="w-full rounded-xs border border-[#d8d9da] bg-[#f7f7f7] p-2.5 text-xs text-[#3d4045] focus:outline-none focus:ring-1 focus:ring-[#008254]"
+                                className="w-full rounded-xs border border-[#d8d9da] bg-[#f7f7f7] p-2.5 text-xs text-[#3d4045] focus-visible:ring-[#008254]"
                             />
                         </div>
 
@@ -545,12 +523,11 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                         )}
 
                         <div className="flex flex-wrap items-center gap-2">
-                            <input
-                                type="checkbox"
+                            <Checkbox
                                 id="severance_paid"
                                 checked={data.severance_paid}
-                                onChange={(e) => setData('severance_paid', e.target.checked)}
-                                className="rounded-xs border-[#d8d9da] text-[#008254] focus:ring-[#008254]"
+                                onCheckedChange={(checked) => setData('severance_paid', checked === true)}
+                                className="rounded-xs border-[#d8d9da] data-[state=checked]:bg-[#008254] data-[state=checked]:text-white"
                             />
                             <label htmlFor="severance_paid" className="text-xs text-black font-medium">
                                 Severance payment has already been disbursed
