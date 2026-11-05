@@ -39,20 +39,39 @@ class PortalController extends Controller
             $employee->load([
                 'department',
                 'currentSalary',
+                'salaries' => fn ($q) => $q->orderByDesc('effective_date'),
                 'leaveBalances' => fn ($q) => $q->orderByDesc('leave_year'),
+                'separation',
+                'promotions',
                 'dataCorrectionReports' => fn ($q) => $q->orderByDesc('created_at'),
             ]);
 
             $tenure = $this->tenureService->calculateTenure($employee);
             $annualLeaveEntitlement = $this->leaveService->calculateAnnualEntitlement($employee);
 
+            if (empty($employee->company_experience) || str_starts_with($employee->company_experience, '=') || str_contains($employee->company_experience, 'DATEDIF') || str_contains($employee->company_experience, 'Year,')) {
+                $employee->company_experience = $tenure['formatted'] ?? '—';
+            }
+            if (empty($employee->total_experience) || str_starts_with($employee->total_experience, '=') || str_contains($employee->total_experience, 'DATEDIF') || str_contains($employee->total_experience, 'Year,')) {
+                $employee->total_experience = $employee->previous_experience
+                    ? "{$employee->previous_experience} + {$employee->company_experience}"
+                    : $employee->company_experience;
+            }
+
             $retirementInfo = null;
             if ($employee->birth_date) {
                 $retDate = $this->retirementService->calculateRetirementDate(Carbon::parse($employee->birth_date));
+                $daysRemaining = (int) Carbon::now()->diffInDays($retDate, false);
+                $isRetired = $daysRemaining <= 0 || $employee->status === 'Retired';
+                $isNear = $this->retirementService->isNearingRetirement(Carbon::parse($employee->birth_date));
+                $statusLabel = $isRetired ? 'Retired' : ($isNear ? 'Nearing Retirement' : 'Active (Not Retired)');
+
                 $retirementInfo = [
                     'retirement_date' => $retDate->toDateString(),
-                    'days_remaining' => Carbon::now()->diffInDays($retDate, false),
-                    'is_near' => $this->retirementService->isNearingRetirement(Carbon::parse($employee->birth_date)),
+                    'days_remaining' => $daysRemaining,
+                    'is_near' => $isNear,
+                    'is_retired' => $isRetired,
+                    'status_label' => $statusLabel,
                 ];
             }
         } else {
