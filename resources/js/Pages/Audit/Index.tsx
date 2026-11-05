@@ -1,10 +1,15 @@
 import { useState } from 'react';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
 import { Head, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import { Calendar } from '@/Components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { cn } from '@/lib/utils';
 import {
     Dialog,
     DialogContent,
@@ -84,6 +89,8 @@ export default function Index({ auditLogs, filters, stats, distinctActions }: Pr
     const [action, setAction] = useState(filters.action || '');
     const [dateFrom, setDateFrom] = useState(filters.date_from || '');
     const [dateTo, setDateTo] = useState(filters.date_to || '');
+    const [fromOpen, setFromOpen] = useState(false);
+    const [toOpen, setToOpen] = useState(false);
 
     const [selectedLog, setSelectedLog] = useState<AuditItem | null>(null);
     const [diffModalOpen, setDiffModalOpen] = useState(false);
@@ -251,29 +258,81 @@ export default function Index({ auditLogs, filters, stats, distinctActions }: Pr
                         </div>
 
                         <div>
-                            <Input
-                                type="date"
-                                placeholder="From Date"
-                                value={dateFrom}
-                                onChange={(e) => {
-                                    setDateFrom(e.target.value);
-                                    handleFilter({ date_from: e.target.value });
-                                }}
-                                className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10 rounded-xs"
-                            />
+                            <Popover open={fromOpen} onOpenChange={setFromOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className={cn(
+                                            'w-full h-10 justify-start text-left font-normal bg-[#f7f7f7] border-[#d8d9da] text-xs rounded-xs hover:bg-[#f7f7f7]',
+                                            !dateFrom && 'text-[#64666a]'
+                                        )}
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4 text-[#64666a]" />
+                                        {dateFrom ? format(new Date(`${dateFrom}T00:00:00`), 'PPP') : 'From date'}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0 bg-white" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        captionLayout="dropdown"
+                                        selected={dateFrom ? new Date(`${dateFrom}T00:00:00`) : undefined}
+                                        onSelect={(d) => {
+                                            const next = d ? format(d, 'yyyy-MM-dd') : '';
+                                            setDateFrom(next);
+                                            handleFilter({ date_from: next });
+                                            setFromOpen(false);
+                                        }}
+                                        autoFocus
+                                    />
+                                    {dateFrom && (
+                                        <div className="p-2 border-t border-[#ebebec]">
+                                            <Button type="button" variant="ghost" size="sm" className="w-full text-xs" onClick={() => { setDateFrom(''); handleFilter({ date_from: '' }); setFromOpen(false); }}>
+                                                Clear
+                                            </Button>
+                                        </div>
+                                    )}
+                                </PopoverContent>
+                            </Popover>
                         </div>
 
                         <div>
-                            <Input
-                                type="date"
-                                placeholder="To Date"
-                                value={dateTo}
-                                onChange={(e) => {
-                                    setDateTo(e.target.value);
-                                    handleFilter({ date_to: e.target.value });
-                                }}
-                                className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10 rounded-xs"
-                            />
+                            <Popover open={toOpen} onOpenChange={setToOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className={cn(
+                                            'w-full h-10 justify-start text-left font-normal bg-[#f7f7f7] border-[#d8d9da] text-xs rounded-xs hover:bg-[#f7f7f7]',
+                                            !dateTo && 'text-[#64666a]'
+                                        )}
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4 text-[#64666a]" />
+                                        {dateTo ? format(new Date(`${dateTo}T00:00:00`), 'PPP') : 'To date'}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0 bg-white" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        captionLayout="dropdown"
+                                        selected={dateTo ? new Date(`${dateTo}T00:00:00`) : undefined}
+                                        onSelect={(d) => {
+                                            const next = d ? format(d, 'yyyy-MM-dd') : '';
+                                            setDateTo(next);
+                                            handleFilter({ date_to: next });
+                                            setToOpen(false);
+                                        }}
+                                        autoFocus
+                                    />
+                                    {dateTo && (
+                                        <div className="p-2 border-t border-[#ebebec]">
+                                            <Button type="button" variant="ghost" size="sm" className="w-full text-xs" onClick={() => { setDateTo(''); handleFilter({ date_to: '' }); setToOpen(false); }}>
+                                                Clear
+                                            </Button>
+                                        </div>
+                                    )}
+                                </PopoverContent>
+                            </Popover>
                         </div>
                     </div>
                 </CardContent>
