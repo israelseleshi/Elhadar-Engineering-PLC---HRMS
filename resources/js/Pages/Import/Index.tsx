@@ -147,7 +147,7 @@ export default function Index({ stats, recentImports }: Props) {
             <Head title="Excel Ingestion & Export - Elhadar Engineering HRMS" />
 
             {/* Top Operational Metrics */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <Card className="border-[#d8d9da] bg-white">
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
@@ -199,7 +199,7 @@ export default function Index({ stats, recentImports }: Props) {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                 {/* Upload & Dry-Run Simulator Card */}
-                <Card className="lg:col-span-2 border-[#d8d9da] bg-white">
+                <Card className="lg:col-span-2 border-[#d8d9da] bg-white min-w-0">
                     <CardHeader className="border-b border-[#ebebec] pb-4">
                         <div className="flex items-center justify-between">
                             <div>
@@ -286,7 +286,7 @@ export default function Index({ stats, recentImports }: Props) {
                         </p>
                     </CardHeader>
                     <CardContent className="p-4 space-y-3">
-                        <div className="p-3 border border-[#d8d9da] rounded-xs hover:border-[#008254] transition-colors flex items-center justify-between bg-[#f7f7f7]/40">
+                        <div className="p-3 border border-[#d8d9da] rounded-xs hover:border-[#008254] transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-[#f7f7f7]/40">
                             <div>
                                 <p className="text-xs font-bold text-black">Complete Staff Master</p>
                                 <p className="text-[11px] text-[#64666a]">All {stats.total_employees} active &amp; historical staff</p>
@@ -298,7 +298,7 @@ export default function Index({ stats, recentImports }: Props) {
                             </a>
                         </div>
 
-                        <div className="p-3 border border-[#d8d9da] rounded-xs hover:border-[#008254] transition-colors flex items-center justify-between bg-[#f7f7f7]/40">
+                        <div className="p-3 border border-[#d8d9da] rounded-xs hover:border-[#008254] transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-[#f7f7f7]/40">
                             <div>
                                 <p className="text-xs font-bold text-black">Permanent Personnel</p>
                                 <p className="text-[11px] text-[#64666a]">{stats.permanent_count} confirmed permanent profiles</p>
@@ -310,7 +310,7 @@ export default function Index({ stats, recentImports }: Props) {
                             </a>
                         </div>
 
-                        <div className="p-3 border border-[#d8d9da] rounded-xs hover:border-[#008254] transition-colors flex items-center justify-between bg-[#f7f7f7]/40">
+                        <div className="p-3 border border-[#d8d9da] rounded-xs hover:border-[#008254] transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-[#f7f7f7]/40">
                             <div>
                                 <p className="text-xs font-bold text-black">Regional Project Sites</p>
                                 <p className="text-[11px] text-[#64666a]">Site engineers, surveyors &amp; foremen</p>
@@ -322,7 +322,7 @@ export default function Index({ stats, recentImports }: Props) {
                             </a>
                         </div>
 
-                        <div className="p-3 border border-[#d8d9da] rounded-xs hover:border-[#008254] transition-colors flex items-center justify-between bg-[#f7f7f7]/40">
+                        <div className="p-3 border border-[#d8d9da] rounded-xs hover:border-[#008254] transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-[#f7f7f7]/40">
                             <div>
                                 <p className="text-xs font-bold text-black">Addis Ababa Head Office</p>
                                 <p className="text-[11px] text-[#64666a]">Corporate executive &amp; admin staff</p>
@@ -372,7 +372,7 @@ export default function Index({ stats, recentImports }: Props) {
                     </div>
 
                     {/* Simulation Metrics Bar */}
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                         <button
                             onClick={() => setActiveTab('new')}
                             className={`p-3 border rounded-xs text-left transition-colors ${

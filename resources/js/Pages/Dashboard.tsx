@@ -520,7 +520,7 @@ export default function Dashboard({
                             </div>
 
                             {/* Legend & Breakdown with Framer Motion */}
-                            <div className="flex flex-col gap-3 w-full sm:w-auto min-w-[200px]">
+                            <div className="flex flex-col gap-3 w-full sm:w-auto sm:min-w-[200px]">
                                 <motion.div 
                                     initial={{ opacity: 0, x: 16 }}
                                     animate={{ opacity: 1, x: 0 }}
@@ -746,7 +746,7 @@ export default function Dashboard({
                             </div>
 
                             {/* Split Breakdown Indicators */}
-                            <div className="grid grid-cols-2 gap-3 mt-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                                 <div className="p-2.5 rounded-md bg-[#effcf8] border border-[#b7ecda] flex flex-col">
                                     <div className="flex items-center gap-1.5">
                                         <span className="w-2.5 h-2.5 rounded-full bg-[#008254] shrink-0" />

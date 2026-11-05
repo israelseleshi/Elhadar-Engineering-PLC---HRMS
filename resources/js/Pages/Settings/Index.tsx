@@ -115,8 +115,8 @@ export default function Index({ groupedSettings }: Props) {
                     const CategoryIcon = getCategoryIcon(category);
                     return (
                         <Card key={category} className="border-[#d8d9da] bg-white">
-                            <CardHeader className="border-b border-[#ebebec] py-4 px-6 bg-[#f7f7f7]/40">
-                                <div className="flex items-center justify-between">
+                            <CardHeader className="border-b border-[#ebebec] py-4 px-4 sm:px-6 bg-[#f7f7f7]/40">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                     <div className="flex items-center gap-2.5">
                                         <div className="w-8 h-8 rounded-xs bg-[#effcf8] text-[#008254] flex items-center justify-center">
                                             <CategoryIcon className="w-4 h-4" />
@@ -136,8 +136,8 @@ export default function Index({ groupedSettings }: Props) {
                                 </div>
                             </CardHeader>
 
-                            <CardContent className="p-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <CardContent className="p-4 sm:p-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                     {items.map((item) => (
                                         <div
                                             key={item.key}
@@ -178,7 +178,7 @@ export default function Index({ groupedSettings }: Props) {
                 })}
 
                 {/* Bottom Sticky Action Bar */}
-                <div className="sticky bottom-4 z-20 p-4 bg-white border border-[#d8d9da] shadow-lg rounded-xs flex items-center justify-between">
+                <div className="sticky bottom-2 sm:bottom-4 z-20 p-3 sm:p-4 bg-white border border-[#d8d9da] shadow-lg rounded-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <span className="text-xs text-[#64666a]">
                         Review parameters carefully before committing changes. All modifications create an immutable audit record.
                     </span>
@@ -186,7 +186,7 @@ export default function Index({ groupedSettings }: Props) {
                     <Button
                         type="submit"
                         disabled={saving}
-                        className="bg-[#008254] hover:bg-[#006a44] text-white font-bold text-xs gap-2 rounded-xs px-6 shadow-sm"
+                        className="w-full sm:w-auto bg-[#008254] hover:bg-[#006a44] text-white font-bold text-xs gap-2 rounded-xs px-6 shadow-sm"
                     >
                         {saving ? (
                             <>

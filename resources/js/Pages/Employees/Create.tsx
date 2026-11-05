@@ -216,7 +216,7 @@ export default function Create({ departments }: Props) {
                                 <CardDescription>Capture official identification and residential address hierarchy</CardDescription>
                             </CardHeader>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-4 pt-2">
                                 <div>
                                     <label className="block text-xs font-bold text-black mb-1">
                                         Full Name (Tripartite) <span className="text-[#de2828]">*</span>
@@ -262,7 +262,7 @@ export default function Create({ departments }: Props) {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-black mb-1">
                                         Educational Attainment
@@ -380,7 +380,7 @@ export default function Create({ departments }: Props) {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-[#ebebec]">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-4 pt-2 border-t border-[#ebebec]">
                                 <div>
                                     <label className="block text-xs font-bold text-black mb-1">Emergency Contact Name</label>
                                     <Input
@@ -420,7 +420,7 @@ export default function Create({ departments }: Props) {
                                 <CardDescription>Establish physical filing code, organizational hierarchy, and contract model</CardDescription>
                             </CardHeader>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-4 pt-2">
                                 <div>
                                     <label className="block text-xs font-bold text-black mb-1">
                                         File Number (Filing Index) <span className="text-[#de2828]">*</span>
@@ -466,7 +466,7 @@ export default function Create({ departments }: Props) {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-black mb-1">
                                         Work Place <span className="text-[#de2828]">*</span>
@@ -511,7 +511,7 @@ export default function Create({ departments }: Props) {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-black mb-1">
                                         Initial Status <span className="text-[#de2828]">*</span>
@@ -746,7 +746,7 @@ export default function Create({ departments }: Props) {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-[#ebebec]">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-4 pt-2 border-t border-[#ebebec]">
                                 <div>
                                     <label className="block text-xs font-bold text-black mb-1">Commercial Bank Name</label>
                                     <Input

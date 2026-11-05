@@ -642,7 +642,7 @@ export default function Edit({ employee, departments }: Props) {
                         </div>
 
                         {/* Fields Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-6">
                             <div>
                                 <Label className="text-sm font-semibold text-black">Company File No *</Label>
                                 <Input
@@ -875,7 +875,7 @@ export default function Edit({ employee, departments }: Props) {
                         </Badge>
                     </CardHeader>
                     <CardContent className="p-6 lg:p-8">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-6">
                             <div>
                                 <Label className="text-sm font-semibold text-black">Assigned Department *</Label>
                                 <Select 
@@ -1107,7 +1107,7 @@ export default function Edit({ employee, departments }: Props) {
                         </div>
 
                         {/* Additional Milestone Dates Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-6 pt-2">
                             <div>
                                 <Label className="text-sm font-semibold text-black">Contract End Date (If Contract)</Label>
                                 <Input
@@ -1188,7 +1188,7 @@ export default function Edit({ employee, departments }: Props) {
                         </Badge>
                     </CardHeader>
                     <CardContent className="p-6 lg:p-8">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-6">
                             <div>
                                 <Label className="text-sm font-semibold text-black">Highest Education Status</Label>
                                 <Input
@@ -1269,7 +1269,7 @@ export default function Edit({ employee, departments }: Props) {
                         </Badge>
                     </CardHeader>
                     <CardContent className="p-6 lg:p-8">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-6">
                             <div>
                                 <Label className="text-sm font-semibold text-black">Previous Outside Experience</Label>
                                 <Input
@@ -1360,7 +1360,7 @@ export default function Edit({ employee, departments }: Props) {
                         </Badge>
                     </CardHeader>
                     <CardContent className="p-6 lg:p-8">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-6">
                             <div>
                                 <Label className="text-sm font-semibold text-black">Bank Institution</Label>
                                 <Input
