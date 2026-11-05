@@ -291,7 +291,7 @@ export default function Index({ auditLogs, filters, stats, distinctActions }: Pr
                                                 {getActionBadge(log.action)}
                                             </TableCell>
                                             <TableCell className="text-xs font-medium text-black">
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex flex-wrap items-center gap-2">
                                                     <div className="w-6 h-6 rounded-full bg-[#008254] text-white flex items-center justify-center text-[10px] font-bold">
                                                         {log.user?.name?.charAt(0) || 'S'}
                                                     </div>
@@ -330,7 +330,7 @@ export default function Index({ auditLogs, filters, stats, distinctActions }: Pr
 
                     {/* Pagination */}
                     {auditLogs.last_page > 1 && (
-                        <div className="p-4 border-t border-[#ebebec] flex items-center justify-between">
+                        <div className="p-4 border-t border-[#ebebec] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <span className="text-xs text-[#64666a]">
                                 Showing {auditLogs.from} to {auditLogs.to} of {auditLogs.total} events
                             </span>

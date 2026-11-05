@@ -44,8 +44,8 @@ export default function FirstPasswordChange({
             <Head title="Change Your Password - Elhadar Engineering HRMS" />
 
             <div className="mb-5">
-                <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="w-4 h-4 text-[#008254]" />
+                <div className="flex items-start sm:items-center gap-2 mb-2">
+                    <AlertTriangle className="w-4 h-4 text-[#008254] shrink-0 mt-0.5 sm:mt-0" />
                     <h2 className="text-xl font-bold text-black tracking-tight">
                         Change Your Password
                     </h2>

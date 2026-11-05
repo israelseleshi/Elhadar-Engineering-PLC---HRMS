@@ -458,11 +458,11 @@ export default function Index({ employees, filters, stats, departments, workplac
 
             {/* Bulk Action Toolbar */}
             {selectedIds.size > 0 && (
-                <div className="mb-4 flex items-center justify-between gap-3 px-4 py-3 bg-[#effcf8] border border-[#b7ecda] rounded-xl animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 bg-[#effcf8] border border-[#b7ecda] rounded-xl animate-in fade-in slide-in-from-top-2 duration-200">
                     <span className="text-sm font-bold text-[#00482f]">
                         {selectedIds.size} employee{selectedIds.size > 1 ? 's' : ''} selected
                     </span>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <Button
                             variant="outline"
                             size="sm"
@@ -793,8 +793,8 @@ export default function Index({ employees, filters, stats, departments, workplac
 
                 {/* Pagination */}
                 {employees.last_page > 1 && (
-                    <div data-tour="pagination" className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex items-center justify-between text-sm text-[#64666a]">
-                        <div className="flex items-center gap-2">
+                    <div data-tour="pagination" className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-[#64666a]">
+                        <div className="flex flex-wrap items-center gap-2">
                             <span className="font-medium text-[#3d4045]">Showing</span>
                             <strong className="text-black">{employees.from || 0}</strong>
                             <span className="text-[#64666a]">to</span>
@@ -874,7 +874,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                                     <Download className="w-3.5 h-3.5" />
                                     Download Sample Template
                                 </a>
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap gap-2">
                                     <Button
                                         type="button"
                                         variant="outline"
@@ -929,8 +929,8 @@ export default function Index({ employees, filters, stats, departments, workplac
                             </div>
 
                             {/* Preview Samples Table */}
-                            <div className="border border-[#d8d9da] rounded-xs overflow-hidden max-h-56 overflow-y-auto">
-                                <table className="w-full text-left text-xs">
+                            <div className="border border-[#d8d9da] rounded-xs overflow-hidden max-h-56 overflow-x-auto overflow-y-auto">
+                                <table className="w-full min-w-[520px] text-left text-xs">
                                     <thead className="bg-[#f7f7f7] text-[#64666a] border-b border-[#d8d9da]">
                                         <tr>
                                             <th className="p-2 font-bold">File no</th>

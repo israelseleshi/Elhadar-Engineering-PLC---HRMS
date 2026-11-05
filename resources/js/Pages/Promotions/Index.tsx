@@ -302,7 +302,7 @@ export default function Index({ promotions, filters, stats, activeEmployees }: P
 
                 {/* Pagination */}
                 {promotions.last_page > 1 && (
-                    <div className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex items-center justify-between text-xs text-[#64666a]">
+                    <div className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#64666a]">
                         <div>
                             Showing <strong>{promotions.from || 0}</strong> to <strong>{promotions.to || 0}</strong> of <strong>{promotions.total}</strong> promotions
                         </div>

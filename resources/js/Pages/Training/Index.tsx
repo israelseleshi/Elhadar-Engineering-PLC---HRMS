@@ -299,7 +299,7 @@ export default function Index({ records, filters, stats, employees }: Props) {
 
                 {/* Pagination */}
                 {records.last_page > 1 && (
-                    <div className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex items-center justify-between text-xs text-[#64666a]">
+                    <div className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#64666a]">
                         <div>
                             Showing <strong>{records.from || 0}</strong> to <strong>{records.to || 0}</strong> of <strong>{records.total}</strong> records
                         </div>

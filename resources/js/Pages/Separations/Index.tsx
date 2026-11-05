@@ -298,7 +298,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <div className="flex items-center justify-end gap-2">
+                                        <div className="flex flex-wrap items-center justify-end gap-2">
                                             {!item.severance_paid && item.severance_amount > 0 && (
                                                 <Button
                                                     onClick={() => handleMarkPaid(item.id)}
@@ -405,7 +405,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
 
                 {/* Pagination */}
                 {separations.last_page > 1 && (
-                    <div className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex items-center justify-between text-xs text-[#64666a]">
+                    <div className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#64666a]">
                         <div>
                             Showing <strong>{separations.from || 0}</strong> to <strong>{separations.to || 0}</strong> of <strong>{separations.total}</strong> records
                         </div>
@@ -544,7 +544,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                             </div>
                         )}
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             <input
                                 type="checkbox"
                                 id="severance_paid"

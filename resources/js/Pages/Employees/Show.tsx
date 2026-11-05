@@ -221,7 +221,7 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
 
             {/* Header Profile Dossier Card */}
             <Card className="border-[#d8d9da] bg-white mb-6 overflow-hidden">
-                <div className="p-6 lg:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="p-4 sm:p-6 lg:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                         <div className="relative group shrink-0">
                             <EmployeeAvatar
@@ -313,11 +313,11 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                     </div>
 
                     <div className="flex flex-col items-end gap-2.5 w-full md:w-auto">
-                        <div className="flex flex-col items-end w-full md:w-auto p-4 rounded-lg bg-[#f7f7f7] border border-[#ebebec]">
+                        <div className="flex flex-col items-start sm:items-end w-full md:w-auto p-4 rounded-lg bg-[#f7f7f7] border border-[#ebebec]">
                             <span className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
                                 Total Monthly Compensation
                             </span>
-                            <span className="text-2xl font-bold text-[#008254] mt-0.5">
+                            <span className="text-xl sm:text-2xl font-bold text-[#008254] mt-0.5 break-words">
                                 {formatCurrency(salary?.total_salary || salary?.basic_salary)}
                             </span>
                             <span className="text-[11px] text-[#64666a]">
@@ -334,7 +334,7 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                 </div>
 
                 {/* Statutory Fast-Facts Ribbon (NerdWallet Comparison Spec) */}
-                <div className="grid grid-cols-2 md:grid-cols-4 border-t border-[#ebebec] bg-[#effcf8]/40 divide-y md:divide-y-0 md:divide-x divide-[#ebebec]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 border-t border-[#ebebec] bg-[#effcf8]/40 divide-y sm:divide-y-0 sm:divide-x divide-[#ebebec]">
                     <div className="p-4">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-[#64666a] block">
                             Tenure of Service
@@ -389,7 +389,7 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                         <span className="text-[11px] font-bold uppercase tracking-wider text-[#64666a] block">
                             Banking & Payroll
                         </span>
-                        <span className="text-base font-bold text-black mt-1 block truncate">
+                        <span className="text-base font-bold text-black mt-1 block break-words">
                             {employee.bank_account_no || 'No account logged'}
                         </span>
                         <span className="text-[11px] text-[#008254] font-medium block">
@@ -401,7 +401,7 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
 
             {/* Section 1 to 7 Master List Tabs */}
             <Tabs defaultValue="section1" className="w-full">
-                <TabsList className="overflow-x-auto flex-nowrap justify-start gap-2 sm:gap-4 border-b border-[#ebebec] scrollbar-thin mb-4 pb-0">
+                <TabsList className="w-full overflow-x-auto flex-nowrap justify-start gap-2 sm:gap-4 border-b border-[#ebebec] scrollbar-thin mb-4 pb-0">
                     <TabsTrigger value="section1" className="shrink-0 text-xs font-semibold px-2 sm:px-3 py-2.5">
                         1. Personal Identification
                     </TabsTrigger>

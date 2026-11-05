@@ -7,10 +7,10 @@ export default function Guest({ children }: PropsWithChildren) {
     return (
         <div className="min-h-screen bg-[#faf9f5] flex flex-col justify-between text-[#0a0b0d] selection:bg-[#008254] selection:text-white">
             {/* Top Statutory Compliance Ribbon */}
-            <div className="bg-[#008254] text-white py-1.5 px-4 sm:px-8 text-xs font-semibold flex items-center justify-between border-b border-[#006642]">
-                <div className="flex items-center space-x-2">
-                    <ShieldCheck className="h-3.5 w-3.5 text-[#e8fdac]" />
-                    <span className="font-semibold">El-Hadar Engineering PLC</span>
+            <div className="bg-[#008254] text-white py-1.5 px-3 sm:px-8 text-[11px] sm:text-xs font-semibold flex flex-wrap items-center justify-between gap-2 border-b border-[#006642]">
+                <div className="flex items-center gap-2 min-w-0">
+                    <ShieldCheck className="h-3.5 w-3.5 text-[#e8fdac] shrink-0" />
+                    <span className="font-semibold truncate">El-Hadar Engineering PLC</span>
                     <span className="text-[#b7ecda] hidden sm:inline">| Employee Portal</span>
                 </div>
             </div>

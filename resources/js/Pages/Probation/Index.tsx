@@ -176,7 +176,7 @@ export default function Index({ candidates, filters, stats }: Props) {
                             />
                         </div>
 
-                        <div className="flex gap-2 w-full sm:w-auto">
+                        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                             <div className="inline-flex rounded-xs border border-[#d8d9da] p-1 bg-[#f7f7f7]">
                                 <button
                                     onClick={() => {
@@ -288,7 +288,7 @@ export default function Index({ candidates, filters, stats }: Props) {
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <div className="flex items-center justify-end gap-2">
+                                        <div className="flex flex-wrap items-center justify-end gap-2">
                                             {candidate.status === 'Probation' && (
                                                 <Button
                                                     onClick={() => handleConfirm(candidate)}
@@ -319,7 +319,7 @@ export default function Index({ candidates, filters, stats }: Props) {
 
                 {/* Pagination */}
                 {candidates.last_page > 1 && (
-                    <div className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex items-center justify-between text-xs text-[#64666a]">
+                    <div className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#64666a]">
                         <div>
                             Showing <strong>{candidates.from || 0}</strong> to <strong>{candidates.to || 0}</strong> of <strong>{candidates.total}</strong> candidates
                         </div>

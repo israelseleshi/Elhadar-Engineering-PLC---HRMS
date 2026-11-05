@@ -97,7 +97,7 @@ export default function DeleteUserForm({
                             onChange={(e) =>
                                 setData('password', e.target.value)
                             }
-                            className="mt-1 block w-3/4"
+                            className="mt-1 block w-full sm:w-3/4"
                             isFocused
                             placeholder="Password"
                         />
@@ -108,12 +108,12 @@ export default function DeleteUserForm({
                         />
                     </div>
 
-                    <div className="mt-6 flex justify-end">
-                        <SecondaryButton onClick={closeModal}>
+                    <div className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3">
+                        <SecondaryButton className="w-full sm:w-auto justify-center" onClick={closeModal}>
                             Cancel
                         </SecondaryButton>
 
-                        <DangerButton className="ms-3" disabled={processing}>
+                        <DangerButton className="w-full sm:w-auto justify-center sm:ms-0" disabled={processing}>
                             Delete Account
                         </DangerButton>
                     </div>

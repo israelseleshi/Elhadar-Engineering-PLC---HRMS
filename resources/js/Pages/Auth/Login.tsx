@@ -114,30 +114,32 @@ export default function Login({
             )}
 
             {/* Credential Type Selector Tabs */}
-            <div className="flex p-1 bg-[#f4f5f6] border border-[#e5e7eb] rounded-xs mb-5">
+            <div className="flex p-1 bg-[#f4f5f6] border border-[#e5e7eb] rounded-xs mb-5 gap-1">
                 <button
                     type="button"
                     onClick={() => switchMethod('phone')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-xs transition-all cursor-pointer ${
+                    className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 sm:gap-2 px-2 py-2 text-[11px] sm:text-xs font-semibold rounded-xs transition-all cursor-pointer ${
                         authMethod === 'phone'
                             ? 'bg-white text-[#008254] shadow-xs font-bold border border-[#d8d9da]'
                             : 'text-[#64666a] hover:text-black'
                     }`}
                 >
-                    <Phone className="w-3.5 h-3.5" />
-                    <span>Phone number</span>
+                    <Phone className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">Phone</span>
+                    <span className="hidden sm:inline">number</span>
                 </button>
                 <button
                     type="button"
                     onClick={() => switchMethod('email')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-xs transition-all cursor-pointer ${
+                    className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 sm:gap-2 px-2 py-2 text-[11px] sm:text-xs font-semibold rounded-xs transition-all cursor-pointer ${
                         authMethod === 'email'
                             ? 'bg-white text-[#008254] shadow-xs font-bold border border-[#d8d9da]'
                             : 'text-[#64666a] hover:text-black'
                     }`}
                 >
-                    <Mail className="w-3.5 h-3.5" />
-                    <span>Email address</span>
+                    <Mail className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">Email</span>
+                    <span className="hidden sm:inline">address</span>
                 </button>
             </div>
 
@@ -236,12 +238,12 @@ export default function Login({
                     <InputError message={errors.password} className="mt-1.5 text-xs text-[#de2828]" />
                 </div>
 
-                <div className="flex items-center justify-between pt-1">
-                    <label className="flex items-center cursor-pointer">
+                <div className="flex items-center justify-between gap-3 flex-wrap pt-1">
+                    <label className="flex items-center cursor-pointer min-w-0">
                         <Checkbox
                             name="remember"
                             checked={data.remember}
-                            className="rounded-xs text-[#008254] focus:ring-[#008254] border-[#d8d9da]"
+                            className="rounded-xs text-[#008254] focus:ring-[#008254] border-[#d8d9da] shrink-0"
                             onChange={(e) =>
                                 setData('remember', (e.target.checked || false) as false)
                             }

@@ -95,16 +95,16 @@ export default function PortalLayout({
     return (
         <div className="min-h-screen bg-[#f7f7f7] text-[#3d4045] font-sans flex flex-col">
             {/* Top Operational Ribbon */}
-            <header className="bg-[#00482f] text-white px-4 py-1.5 text-xs flex justify-between items-center border-b border-[#003824]">
-                <div className="flex items-center space-x-3">
-                    <span className="inline-flex items-center gap-1 font-semibold text-[#ddfa88]">
-                        <ShieldCheck className="w-3.5 h-3.5" /> El-Hadar Engineering PLC
+            <header className="bg-[#00482f] text-white px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs flex flex-wrap justify-between items-center gap-x-3 gap-y-1 border-b border-[#003824]">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <span className="inline-flex items-center gap-1 font-semibold text-[#ddfa88] truncate">
+                        <ShieldCheck className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">El-Hadar Engineering PLC</span>
                     </span>
                     <span className="hidden md:inline text-white/60">|</span>
                     <span className="hidden md:inline text-white/80">Employee Self-Service (ESS) Portal</span>
                 </div>
-                <div className="flex items-center space-x-4">
-                    <span className="text-white/80 hidden sm:inline">Active Session: {user.name}</span>
+                <div className="flex items-center min-w-0">
+                    <span className="text-white/80 hidden sm:inline truncate max-w-[220px]">Active Session: {user.name}</span>
                 </div>
             </header>
 
@@ -318,40 +318,40 @@ export default function PortalLayout({
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col min-w-0">
                     {/* Top Bar with Hamburger */}
-                    <header className="h-16 bg-white border-b border-[#d8d9da] flex items-center justify-between px-4 lg:px-8 shrink-0">
-                        <div className="flex items-center gap-3">
+                    <header className="min-h-16 bg-white border-b border-[#d8d9da] flex items-center justify-between gap-2 px-3 sm:px-4 lg:px-8 py-2 shrink-0">
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                             <button
                                 onClick={toggleSidebar}
-                                className="p-2 -ml-2 text-[#64666a] hover:text-black hover:bg-[#f7f7f7] rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-[#008254]/30 cursor-pointer"
+                                className="p-2 -ml-1 sm:-ml-2 text-[#64666a] hover:text-black hover:bg-[#f7f7f7] rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-[#008254]/30 cursor-pointer shrink-0"
                                 aria-label="Toggle navigation menu"
                                 title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                             >
                                 <Menu className="w-5 h-5 transition-transform duration-200" />
                             </button>
-                            <Link href={route('portal.profile')} className={`${!sidebarCollapsed ? 'lg:hidden' : ''} flex items-center gap-2 transition-opacity duration-300`}>
+                            <Link href={route('portal.profile')} className={`${!sidebarCollapsed ? 'lg:hidden' : ''} flex items-center gap-2 transition-opacity duration-300 min-w-0`}>
                                 <ApplicationLogo className="w-8 h-8 shrink-0" />
-                                <div>
-                                    <span className="font-bold text-black text-sm block leading-none">El-Hadar Engineering PLC</span>
-                                    <span className="text-[10px] font-semibold text-[#008254] block mt-0.5">Employee Portal</span>
+                                <div className="min-w-0">
+                                    <span className="font-bold text-black text-sm block leading-none truncate">El-Hadar Engineering PLC</span>
+                                    <span className="text-[10px] font-semibold text-[#008254] block mt-0.5 truncate">Employee Portal</span>
                                 </div>
                             </Link>
                         </div>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                             {user.role !== 'Employee' && (
                                 <Link href={route('dashboard')}>
                                     <Button size="sm" variant="outline" className="text-xs font-semibold gap-1.5 bg-[#effcf8] hover:bg-[#d5f7ed] text-[#008254] border-[#008254]/30 rounded-xs">
                                         <LayoutDashboard className="w-3.5 h-3.5" />
-                                        <span className="hidden sm:inline">HR Admin Console</span>
+                                        <span className="hidden md:inline">HR Admin Console</span>
                                     </Button>
                                 </Link>
                             )}
-                            <span className="text-xs text-[#64666a] hidden sm:inline">Signed in as <strong className="text-black font-semibold">{user.name}</strong></span>
+                            <span className="text-xs text-[#64666a] hidden lg:inline truncate max-w-[180px]">Signed in as <strong className="text-black font-semibold">{user.name}</strong></span>
                             <Link
                                 href={route('logout')}
                                 method="post"
                                 as="button"
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#64666a] hover:text-[#de2828] hover:bg-[#effcf8] border border-[#d8d9da] rounded-xs transition-colors cursor-pointer"
+                                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-[#64666a] hover:text-[#de2828] hover:bg-[#effcf8] border border-[#d8d9da] rounded-xs transition-colors cursor-pointer"
                             >
                                 <LogOut className="w-3.5 h-3.5" />
                                 <span className="hidden sm:inline">Sign Out</span>
@@ -361,10 +361,10 @@ export default function PortalLayout({
 
                     {/* Page Sub-Header / Hero banner (if title provided) */}
                     {title && (
-                        <div className="bg-[#008254] text-white px-6 py-6 shadow-xs">
-                            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                <div>
-                                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                        <div className="bg-[#008254] text-white px-4 sm:px-6 py-5 sm:py-6 shadow-xs">
+                            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 min-w-0">
+                                <div className="min-w-0">
+                                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white break-words">
                                         {title}
                                     </h2>
                                     {subtitle && (
@@ -383,8 +383,8 @@ export default function PortalLayout({
                     </main>
 
                     {/* Footer */}
-                    <footer className="bg-white border-t border-[#ebebec] py-4 px-6 lg:px-8 text-xs text-[#64666a] flex flex-col sm:flex-row justify-between items-center gap-2">
-                        <div>
+                    <footer className="bg-white border-t border-[#ebebec] py-4 px-4 sm:px-6 lg:px-8 text-xs text-[#64666a] flex flex-col sm:flex-row justify-between items-center gap-2 text-center sm:text-left">
+                        <div className="min-w-0">
                             &copy; {new Date().getFullYear()} El-Hadar Engineering PLC. All rights reserved.
                         </div>
                         <div className="flex items-center gap-4">

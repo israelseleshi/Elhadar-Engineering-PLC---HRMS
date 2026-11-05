@@ -52,17 +52,17 @@ export default function ForgotPassword({ status }: { status?: string }) {
                     <InputError message={errors.email} className="mt-2 text-xs text-[#de2828]" />
                 </div>
 
-                <div className="mt-4 flex items-center justify-between">
+                <div className="mt-4 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
                     <Link
                         href={route('login')}
-                        className="flex items-center gap-1 text-xs text-[#008254] hover:underline"
+                        className="flex items-center justify-center sm:justify-start gap-1 text-xs text-[#008254] hover:underline"
                     >
                         <ArrowLeft className="h-3.5 w-3.5" />
                         Back to Sign In
                     </Link>
 
                     <Button
-                        className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase tracking-wider rounded-xs"
+                        className="w-full sm:w-auto bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase tracking-wider rounded-xs"
                         disabled={processing}
                     >
                         Email Password Reset Link

@@ -150,7 +150,7 @@ export default function Index({ newHires, filters, stats, departments, workplace
             header={
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-white">New Employees</h2>
                             <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-xs bg-[#ddfa88] text-[#00482f] text-[11px] font-bold uppercase tracking-wide">
                                 Hamle 1, 2018 E.C.
@@ -275,7 +275,7 @@ export default function Index({ newHires, filters, stats, departments, workplace
                             </select>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             <select
                                 value={status}
                                 onChange={(e) => {
@@ -458,7 +458,7 @@ export default function Index({ newHires, filters, stats, departments, workplace
 
                 {/* Pagination */}
                 {newHires.last_page > 1 && (
-                    <div className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex items-center justify-between text-xs text-[#64666a]">
+                    <div className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#64666a]">
                         <div>
                             Showing <strong>{newHires.from || 0}</strong> to <strong>{newHires.to || 0}</strong> of <strong>{newHires.total}</strong> new hires
                         </div>

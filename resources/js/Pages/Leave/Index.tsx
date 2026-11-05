@@ -303,7 +303,7 @@ export default function Index({ employees, filters, stats, currentYear }: Props)
                                         </span>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <div className="flex items-center justify-end gap-2">
+                                        <div className="flex flex-wrap items-center justify-end gap-2">
                                             <Button
                                                 data-tour={index === 0 ? "first-deduct-btn" : undefined}
                                                 onClick={() => openAdjustModal(emp)}
@@ -408,7 +408,7 @@ export default function Index({ employees, filters, stats, currentYear }: Props)
 
                 {/* Pagination */}
                 {employees.last_page > 1 && (
-                    <div data-tour="leave-pagination" className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex items-center justify-between text-xs text-[#64666a]">
+                    <div data-tour="leave-pagination" className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#64666a]">
                         <div>
                             Showing <strong>{employees.from || 0}</strong> to <strong>{employees.to || 0}</strong> of <strong>{employees.total}</strong> records
                         </div>

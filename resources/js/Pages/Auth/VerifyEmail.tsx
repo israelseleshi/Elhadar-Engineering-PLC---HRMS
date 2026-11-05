@@ -31,19 +31,19 @@ export default function VerifyEmail({ status }: { status?: string }) {
             )}
 
             <form onSubmit={submit}>
-                <div className="mt-4 flex items-center justify-between">
-                    <PrimaryButton disabled={processing}>
-                        Resend Verification Email
-                    </PrimaryButton>
-
+                <div className="mt-4 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
                     <Link
                         href={route('logout')}
                         method="post"
                         as="button"
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
+                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800 text-center sm:text-left"
                     >
                         Log Out
                     </Link>
+
+                    <PrimaryButton className="w-full sm:w-auto justify-center" disabled={processing}>
+                        Resend Verification Email
+                    </PrimaryButton>
                 </div>
             </form>
         </GuestLayout>

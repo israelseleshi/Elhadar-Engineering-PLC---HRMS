@@ -115,15 +115,15 @@ export default function AuthenticatedLayout({
     return (
         <div className="min-h-screen bg-[#f7f7f7] text-[#3d4045] font-sans flex flex-col">
             {/* Top Operational Ribbon (NerdWallet Style) */}
-            <div className="bg-[#00482f] text-white px-4 py-1.5 text-xs flex justify-between items-center border-b border-[#003824]">
-                <div className="flex items-center space-x-3">
-                    <span className="inline-flex items-center gap-1 font-semibold text-[#ddfa88]">
-                        <ShieldCheck className="w-3.5 h-3.5" /> El-Hadar Engineering PLC
+            <div className="bg-[#00482f] text-white px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs flex flex-wrap justify-between items-center gap-x-3 gap-y-1 border-b border-[#003824]">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <span className="inline-flex items-center gap-1 font-semibold text-[#ddfa88] truncate">
+                        <ShieldCheck className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">El-Hadar Engineering PLC</span>
                     </span>
                     <span className="hidden md:inline text-white/60">|</span>
                     <span className="hidden md:inline text-white/80">Employee Records, Leave &amp; Payroll</span>
                 </div>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center">
                     <span className="text-white/80 hidden sm:inline">Active Fiscal Period: 2017/2018 E.C.</span>
                 </div>
             </div>
@@ -255,28 +255,28 @@ export default function AuthenticatedLayout({
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col min-w-0">
                     {/* Top Bar */}
-                    <header className="h-16 bg-white border-b border-[#d8d9da] flex items-center justify-between px-4 lg:px-8 shrink-0">
-                        <div className="flex items-center gap-3">
+                    <header className="min-h-16 bg-white border-b border-[#d8d9da] flex items-center justify-between gap-2 px-3 sm:px-4 lg:px-8 py-2 shrink-0">
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                             {!isEmployee ? (
                                 <button
                                     onClick={toggleSidebar}
-                                    className="p-2 -ml-2 text-[#64666a] hover:text-black hover:bg-[#f7f7f7] rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-[#008254]/30 cursor-pointer"
+                                    className="p-2 -ml-1 sm:-ml-2 text-[#64666a] hover:text-black hover:bg-[#f7f7f7] rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-[#008254]/30 cursor-pointer shrink-0"
                                     aria-label="Toggle navigation menu"
                                     title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                                 >
                                     <Menu className="w-5 h-5 transition-transform duration-200" />
                                 </button>
                             ) : null}
-                            <Link href={isEmployee ? route('portal.profile') : route('dashboard')} className={`${!isEmployee && !sidebarCollapsed ? 'lg:hidden' : ''} flex items-center gap-2 transition-opacity duration-300`}>
+                            <Link href={isEmployee ? route('portal.profile') : route('dashboard')} className={`${!isEmployee && !sidebarCollapsed ? 'lg:hidden' : ''} flex items-center gap-2 transition-opacity duration-300 min-w-0`}>
                                 <ApplicationLogo className="w-8 h-8 shrink-0" />
-                                <div>
-                                    <span className="font-bold text-black text-sm block leading-none">El-Hadar Engineering PLC</span>
-                                    <span className="text-[10px] font-semibold text-[#008254] block mt-0.5">HR &amp; Payroll System</span>
+                                <div className="min-w-0">
+                                    <span className="font-bold text-black text-sm block leading-none truncate">El-Hadar Engineering PLC</span>
+                                    <span className="text-[10px] font-semibold text-[#008254] block mt-0.5 truncate">HR &amp; Payroll System</span>
                                 </div>
                             </Link>
                         </div>
 
-                        <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                             {!isEmployee ? (
                                 <>
                                     <Button
@@ -293,35 +293,35 @@ export default function AuthenticatedLayout({
                                                 }
                                             }
                                         }}
-                                        className="hidden sm:inline-flex gap-1.5 text-xs font-semibold bg-[#effcf8] hover:bg-[#d5f7ed] text-[#008254] border-[#008254]/30 rounded-xs"
+                                        className="hidden md:inline-flex gap-1.5 text-xs font-semibold bg-[#effcf8] hover:bg-[#d5f7ed] text-[#008254] border-[#008254]/30 rounded-xs"
                                     >
                                         <Compass className="w-3.5 h-3.5" />
                                         <span>Interactive Tour</span>
                                     </Button>
                                     <Link href={route('employees.create')}>
-                                        <Button size="sm" className="hidden sm:inline-flex gap-1.5 text-xs font-semibold bg-[#008254] hover:bg-[#006a44] text-white rounded-xs">
+                                        <Button size="sm" className="hidden md:inline-flex gap-1.5 text-xs font-semibold bg-[#008254] hover:bg-[#006a44] text-white rounded-xs">
                                             <UserPlus className="w-3.5 h-3.5" />
                                             <span>Onboard Staff</span>
                                         </Button>
                                     </Link>
-                                    <Link href={route('employees.index')}>
-                                        <Button variant="outline" size="sm" className="hidden sm:inline-flex gap-2 text-xs font-semibold">
+                                    <Link href={route('employees.index')} className="hidden sm:inline-flex">
+                                        <Button variant="outline" size="sm" className="gap-2 text-xs font-semibold">
                                             <Search className="w-3.5 h-3.5 text-[#008254]" />
-                                            <span>Quick Search</span>
+                                            <span className="hidden lg:inline">Quick Search</span>
                                         </Button>
                                     </Link>
                                 </>
                             ) : (
-                                <div className="flex items-center gap-3">
-                                    <span className="text-xs text-[#64666a]">Welcome, {user.name}</span>
+                                <div className="flex items-center gap-2 sm:gap-3">
+                                    <span className="text-xs text-[#64666a] hidden md:inline max-w-[160px] truncate">Welcome, {user.name}</span>
                                     <Link
                                         href={route('logout')}
                                         method="post"
                                         as="button"
-                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#008254] hover:bg-[#effcf8] border border-[#d8d9da] rounded-xs transition-colors"
+                                        className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-[#008254] hover:bg-[#effcf8] border border-[#d8d9da] rounded-xs transition-colors"
                                     >
                                         <LogOut className="w-3.5 h-3.5" />
-                                        <span>Sign Out</span>
+                                        <span className="hidden sm:inline">Sign Out</span>
                                     </Link>
                                 </div>
                             )}
@@ -387,13 +387,13 @@ export default function AuthenticatedLayout({
 
                     {/* Hero Band / Editorial Heading if provided */}
                     {(title || header) && (
-                        <div className="bg-[#008254] text-white px-6 lg:px-8 py-7 shadow-sm">
-                            <div className="max-w-7xl mx-auto">
+                        <div className="bg-[#008254] text-white px-4 sm:px-6 lg:px-8 py-5 sm:py-7 shadow-sm">
+                            <div className="max-w-7xl mx-auto min-w-0">
                                 {header ? (
                                     header
                                 ) : (
-                                    <div>
-                                        <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-white">
+                                    <div className="min-w-0">
+                                        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white break-words">
                                             {title}
                                         </h2>
                                         {subtitle && (
@@ -413,8 +413,8 @@ export default function AuthenticatedLayout({
                     </main>
 
                     {/* Footer */}
-                    <footer className="bg-white border-t border-[#ebebec] py-4 px-6 lg:px-8 text-xs text-[#64666a] flex flex-col sm:flex-row justify-between items-center gap-2">
-                        <div>
+                    <footer className="bg-white border-t border-[#ebebec] py-4 px-4 sm:px-6 lg:px-8 text-xs text-[#64666a] flex flex-col sm:flex-row justify-between items-center gap-2 text-center sm:text-left">
+                        <div className="min-w-0">
                             &copy; {new Date().getFullYear()} El-Hadar Engineering PLC. All rights reserved.
                         </div>
                         <div className="flex items-center gap-4">
