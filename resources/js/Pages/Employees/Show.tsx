@@ -265,24 +265,6 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                                 <Badge variant={employee.status === 'Permanent' ? 'mint' : 'secondary'}>
                                     {employee.status}
                                 </Badge>
-                                <span className="text-xs text-[#64666a]">
-                                    {employee.employment_type}
-                                </span>
-                                {employee.grade && (
-                                    <span className="text-xs font-semibold px-2 py-0.5 rounded-xs bg-[#f7f7f7] text-[#3d4045] border border-[#d8d9da]">
-                                        Grade: {employee.grade}
-                                    </span>
-                                )}
-                                {employee.step && (
-                                    <span className="text-xs font-semibold px-2 py-0.5 rounded-xs bg-[#f7f7f7] text-[#3d4045] border border-[#d8d9da]">
-                                        Step: {employee.step}
-                                    </span>
-                                )}
-                                {employee.age && (
-                                    <span className="text-xs font-bold px-2 py-0.5 rounded-xs bg-[#effcf8] text-[#008254] border border-[#b7ecda]">
-                                        Age: {employee.age}
-                                    </span>
-                                )}
                             </div>
                             <h1 className="text-2xl font-bold text-black tracking-tight">
                                 {employee.full_name}
