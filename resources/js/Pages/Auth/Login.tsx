@@ -1,4 +1,4 @@
-﻿import { Checkbox } from '@/Components/ui/checkbox';
+import { Checkbox } from '@/Components/ui/checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PasswordInput from '@/Components/PasswordInput';
@@ -154,7 +154,7 @@ export default function Login({
                                 inputMode="numeric"
                                 value={phoneNumber}
                                 placeholder="9XXXXXXXX"
-                                className="pl-9 border-input bg-background text-sm text-foreground placeholder:text-muted-foreground font-medium tracking-wider"
+                                className="pl-16 border-input bg-background text-sm text-foreground placeholder:text-muted-foreground font-medium tracking-wider"
                                 autoComplete="tel-national"
                                 autoFocus
                                 onChange={handlePhoneChange}
