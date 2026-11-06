@@ -1,30 +1,11 @@
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
-import { 
-    LayoutDashboard, 
-    Users, 
-    Briefcase, 
-    CalendarClock, 
-    CalendarDays,
-    GraduationCap,
-    UserCheck,
-    Receipt, 
-    LogOut, 
-    Search, 
-    Building2,
-    ShieldCheck,
-    Menu,
-    X,
-    Bell,
-    TrendingUp,
-    UserMinus,
-    UserPlus,
-    FileSpreadsheet,
-    Sliders,
-    Activity,
-    Compass
+import {
+    LayoutDashboard, Users, CalendarDays, GraduationCap, UserCheck, LogOut, Search,
+    ShieldCheck, Menu, X, TrendingUp, UserMinus, UserPlus, Sliders, Activity, Compass
 } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
+import { ThemeToggle } from '@/Components/ThemeToggle';
 import SystemTour from '@/Components/SystemTour';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { formatEthPhone } from '@/lib/utils';
@@ -32,65 +13,38 @@ import { Toaster } from '@/Components/ui/sonner';
 import { toast } from 'sonner';
 import { PageProps } from '@/types';
 
-interface Props {
-    header?: ReactNode;
-    title?: string;
-    subtitle?: string;
-}
+interface Props { header?: ReactNode; title?: string; subtitle?: string; }
 
-export default function AuthenticatedLayout({
-    header,
-    title,
-    subtitle,
-    children,
-}: PropsWithChildren<Props>) {
+export default function AuthenticatedLayout({ header, title, subtitle, children }: PropsWithChildren<Props>) {
     const { auth, flash } = usePage<PageProps>().props;
     const user = auth.user;
     const displayPhone = formatEthPhone(user?.phone) || user?.phone || user?.email;
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('hrms_sidebar_collapsed') === 'true';
-        }
+        if (typeof window !== 'undefined') return localStorage.getItem('hrms_sidebar_collapsed') === 'true';
         return false;
     });
     const [tourOpen, setTourOpen] = useState(false);
 
     useEffect(() => {
-        if (flash?.success) {
-            toast.success(flash.success);
-        }
-        if (flash?.error) {
-            toast.error(flash.error);
-        }
-        if (flash?.warning) {
-            toast.warning(flash.warning);
-        }
-        if (flash?.info) {
-            toast.info(flash.info);
-        }
+        if (flash?.success) toast.success(flash.success);
+        if (flash?.error) toast.error(flash.error);
+        if (flash?.warning) toast.warning(flash.warning);
+        if (flash?.info) toast.info(flash.info);
     }, [flash]);
 
     const toggleSidebar = () => {
-        if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-            setSidebarOpen(!sidebarOpen);
-        } else {
-            setSidebarCollapsed((prev) => {
-                const next = !prev;
-                if (typeof window !== 'undefined') {
-                    localStorage.setItem('hrms_sidebar_collapsed', String(next));
-                }
-                return next;
-            });
-        }
+        if (typeof window !== 'undefined' && window.innerWidth < 1024) setSidebarOpen(!sidebarOpen);
+        else setSidebarCollapsed((prev) => {
+            const next = !prev;
+            if (typeof window !== 'undefined') localStorage.setItem('hrms_sidebar_collapsed', String(next));
+            return next;
+        });
     };
 
     const isEmployee = user.role === 'Employee';
-
     const navItems = isEmployee
-        ? [
-            { name: 'My Self-Service', href: route('portal.profile'), routeName: 'portal.*', icon: UserCheck },
-        ]
+        ? [{ name: 'My Self-Service', href: route('portal.profile'), routeName: 'portal.*', icon: UserCheck }]
         : [
             { name: 'Dashboard', href: route('dashboard'), routeName: 'dashboard', icon: LayoutDashboard },
             { name: 'Staff Directory', href: route('employees.index'), routeName: 'employees.*', icon: Users },
@@ -104,147 +58,70 @@ export default function AuthenticatedLayout({
             { name: 'My Self-Service', href: route('portal.profile'), routeName: 'portal.*', icon: UserCheck },
         ];
 
-    const isCurrent = (name: string) => {
-        try {
-            return route().current(name);
-        } catch {
-            return false;
-        }
-    };
+    const isCurrent = (name: string) => { try { return route().current(name); } catch { return false; } };
 
     return (
-        <div className="min-h-screen bg-[#f7f7f7] text-[#3d4045] font-sans flex flex-col">
-            {/* Top Operational Ribbon (NerdWallet Style) */}
-            <div className="bg-[#00482f] text-white px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs flex flex-wrap justify-between items-center gap-x-3 gap-y-1 border-b border-[#003824]">
+        <div className="min-h-screen bg-background text-foreground font-sans flex flex-col">
+            <div className="bg-background text-foreground px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs flex flex-wrap justify-between items-center gap-x-3 gap-y-1 border-b border-border/50">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <span className="inline-flex items-center gap-1 font-semibold text-[#ddfa88] truncate">
-                        <ShieldCheck className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">El-Hadar Engineering PLC</span>
+                    <span className="inline-flex items-center gap-1.5 font-medium text-foreground truncate">
+                        <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-primary" /> <span className="truncate">El-Hadar Engineering PLC</span>
                     </span>
-                    <span className="hidden md:inline text-white/60">|</span>
-                    <span className="hidden md:inline text-white/80">Employee Records, Leave &amp; Payroll</span>
+                    <span className="hidden md:inline text-muted-foreground">|</span>
+                    <span className="hidden md:inline text-muted-foreground">Employee Records, Leave &amp; Payroll</span>
                 </div>
-                <div className="flex items-center">
-                    <span className="text-white/80 hidden sm:inline">Active Fiscal Period: 2017/2018 E.C.</span>
-                </div>
+                <span className="text-muted-foreground hidden sm:inline">Active Fiscal Period: 2017/2018 E.C.</span>
             </div>
 
             <div className="flex flex-1">
-                {/* Desktop Sidebar */}
                 {!isEmployee && (
-                    <aside
-                        className={`hidden lg:flex flex-col bg-white border-r border-[#d8d9da] shrink-0 transition-all duration-300 ease-in-out select-none ${
-                            sidebarCollapsed ? 'w-20' : 'w-64'
-                        }`}
-                    >
-                        {/* Brand Header */}
-                        <div
-                            className={`border-b border-[#ebebec] flex items-center transition-all duration-300 ${
-                                sidebarCollapsed ? 'p-3.5 justify-center' : 'p-5 justify-between'
-                            }`}
-                        >
+                    <aside className={`hidden lg:flex flex-col bg-background/95 backdrop-blur border-r border-border shrink-0 transition-all duration-300 ease-in-out select-none ${sidebarCollapsed ? 'w-20' : 'w-64'}`}>
+                        <div className={`border-b border-border flex items-center transition-all duration-300 ${sidebarCollapsed ? 'p-3.5 justify-center' : 'p-4 justify-between'}`}>
                             <Link href={route('dashboard')} className="flex items-center gap-2.5 group overflow-hidden">
-                                <ApplicationLogo className="w-9 h-9 shrink-0" />
+                                <ApplicationLogo className="w-8 h-8 shrink-0" />
                                 {!sidebarCollapsed && (
-                                    <div className="whitespace-nowrap transition-opacity duration-300">
-                                        <h1 className="text-sm font-bold text-black tracking-tight leading-tight">
-                                            El-Hadar Engineering PLC
-                                        </h1>
-                                        <p className="text-[11px] font-semibold text-[#008254]">
-                                            HR &amp; Payroll System
-                                        </p>
+                                    <div className="whitespace-nowrap">
+                                        <h1 className="text-sm font-semibold text-foreground tracking-tight leading-tight">El-Hadar Engineering PLC</h1>
+                                        <p className="text-[11px] font-medium text-primary">HR &amp; Payroll System</p>
                                     </div>
                                 )}
                             </Link>
                         </div>
 
-                        {/* Navigation Items */}
-                        <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto overflow-x-hidden">
-                            {!sidebarCollapsed && (
-                                <div className="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-[#64666a] whitespace-nowrap">
-                                    Core Operations
-                                </div>
-                            )}
+                        <nav className="flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden">
+                            {!sidebarCollapsed && <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground whitespace-nowrap">Core Operations</div>}
                             {navItems.map((item) => {
                                 const active = isCurrent(item.routeName);
                                 const Icon = item.icon;
                                 return (
-                                    <Link
-                                        key={item.name}
-                                        href={item.href}
-                                        title={sidebarCollapsed ? item.name : undefined}
-                                        className={`flex items-center text-sm font-medium transition-colors ${
-                                            sidebarCollapsed
-                                                ? `justify-center w-12 h-10 mx-auto rounded-md ${
-                                                    active
-                                                        ? 'bg-[#effcf8] text-[#008254] font-bold ring-1 ring-[#008254]/30'
-                                                        : 'text-[#3d4045] hover:bg-[#f7f7f7] hover:text-black'
-                                                  }`
-                                                : `gap-3 px-3.5 py-2.5 ${
-                                                    active
-                                                        ? 'bg-[#effcf8] text-[#008254] font-bold border-l-4 border-[#008254] -ml-3 pl-6'
-                                                        : 'text-[#3d4045] hover:bg-[#f7f7f7] hover:text-black rounded-xs'
-                                                  }`
-                                        }`}
-                                    >
-                                        <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-[#008254]' : 'text-[#64666a]'}`} />
-                                        {!sidebarCollapsed && (
-                                            <span className="truncate whitespace-nowrap">{item.name}</span>
-                                        )}
+                                    <Link key={item.name} href={item.href} title={sidebarCollapsed ? item.name : undefined}
+                                        className={`flex items-center text-[13px] font-medium transition-all ${sidebarCollapsed
+                                            ? `justify-center w-11 h-10 mx-auto rounded-xl ${active ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`
+                                            : `gap-3 px-3 py-2.5 rounded-xl ${active ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}`}>
+                                        <Icon className={`w-[18px] h-[18px] shrink-0 ${active ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
+                                        {!sidebarCollapsed && <span className="truncate whitespace-nowrap">{item.name}</span>}
                                     </Link>
                                 );
                             })}
                         </nav>
 
-                        {/* User & System Status Card at Bottom of Sidebar */}
-                        <div
-                            className={`border-t border-[#ebebec] bg-[#f7f7f7]/60 transition-all duration-300 ${
-                                sidebarCollapsed ? 'p-3 flex flex-col items-center gap-3' : 'p-4'
-                            }`}
-                        >
+                        <div className={`border-t border-border transition-all duration-300 ${sidebarCollapsed ? 'p-3 flex flex-col items-center gap-3' : 'p-4'}`}>
                             {sidebarCollapsed ? (
                                 <>
-                                    <div
-                                        className="w-9 h-9 rounded-full bg-[#008254] text-white flex items-center justify-center text-xs font-bold uppercase shrink-0"
-                                        title={`${user.name} (${displayPhone})`}
-                                    >
-                                        {user.name.charAt(0)}
-                                    </div>
-                                    <Link
-                                        href={route('logout')}
-                                        method="post"
-                                        as="button"
-                                        title="Sign Out"
-                                        className="w-10 h-10 flex items-center justify-center text-[#64666a] hover:text-[#de2828] hover:bg-white rounded-md border border-[#d8d9da] transition-colors"
-                                    >
-                                        <LogOut className="w-4 h-4" />
-                                    </Link>
+                                    <div className="w-9 h-9 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-semibold uppercase shrink-0" title={`${user.name} (${displayPhone})`}>{user.name.charAt(0)}</div>
+                                    <Link href={route('logout')} method="post" as="button" title="Sign Out" className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-background rounded-xl border border-border transition-colors"><LogOut className="w-4 h-4" /></Link>
                                 </>
                             ) : (
                                 <>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center gap-2.5 overflow-hidden">
-                                            <div className="w-8 h-8 rounded-full bg-[#008254] text-white flex items-center justify-center text-xs font-bold uppercase shrink-0">
-                                                {user.name.charAt(0)}
-                                            </div>
-                                            <div className="overflow-hidden">
-                                                <p className="text-sm font-bold text-black truncate leading-none">
-                                                    {user.name}
-                                                </p>
-                                                <p className="text-xs text-[#64666a] truncate mt-0.5">
-                                                    {displayPhone}
-                                                </p>
-                                            </div>
+                                    <div className="flex items-center gap-2.5 mb-3 overflow-hidden">
+                                        <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-semibold uppercase shrink-0">{user.name.charAt(0)}</div>
+                                        <div className="overflow-hidden">
+                                            <p className="text-sm font-semibold text-foreground truncate leading-none">{user.name}</p>
+                                            <p className="text-xs text-muted-foreground truncate mt-0.5">{displayPhone}</p>
                                         </div>
                                     </div>
-
-                                    <Link
-                                        href={route('logout')}
-                                        method="post"
-                                        as="button"
-                                        className="w-full flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium text-[#64666a] hover:text-[#de2828] hover:bg-white rounded-xs border border-[#d8d9da] transition-colors"
-                                    >
-                                        <LogOut className="w-3.5 h-3.5" />
-                                        Sign Out
+                                    <Link href={route('logout')} method="post" as="button" className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-background rounded-xl border border-border transition-colors">
+                                        <LogOut className="w-3.5 h-3.5" /> Sign Out
                                     </Link>
                                 </>
                             )}
@@ -252,182 +129,110 @@ export default function AuthenticatedLayout({
                     </aside>
                 )}
 
-                {/* Main Content Area */}
                 <div className="flex-1 flex flex-col min-w-0">
-                    {/* Top Bar */}
-                    <header className="min-h-16 bg-white border-b border-[#d8d9da] flex items-center justify-between gap-2 px-3 sm:px-4 lg:px-8 py-2 shrink-0">
+                    <header className="min-h-14 bg-background/80 backdrop-blur-xl border-b border-border/50 flex items-center justify-between gap-3 px-3 sm:px-4 lg:px-8 py-2 shrink-0 sticky top-0 z-20">
                         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                             {!isEmployee ? (
-                                <button
-                                    onClick={toggleSidebar}
-                                    className="p-2 -ml-1 sm:-ml-2 text-[#64666a] hover:text-black hover:bg-[#f7f7f7] rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-[#008254]/30 cursor-pointer shrink-0"
-                                    aria-label="Toggle navigation menu"
-                                    title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                                >
-                                    <Menu className="w-5 h-5 transition-transform duration-200" />
+                                <button onClick={toggleSidebar} className="p-2 -ml-1 sm:-ml-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer shrink-0" aria-label="Toggle navigation menu" title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+                                    <Menu className="w-5 h-5" />
                                 </button>
                             ) : null}
-                            <Link href={isEmployee ? route('portal.profile') : route('dashboard')} className={`${!isEmployee && !sidebarCollapsed ? 'lg:hidden' : ''} flex items-center gap-2 transition-opacity duration-300 min-w-0`}>
+                            <Link href={isEmployee ? route('portal.profile') : route('dashboard')} className={`${!isEmployee && !sidebarCollapsed ? 'lg:hidden' : ''} flex items-center gap-2 transition-opacity duration-300 shrink-0`}>
                                 <ApplicationLogo className="w-8 h-8 shrink-0" />
-                                <div className="min-w-0">
-                                    <span className="font-bold text-black text-sm block leading-none truncate">El-Hadar Engineering PLC</span>
-                                    <span className="text-[10px] font-semibold text-[#008254] block mt-0.5 truncate">HR &amp; Payroll System</span>
+                                <div className="min-w-0 hidden sm:block">
+                                    <span className="font-semibold text-foreground text-sm block leading-none truncate">El-Hadar</span>
+                                    <span className="text-[10px] font-medium text-primary block mt-0.5 truncate">HRMS</span>
                                 </div>
                             </Link>
+
+                            {/* Page Title & Subtitle Integrated in Header */}
+                            {title && (
+                                <div className="min-w-0 flex flex-col justify-center border-l border-border/60 pl-2.5 sm:pl-3 ml-0.5 sm:ml-1">
+                                    <h1 className="text-sm sm:text-base font-bold text-foreground tracking-tight leading-tight truncate">
+                                        {title}
+                                    </h1>
+                                    {subtitle && (
+                                        <p className="text-[11px] text-muted-foreground truncate hidden md:block max-w-md lg:max-w-xl">
+                                            {subtitle}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
-                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+                            <ThemeToggle className="mr-0.5" />
                             {!isEmployee ? (
                                 <>
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => {
-                                            if (typeof window !== 'undefined') {
-                                                if (window.location.pathname.includes('/employees') && !window.location.pathname.includes('/create')) {
-                                                    window.dispatchEvent(new CustomEvent('open-staff-directory-tour'));
-                                                } else if (window.location.pathname.includes('/leave')) {
-                                                    window.dispatchEvent(new CustomEvent('open-leave-ledger-tour'));
-                                                } else {
-                                                    setTourOpen(true);
-                                                }
-                                            }
-                                        }}
-                                        className="hidden md:inline-flex gap-1.5 text-xs font-semibold bg-[#effcf8] hover:bg-[#d5f7ed] text-[#008254] border-[#008254]/30 rounded-xs"
-                                    >
-                                        <Compass className="w-3.5 h-3.5" />
-                                        <span>Interactive Tour</span>
+                                    <Button size="sm" variant="outline" onClick={() => {
+                                        if (typeof window !== 'undefined') {
+                                            if (window.location.pathname.includes('/employees') && !window.location.pathname.includes('/create')) window.dispatchEvent(new CustomEvent('open-staff-directory-tour'));
+                                            else if (window.location.pathname.includes('/leave')) window.dispatchEvent(new CustomEvent('open-leave-ledger-tour'));
+                                            else setTourOpen(true);
+                                        }
+                                    }} className="hidden md:inline-flex gap-1.5 text-xs font-medium rounded-full border-border">
+                                        <Compass className="w-3.5 h-3.5 text-primary" /><span>Tour</span>
                                     </Button>
-                                    <Link href={route('employees.create')}>
-                                        <Button size="sm" className="hidden md:inline-flex gap-1.5 text-xs font-semibold bg-[#008254] hover:bg-[#006a44] text-white rounded-xs">
-                                            <UserPlus className="w-3.5 h-3.5" />
-                                            <span>Onboard Staff</span>
-                                        </Button>
-                                    </Link>
-                                    <Link href={route('employees.index')} className="hidden sm:inline-flex">
-                                        <Button variant="outline" size="sm" className="gap-2 text-xs font-semibold">
-                                            <Search className="w-3.5 h-3.5 text-[#008254]" />
-                                            <span className="hidden lg:inline">Quick Search</span>
-                                        </Button>
-                                    </Link>
+                                    <Link href={route('employees.create')}><Button size="sm" className="hidden md:inline-flex gap-1.5 text-xs font-medium rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"><UserPlus className="w-3.5 h-3.5" /><span>Onboard Staff</span></Button></Link>
+                                    <Link href={route('employees.index')} className="hidden sm:inline-flex"><Button variant="outline" size="sm" className="gap-2 text-xs font-medium rounded-full border-border"><Search className="w-3.5 h-3.5 text-primary" /><span className="hidden lg:inline">Search</span></Button></Link>
                                 </>
                             ) : (
                                 <div className="flex items-center gap-2 sm:gap-3">
-                                    <span className="text-xs text-[#64666a] hidden md:inline max-w-[160px] truncate">Welcome, {user.name}</span>
-                                    <Link
-                                        href={route('logout')}
-                                        method="post"
-                                        as="button"
-                                        className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-[#008254] hover:bg-[#effcf8] border border-[#d8d9da] rounded-xs transition-colors"
-                                    >
-                                        <LogOut className="w-3.5 h-3.5" />
-                                        <span className="hidden sm:inline">Sign Out</span>
-                                    </Link>
+                                    <span className="text-xs text-muted-foreground hidden md:inline max-w-[160px] truncate">Welcome, {user.name}</span>
+                                    <Link href={route('logout')} method="post" as="button" className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent border border-border rounded-full transition-colors"><LogOut className="w-3.5 h-3.5" /><span className="hidden sm:inline">Sign Out</span></Link>
                                 </div>
                             )}
                         </div>
                     </header>
 
-                    {/* Mobile Sidebar Overlay */}
                     {sidebarOpen && (
                         <div className="lg:hidden fixed inset-0 z-50 flex">
-                            <div className="fixed inset-0 bg-black/30" onClick={() => setSidebarOpen(false)} />
-                            <div className="relative w-64 bg-white flex flex-col h-full border-r border-[#d8d9da] z-10 p-4">
-                                <div className="flex items-center justify-between pb-4 border-b border-[#ebebec]">
+                            <div className="fixed inset-0 bg-foreground/20 backdrop-blur-[2px]" onClick={() => setSidebarOpen(false)} />
+                            <div className="relative w-[280px] bg-background backdrop-blur-xl flex flex-col h-full border-r border-border z-10 p-4 shadow-apple">
+                                <div className="flex items-center justify-between pb-4 border-b border-border">
                                     <Link href={route('dashboard')} className="flex items-center gap-2.5" onClick={() => setSidebarOpen(false)}>
                                         <ApplicationLogo className="w-8 h-8 shrink-0" />
-                                        <div>
-                                            <span className="font-bold text-black text-sm block leading-tight">El-Hadar Engineering PLC</span>
-                                            <span className="text-[10px] font-semibold text-[#008254] block mt-0.5">HR &amp; Payroll System</span>
-                                        </div>
+                                        <div><span className="font-semibold text-foreground text-sm block leading-tight">El-Hadar Engineering PLC</span><span className="text-[10px] font-medium text-primary block mt-0.5">HR &amp; Payroll System</span></div>
                                     </Link>
-                                    <button onClick={() => setSidebarOpen(false)} className="text-[#64666a] hover:text-black p-1">
-                                        <X className="w-5 h-5" />
-                                    </button>
+                                    <button onClick={() => setSidebarOpen(false)} className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg"><X className="w-5 h-5" /></button>
                                 </div>
                                 <nav className="mt-4 space-y-1 flex-1">
                                     {navItems.map((item) => (
-                                        <Link
-                                            key={item.name}
-                                            href={item.href}
-                                            onClick={() => setSidebarOpen(false)}
-                                            className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-[#3d4045] hover:bg-[#effcf8] hover:text-[#008254] rounded-xs"
-                                        >
-                                            <item.icon className="w-4 h-4" />
-                                            <span>{item.name}</span>
+                                        <Link key={item.name} href={item.href} onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground rounded-xl">
+                                            <item.icon className="w-4 h-4 text-muted-foreground" /><span>{item.name}</span>
                                         </Link>
                                     ))}
                                 </nav>
-                                <div className="pt-4 border-t border-[#ebebec]">
+                                <div className="pt-4 border-t border-border">
                                     <div className="flex items-center gap-2.5 mb-3">
-                                        <div className="w-8 h-8 rounded-full bg-[#008254] text-white flex items-center justify-center text-xs font-bold uppercase shrink-0">
-                                            {user.name.charAt(0)}
-                                        </div>
-                                        <div className="overflow-hidden">
-                                            <p className="text-sm font-bold text-black truncate leading-none">
-                                                {user.name}
-                                            </p>
-                                            <p className="text-xs text-[#64666a] truncate mt-0.5">
-                                                {displayPhone}
-                                            </p>
-                                        </div>
+                                        <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-semibold uppercase shrink-0">{user.name.charAt(0)}</div>
+                                        <div className="overflow-hidden"><p className="text-sm font-semibold text-foreground truncate leading-none">{user.name}</p><p className="text-xs text-muted-foreground truncate mt-0.5">{displayPhone}</p></div>
                                     </div>
-                                    <Link
-                                        href={route('logout')}
-                                        method="post"
-                                        as="button"
-                                        className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-[#de2828] bg-[#f7f7f7] rounded-xs"
-                                    >
-                                        <LogOut className="w-4 h-4" /> Sign Out
-                                    </Link>
+                                    <Link href={route('logout')} method="post" as="button" className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-destructive bg-accent rounded-xl"><LogOut className="w-4 h-4" /> Sign Out</Link>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* Hero Band / Editorial Heading if provided */}
-                    {(title || header) && (
-                        <div className="bg-[#008254] text-white px-4 sm:px-6 lg:px-8 py-5 sm:py-7 shadow-sm">
+                    {/* Slim Toolbar only if custom header element is provided */}
+                    {header && (
+                        <div className="bg-background border-b border-border px-4 sm:px-6 lg:px-8 py-3">
                             <div className="max-w-7xl mx-auto min-w-0">
-                                {header ? (
-                                    header
-                                ) : (
-                                    <div className="min-w-0">
-                                        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white break-words">
-                                            {title}
-                                        </h2>
-                                        {subtitle && (
-                                            <p className="mt-1 text-sm text-[#e3faf2] font-light max-w-2xl">
-                                                {subtitle}
-                                            </p>
-                                        )}
-                                    </div>
-                                )}
+                                {header}
                             </div>
                         </div>
                     )}
 
-                    {/* Main Content Body */}
-                    <main className="flex-1 px-3 py-6 lg:px-4 lg:py-8 max-w-7xl mx-auto w-full">
-                        {children}
-                    </main>
+                    <main className="flex-1 px-3 py-4 lg:px-6 lg:py-6 max-w-7xl mx-auto w-full">{children}</main>
 
-                    {/* Footer */}
-                    <footer className="bg-white border-t border-[#ebebec] py-4 px-4 sm:px-6 lg:px-8 text-xs text-[#64666a] flex flex-col sm:flex-row justify-between items-center gap-2 text-center sm:text-left">
-                        <div className="min-w-0">
-                            &copy; {new Date().getFullYear()} El-Hadar Engineering PLC. All rights reserved.
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <span className="font-medium">Employee Records, Leave &amp; Payroll</span>
-                        </div>
+                    <footer className="bg-background/50 border-t border-border py-4 px-4 sm:px-6 lg:px-8 text-xs text-muted-foreground flex flex-col sm:flex-row justify-between items-center gap-2 text-center sm:text-left">
+                        <div className="min-w-0">&copy; {new Date().getFullYear()} El-Hadar Engineering PLC. All rights reserved.</div>
+                        <div className="flex items-center gap-4"><span className="font-medium text-muted-foreground">Employee Records, Leave &amp; Payroll</span></div>
                     </footer>
                 </div>
             </div>
 
-            {/* Guided System Tour Modal */}
             <SystemTour open={tourOpen} onClose={() => setTourOpen(false)} />
-
-            {/* Global Toaster for Flash and Client Notifications */}
             <Toaster richColors position="top-right" closeButton />
         </div>
     );

@@ -1,14 +1,23 @@
-{
-    "$schema": "https://opencode.ai/config.json",
-    "mcp": {
-        "laravel-boost": {
-            "type": "local",
-            "enabled": true,
-            "command": [
-                "php",
-                "artisan",
-                "boost:mcp"
-            ]
-        }
-    }
+﻿{
+    "$schema":  "https://opencode.ai/config.json",
+    "mcp":  {
+                "laravel-boost":  {
+                                      "type":  "local",
+                                      "enabled":  true,
+                                      "command":  [
+                                                      "php",
+                                                      "artisan",
+                                                      "boost:mcp"
+                                                  ]
+                                  },
+                "chrome-devtools":  {
+                                        "command":  [
+                                                        "npx",
+                                                        "-y",
+                                                        "chrome-devtools-mcp@latest"
+                                                    ],
+                                        "type":  "local",
+                                        "enabled":  true
+                                    }
+            }
 }

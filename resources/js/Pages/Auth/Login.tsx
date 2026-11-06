@@ -1,4 +1,4 @@
-import { Checkbox } from '@/Components/ui/checkbox';
+﻿import { Checkbox } from '@/Components/ui/checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PasswordInput from '@/Components/PasswordInput';
@@ -26,26 +26,15 @@ export default function Login({
         remember: true as boolean,
     });
 
-    /**
-     * Sanitizes Ethiopian phone input:
-     * - Strips non-digits
-     * - Strips +251 / 251 prefix if pasted or entered
-     * - Strips any leading zeros (e.g. 09 -> 9)
-     * - Only accepts starting from 9
-     * - Limits to 9 digits (standard Ethiopian mobile length after prefix)
-     */
     const sanitizePhoneNumber = (raw: string): string => {
         let digits = raw.replace(/\D/g, '');
 
-        // Remove 251 prefix if pasted or typed
         if (digits.startsWith('251')) {
             digits = digits.slice(3);
         }
 
-        // Remove any leading zeros (e.g. 09... -> 9...)
         digits = digits.replace(/^0+/, '');
 
-        // It only has to accept from 9
         if (digits.length > 0 && !digits.startsWith('9')) {
             const nineIdx = digits.indexOf('9');
             if (nineIdx !== -1) {
@@ -83,7 +72,6 @@ export default function Login({
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        // Ensure current active tab credentials are submitted
         const finalLogin = authMethod === 'phone'
             ? (phoneNumber ? `+251${phoneNumber}` : '')
             : emailAddress;
@@ -101,28 +89,29 @@ export default function Login({
         <GuestLayout>
             <Head title="Sign In - Elhadar Engineering HRMS" />
 
-            <div className="mb-5">
-                <h2 className="text-xl font-bold text-black tracking-tight">Sign in</h2>
-                <p className="text-xs text-[#595959] mt-1 font-light">
+            <div className="mb-6">
+                <h2 className="text-xl font-bold text-foreground tracking-tight">Sign in</h2>
+                <p className="text-xs text-muted-foreground mt-1 font-light">
                     Access your employee records, leave and payroll tools.
                 </p>
             </div>
 
             {status && (
-                <div className="mb-4 text-xs font-semibold text-[#008254] bg-[#effcf8] p-3 border border-[#b7ecda] rounded-xs">
+                <div className="mb-4 text-xs font-semibold text-primary bg-primary/10 border border-primary/30 rounded-xl p-3">
                     {status}
                 </div>
             )}
 
             {/* Credential Type Selector Tabs */}
-            <div className="flex p-1 bg-[#f4f5f6] border border-[#e5e7eb] rounded-xs mb-5 gap-1">
+            <div role="tablist" aria-label="Credential type" className="flex p-1 bg-muted border border-border rounded-xl mb-5 gap-1">
                 <button
                     type="button"
+                    role="tab"
+                    aria-selected={authMethod === 'phone'}
                     onClick={() => switchMethod('phone')}
-                    className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 sm:gap-2 px-2 py-2 text-[11px] sm:text-xs font-semibold rounded-xs transition-all cursor-pointer ${
-                        authMethod === 'phone'
-                            ? 'bg-white text-[#008254] shadow-xs font-bold border border-[#d8d9da]'
-                            : 'text-[#64666a] hover:text-black'
+                    className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 sm:gap-2 px-2 py-2 text-[11px] sm:text-xs font-semibold rounded-xl transition-all cursor-pointer ${authMethod === 'phone'
+                        ? 'bg-card text-primary border border-border shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                 >
                     <Phone className="w-3.5 h-3.5 shrink-0" />
@@ -131,11 +120,12 @@ export default function Login({
                 </button>
                 <button
                     type="button"
+                    role="tab"
+                    aria-selected={authMethod === 'email'}
                     onClick={() => switchMethod('email')}
-                    className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 sm:gap-2 px-2 py-2 text-[11px] sm:text-xs font-semibold rounded-xs transition-all cursor-pointer ${
-                        authMethod === 'email'
-                            ? 'bg-white text-[#008254] shadow-xs font-bold border border-[#d8d9da]'
-                            : 'text-[#64666a] hover:text-black'
+                    className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 sm:gap-2 px-2 py-2 text-[11px] sm:text-xs font-semibold rounded-xl transition-all cursor-pointer ${authMethod === 'email'
+                        ? 'bg-card text-primary border border-border shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                 >
                     <Mail className="w-3.5 h-3.5 shrink-0" />
@@ -144,16 +134,19 @@ export default function Login({
                 </button>
             </div>
 
-            <form onSubmit={submit} className="space-y-4">
+            <form onSubmit={submit} className="space-y-4" aria-busy={processing}>
                 {authMethod === 'phone' ? (
                     <div>
                         <InputLabel
                             htmlFor="phone"
                             value="Mobile phone number"
-                            className="text-xs font-semibold text-black"
+                            className="text-xs font-semibold text-foreground"
                         />
 
-                        <div className="mt-1">
+                        <div className="relative mt-1 group">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium pointer-events-none select-none">
+                                +251
+                            </span>
                             <Input
                                 id="phone"
                                 type="tel"
@@ -161,24 +154,21 @@ export default function Login({
                                 inputMode="numeric"
                                 value={phoneNumber}
                                 placeholder="9XXXXXXXX"
-                                className="border-[#d8d9da] bg-white text-sm text-black placeholder:text-[#9e9e9e] font-medium tracking-wider"
+                                className="pl-9 border-input bg-background text-sm text-foreground placeholder:text-muted-foreground font-medium tracking-wider"
                                 autoComplete="tel-national"
                                 autoFocus
                                 onChange={handlePhoneChange}
                             />
                         </div>
 
-                        <InputError
-                            message={errors.login || (errors as Record<string, string | undefined>).email}
-                            className="mt-1.5 text-xs text-[#de2828]"
-                        />
+                        <InputError message={errors.login} className="mt-1.5" />
                     </div>
                 ) : (
                     <div>
                         <InputLabel
                             htmlFor="email"
                             value="Email address"
-                            className="text-xs font-semibold text-black"
+                            className="text-xs font-semibold text-foreground"
                         />
 
                         <div className="mt-1">
@@ -188,17 +178,14 @@ export default function Login({
                                 name="email"
                                 value={emailAddress}
                                 placeholder="Enter your email"
-                                className="border-[#d8d9da] bg-white text-sm text-black placeholder:text-[#9e9e9e]"
+                                className="border-input bg-background text-sm text-foreground placeholder:text-muted-foreground"
                                 autoComplete="username"
                                 autoFocus
                                 onChange={handleEmailChange}
                             />
                         </div>
 
-                        <InputError
-                            message={errors.login || (errors as Record<string, string | undefined>).email}
-                            className="mt-1.5 text-xs text-[#de2828]"
-                        />
+                        <InputError message={errors.login} className="mt-1.5" />
                     </div>
                 )}
 
@@ -207,12 +194,12 @@ export default function Login({
                         <InputLabel
                             htmlFor="password"
                             value="Password"
-                            className="text-xs font-semibold text-black"
+                            className="text-xs font-semibold text-foreground"
                         />
                         {canResetPassword && (
                             <Link
                                 href={route('password.request')}
-                                className="text-xs text-[#008254] hover:underline font-medium"
+                                className="text-xs text-primary underline-offset-4 hover:underline font-medium"
                             >
                                 Forgot password?
                             </Link>
@@ -230,7 +217,7 @@ export default function Login({
                         />
                     </div>
 
-                    <InputError message={errors.password} className="mt-1.5 text-xs text-[#de2828]" />
+                    <InputError message={errors.password} className="mt-1.5" />
                 </div>
 
                 <div className="flex items-center justify-between gap-3 flex-wrap pt-1">
@@ -238,10 +225,10 @@ export default function Login({
                         <Checkbox
                             name="remember"
                             checked={data.remember}
-                            className="rounded-xs text-[#008254] focus-visible:ring-[#008254] border-[#d8d9da] shrink-0 data-[state=checked]:bg-[#008254] data-[state=checked]:text-white"
+                            className="rounded-sm text-primary border border-border shrink-0 focus-visible:ring-ring/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                             onCheckedChange={(checked) => setData('remember', checked === true)}
                         />
-                        <span className="ms-2 text-xs text-[#595959]">
+                        <span className="ms-2 text-xs text-muted-foreground">
                             Keep me signed in
                         </span>
                     </label>
@@ -250,7 +237,7 @@ export default function Login({
                 <div className="pt-2">
                     <Button
                         type="submit"
-                        className="w-full bg-[#008254] hover:bg-[#006642] text-white font-semibold py-2.5 text-sm rounded-xs shadow-xs flex items-center justify-center space-x-2 transition-all cursor-pointer"
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold py-2.5 text-sm rounded-xl shadow-sm flex items-center justify-center space-x-2 transition-all cursor-pointer disabled:pointer-events-none disabled:opacity-50"
                         disabled={processing}
                     >
                         <Lock className="h-3.5 w-3.5" />

@@ -1,4 +1,4 @@
-import InputError from '@/Components/InputError';
+﻿import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PasswordInput from '@/Components/PasswordInput';
 import GuestLayout from '@/Layouts/GuestLayout';
@@ -45,31 +45,31 @@ export default function FirstPasswordChange({
 
             <div className="mb-5">
                 <div className="flex items-start sm:items-center gap-2 mb-2">
-                    <AlertTriangle className="w-4 h-4 text-[#008254] shrink-0 mt-0.5 sm:mt-0" />
-                    <h2 className="text-xl font-bold text-black tracking-tight">
+                    <AlertTriangle className="w-4 h-4 text-primary shrink-0 mt-0.5 sm:mt-0" />
+                    <h2 className="text-xl font-bold text-foreground tracking-tight">
                         Change Your Password
                     </h2>
                 </div>
-                <p className="text-xs text-[#595959] mt-1 font-light">
+                <p className="text-xs text-muted-foreground mt-1 font-light">
                     This is your first login. Please set a new password to secure your account.
                 </p>
             </div>
 
             {status && (
-                <div className="mb-4 text-xs font-semibold text-[#008254] bg-[#effcf8] p-3 border border-[#b7ecda] rounded-xs">
+                <div className="mb-4 text-xs font-semibold text-primary bg-primary/10 border border-primary/30 rounded-xl p-3">
                     {status}
                 </div>
             )}
 
-            <form onSubmit={submit} className="space-y-4">
+            <form onSubmit={submit} className="space-y-4" aria-busy={processing}>
                 <div>
                     <InputLabel
                         htmlFor="current_password"
                         value="Current Password"
-                        className="text-xs font-semibold text-black"
+                        className="text-xs font-semibold text-foreground"
                     />
 
-                    <div className="mt-1 flex rounded-xs shadow-xs border border-[#d8d9da] focus-within:border-[#008254] focus-within:ring-1 focus-within:ring-[#008254] bg-white overflow-hidden">
+                    <div className="mt-1 flex rounded-xl shadow-sm border border-input focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20 bg-background overflow-hidden">
                         <PasswordInput
                             id="current_password"
                             name="current_password"
@@ -82,7 +82,7 @@ export default function FirstPasswordChange({
 
                     <InputError
                         message={errors.current_password}
-                        className="mt-1.5 text-xs text-[#de2828]"
+                        className="mt-1.5 text-xs"
                     />
                 </div>
 
@@ -90,10 +90,10 @@ export default function FirstPasswordChange({
                     <InputLabel
                         htmlFor="password"
                         value="New Password"
-                        className="text-xs font-semibold text-black"
+                        className="text-xs font-semibold text-foreground"
                     />
 
-                    <div className="mt-1 flex rounded-xs shadow-xs border border-[#d8d9da] focus-within:border-[#008254] focus-within:ring-1 focus-within:ring-[#008254] bg-white overflow-hidden">
+                    <div className="mt-1 flex rounded-xl shadow-sm border border-input focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20 bg-background overflow-hidden">
                         <PasswordInput
                             id="password"
                             name="password"
@@ -104,17 +104,17 @@ export default function FirstPasswordChange({
                         />
                     </div>
 
-                    <InputError message={errors.password} className="mt-1.5 text-xs text-[#de2828]" />
+                    <InputError message={errors.password} className="mt-1.5 text-xs" />
                 </div>
 
                 <div>
                     <InputLabel
                         htmlFor="password_confirmation"
                         value="Confirm New Password"
-                        className="text-xs font-semibold text-black"
+                        className="text-xs font-semibold text-foreground"
                     />
 
-                    <div className="mt-1 flex rounded-xs shadow-xs border border-[#d8d9da] focus-within:border-[#008254] focus-within:ring-1 focus-within:ring-[#008254] bg-white overflow-hidden">
+                    <div className="mt-1 flex rounded-xl shadow-sm border border-input focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20 bg-background overflow-hidden">
                         <PasswordInput
                             id="password_confirmation"
                             name="password_confirmation"
@@ -129,14 +129,14 @@ export default function FirstPasswordChange({
 
                     <InputError
                         message={errors.password_confirmation}
-                        className="mt-1.5 text-xs text-[#de2828]"
+                        className="mt-1.5 text-xs"
                     />
                 </div>
 
                 <div className="pt-2">
                     <Button
                         type="submit"
-                        className="w-full bg-[#008254] hover:bg-[#006642] text-white font-semibold py-2.5 text-sm rounded-xs shadow-xs flex items-center justify-center space-x-2 transition-all cursor-pointer"
+                        className="w-full rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
                         disabled={processing}
                     >
                         <Lock className="h-3.5 w-3.5" />
@@ -154,7 +154,7 @@ export default function FirstPasswordChange({
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-xs text-[#008254] text-center font-medium">
+                        <p className="text-xs text-primary text-center font-medium">
                             Password changed successfully. Redirecting to your profile...
                         </p>
                     </Transition>

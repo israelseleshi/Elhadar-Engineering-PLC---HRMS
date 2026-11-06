@@ -1,4 +1,4 @@
-import {
+﻿import {
     forwardRef,
     InputHTMLAttributes,
     useEffect,
@@ -38,7 +38,7 @@ export default forwardRef(function PasswordInput(
                 {...props}
                 type={visible ? 'text' : 'password'}
                 className={cn(
-                    'block w-full rounded-xs border-[#d8d9da] bg-white pr-10 text-sm shadow-sm focus-visible:ring-[#008254] focus-visible:border-[#008254]',
+                    'block w-full rounded-xl border border-input bg-background pr-10 text-sm text-foreground shadow-sm focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:border-ring',
                     className
                 )}
                 ref={localRef}
@@ -49,10 +49,12 @@ export default forwardRef(function PasswordInput(
                 onClick={() => setVisible((v) => !v)}
                 aria-label={visible ? 'Hide password' : 'Show password'}
                 title={visible ? 'Hide password' : 'Show password'}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xs p-1 text-[#64666a] transition-colors hover:text-[#008254]"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl p-1.5 rounded-lg text-muted-foreground transition-colors hover:text-primary"
             >
                 {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
         </div>
     );
 });
+
+

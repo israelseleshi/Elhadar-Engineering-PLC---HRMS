@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -14,19 +14,19 @@ interface Props {
 }
 
 const ETHIOPIAN_MONTHS = [
-    { num: 1, name: 'Meskerem (መስከረም)' },
-    { num: 2, name: 'Tikimt (ጥቅምት)' },
-    { num: 3, name: 'Hidar (ኅዳር)' },
-    { num: 4, name: 'Tahsas (ታኅሣሥ)' },
-    { num: 5, name: 'Tir (ጥር)' },
-    { num: 6, name: 'Yakatit (የካቲት)' },
-    { num: 7, name: 'Magabit (መጋቢት)' },
-    { num: 8, name: 'Miyazya (ሚያዝያ)' },
-    { num: 9, name: 'Ginbot (ግንቦት)' },
-    { num: 10, name: 'Sene (ሰኔ)' },
-    { num: 11, name: 'Hamle (ሐምሌ)' },
-    { num: 12, name: 'Nehase (ነሐሴ)' },
-    { num: 13, name: 'Pagume (ጳጉሜ)' },
+    { num: 1, name: 'Meskerem (áˆ˜áˆµáŠ¨áˆ¨áˆ)' },
+    { num: 2, name: 'Tikimt (áŒ¥á‰…áˆá‰µ)' },
+    { num: 3, name: 'Hidar (áŠ…á‹³áˆ­)' },
+    { num: 4, name: 'Tahsas (á‰³áŠ…áˆ£áˆ¥)' },
+    { num: 5, name: 'Tir (áŒ¥áˆ­)' },
+    { num: 6, name: 'Yakatit (á‹¨áŠ«á‰²á‰µ)' },
+    { num: 7, name: 'Magabit (áˆ˜áŒ‹á‰¢á‰µ)' },
+    { num: 8, name: 'Miyazya (áˆšá‹«á‹á‹«)' },
+    { num: 9, name: 'Ginbot (áŒáŠ•á‰¦á‰µ)' },
+    { num: 10, name: 'Sene (áˆ°áŠ”)' },
+    { num: 11, name: 'Hamle (áˆáˆáˆŒ)' },
+    { num: 12, name: 'Nehase (áŠáˆáˆ´)' },
+    { num: 13, name: 'Pagume (áŒ³áŒ‰áˆœ)' },
 ];
 
 export default function EthiopianDatePicker({
@@ -113,14 +113,14 @@ export default function EthiopianDatePicker({
                         {label} {required && <span className="text-[#de2828]">*</span>}
                     </label>
                 )}
-                <div className="flex items-center border border-[#d8d9da] rounded-xs overflow-hidden text-[11px] font-semibold">
+                <div className="flex items-center border border-[#d2d2d7] rounded-xs overflow-hidden text-[11px] font-semibold">
                     <button
                         type="button"
                         onClick={() => setMode('GC')}
                         className={`px-2 py-0.5 transition-colors ${
                             mode === 'GC'
-                                ? 'bg-[#008254] text-white'
-                                : 'bg-white text-[#64666a] hover:bg-[#f7f7f7]'
+                                ? 'bg-[#0066cc] text-white'
+                                : 'bg-white text-[#6e6e73] hover:bg-[#f5f5f7]'
                         }`}
                     >
                         Gregorian (G.C.)
@@ -130,8 +130,8 @@ export default function EthiopianDatePicker({
                         onClick={() => setMode('EC')}
                         className={`px-2 py-0.5 transition-colors ${
                             mode === 'EC'
-                                ? 'bg-[#008254] text-white'
-                                : 'bg-white text-[#64666a] hover:bg-[#f7f7f7]'
+                                ? 'bg-[#0066cc] text-white'
+                                : 'bg-white text-[#6e6e73] hover:bg-[#f5f5f7]'
                         }`}
                     >
                         Ethiopian (E.C.)
@@ -145,11 +145,11 @@ export default function EthiopianDatePicker({
                         type="date"
                         value={gcDate}
                         onChange={(e) => handleGcChange(e.target.value)}
-                        className="h-10 text-xs border-[#d8d9da] rounded-xs bg-[#f7f7f7]"
+                        className="h-10 text-xs border-[#d2d2d7] rounded-xs bg-[#f5f5f7]"
                         required={required}
                     />
                     {valueEc && (
-                        <p className="text-[10px] text-[#008254] font-medium mt-1">
+                        <p className="text-[10px] text-[#0066cc] font-medium mt-1">
                             Ethiopian Equivalent: {valueEc} E.C.
                         </p>
                     )}
@@ -159,7 +159,7 @@ export default function EthiopianDatePicker({
                     <div className="grid grid-cols-3 gap-2">
                         <div>
                             <Select value={String(ecMonth)} onValueChange={(v) => handleEcChange(ecYear, v, ecDay)}>
-                                <SelectTrigger className="h-10 border-[#d8d9da] rounded-xs text-xs bg-[#f7f7f7]">
+                                <SelectTrigger className="h-10 border-[#d2d2d7] rounded-xs text-xs bg-[#f5f5f7]">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -171,7 +171,7 @@ export default function EthiopianDatePicker({
                         </div>
                         <div>
                             <Select value={String(ecDay)} onValueChange={(v) => handleEcChange(ecYear, ecMonth, v)}>
-                                <SelectTrigger className="h-10 border-[#d8d9da] rounded-xs text-xs bg-[#f7f7f7]">
+                                <SelectTrigger className="h-10 border-[#d2d2d7] rounded-xs text-xs bg-[#f5f5f7]">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -187,12 +187,12 @@ export default function EthiopianDatePicker({
                                 value={ecYear}
                                 onChange={(e) => handleEcChange(e.target.value, ecMonth, ecDay)}
                                 placeholder="Year (e.g. 2017)"
-                                className="h-10 text-xs border-[#d8d9da] rounded-xs bg-[#f7f7f7]"
+                                className="h-10 text-xs border-[#d2d2d7] rounded-xs bg-[#f5f5f7]"
                             />
                         </div>
                     </div>
                     {gcDate && (
-                        <p className="text-[10px] text-[#008254] font-medium">
+                        <p className="text-[10px] text-[#0066cc] font-medium">
                             Gregorian SQL Equivalent: {gcDate}
                         </p>
                     )}
@@ -201,3 +201,4 @@ export default function EthiopianDatePicker({
         </div>
     );
 }
+

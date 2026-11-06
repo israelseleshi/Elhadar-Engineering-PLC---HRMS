@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 
 interface Props {
     name: string;
@@ -40,10 +40,11 @@ export default function EmployeeAvatar({ name, src, size = 'md', className = '' 
     // Elegant fallback initials avatar
     return (
         <div 
-            className={`shrink-0 flex items-center justify-center bg-[#008254] text-white select-none rounded-full ${config.container} ${className}`}
+            className={`shrink-0 flex items-center justify-center bg-[#0066cc] text-white select-none rounded-full ${config.container} ${className}`}
             title={name}
         >
             <span className={config.text}>{initial}</span>
         </div>
     );
 }
+

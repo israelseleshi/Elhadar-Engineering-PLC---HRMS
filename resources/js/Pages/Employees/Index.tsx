@@ -137,7 +137,7 @@ const staffDirectoryTourSteps: TourStep[] = [
     {
         target: '[data-tour="department-filter"]',
         title: 'Departmental Filter',
-        content: 'Narrow down personnel by department—such as Engineering Dept, Electro-Mechanical, Procurement, Finance, or General Operations.',
+        content: 'Narrow down personnel by departmentâ€”such as Engineering Dept, Electro-Mechanical, Procurement, Finance, or General Operations.',
         badge: 'Department',
         placement: 'bottom',
     },
@@ -165,8 +165,8 @@ const staffDirectoryTourSteps: TourStep[] = [
     },
     {
         target: '[data-tour="first-dossier-btn"]',
-        title: '360° Employee Profile',
-        content: 'Click the "View Profile" button on any employee row to open their complete personnel file—revealing all allowance breakdowns, residence, pension number, and career increments.',
+        title: '360Â° Employee Profile',
+        content: 'Click the "View Profile" button on any employee row to open their complete personnel fileâ€”revealing all allowance breakdowns, residence, pension number, and career increments.',
         badge: 'Profile View',
         placement: 'left',
         tip: 'From the employee profile, you can also edit details or log statutory salary adjustments.'
@@ -308,7 +308,7 @@ export default function Index({ employees, filters, stats, departments, workplac
     };
 
     const formatCurrency = (amount?: number) => {
-        if (!amount || amount <= 0) return '—';
+        if (!amount || amount <= 0) return 'â€”';
         return new Intl.NumberFormat('en-ET', {
             style: 'currency',
             currency: 'ETB',
@@ -319,11 +319,11 @@ export default function Index({ employees, filters, stats, departments, workplac
     const getStatusBadge = (empStatus: string) => {
         switch (empStatus) {
             case 'Permanent':
-                return <Badge variant="mint" className="gap-1 font-bold"><CheckCircle2 className="w-3 h-3 text-[#008254]" /> Permanent</Badge>;
+                return <Badge className="gap-1 font-medium bg-[#e8f5e9] text-[#1f7a3d] border border-[#cdebd6] hover:bg-[#e8f5e9]"><CheckCircle2 className="w-3 h-3" /> Permanent</Badge>;
             case 'Contract':
                 return <Badge variant="secondary">Contract</Badge>;
             case 'Probation':
-                return <Badge variant="lime">Under Probation</Badge>;
+                return <Badge className="font-medium bg-[#fff7e6] text-[#8a5a00] border border-[#f3d9a4] hover:bg-[#fff7e6]">Under Probation</Badge>;
             case 'Separated':
                 return <Badge variant="destructive">Separated</Badge>;
             default:
@@ -333,135 +333,141 @@ export default function Index({ employees, filters, stats, departments, workplac
 
     return (
         <AuthenticatedLayout
-            header={
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div data-tour="page-header">
-                        <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-white">Staff Directory</h2>
-                        <p className="mt-1 text-sm text-[#e3faf2] font-light max-w-2xl">
-                            Search and filter personnel records across Head Office and active project sites.
-                        </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                        {/* Excel Export Dropdown */}
-                        <div className="relative">
-                            <Button
-                                type="button"
-                                onClick={() => setExportMenuOpen(!exportMenuOpen)}
-                                variant="outline"
-                                className="bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/25 gap-1.5 rounded-xs"
-                            >
-                                <Download className="w-3.5 h-3.5 text-[#ddfa88]" />
-                                <span>Export</span>
-                                <ChevronDown className="w-3 h-3 text-white/70" />
-                            </Button>
-                            {exportMenuOpen && (
-                                <div className="absolute right-0 mt-1 w-56 bg-white border border-[#d8d9da] rounded-xs shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
-                                    <a
-                                        href={route('export.employees', { search, department_id: departmentId, work_place: workPlace, status })}
-                                        className="flex items-center gap-2 px-3 py-2 text-xs text-[#3d4045] hover:bg-[#effcf8] hover:text-[#008254]"
-                                        onClick={() => setExportMenuOpen(false)}
-                                    >
-                                        <Download className="w-3.5 h-3.5 text-[#008254]" />
-                                        <span>Export Filtered View (CSV)</span>
-                                    </a>
-                                    <a
-                                        href={route('export.employees', { status: 'Permanent' })}
-                                        className="flex items-center gap-2 px-3 py-2 text-xs text-[#3d4045] hover:bg-[#effcf8] hover:text-[#008254]"
-                                        onClick={() => setExportMenuOpen(false)}
-                                    >
-                                        <CheckCircle2 className="w-3.5 h-3.5 text-[#008254]" />
-                                        <span>Export All Active Staff (CSV)</span>
-                                    </a>
-                                    <div className="border-t border-[#ebebec] my-1" />
-                                    <a
-                                        href={route('import.template')}
-                                        className="flex items-center gap-2 px-3 py-2 text-xs text-[#3d4045] hover:bg-[#effcf8] hover:text-[#008254]"
-                                        onClick={() => setExportMenuOpen(false)}
-                                    >
-                                        <FileSpreadsheet className="w-3.5 h-3.5 text-[#008254]" />
-                                        <span>Download Blank Template (CSV)</span>
-                                    </a>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Excel Sync Modal Trigger */}
-                        <Button
-                            type="button"
-                            onClick={() => setShowImportModal(true)}
-                            variant="outline"
-                            className="bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/25 gap-1.5 rounded-xs"
-                        >
-                            <FileSpreadsheet className="w-3.5 h-3.5 text-[#ddfa88]" />
-                            <span>Excel Sync</span>
-                        </Button>
-
-                        <Button
-                            type="button"
-                            onClick={() => setIsTourOpen(true)}
-                            variant="outline"
-                            className="bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/25 gap-1.5 rounded-xs transition-colors"
-                        >
-                            <Compass className="w-3.5 h-3.5 text-[#ddfa88]" />
-                            <span>Tour Directory</span>
-                        </Button>
-
-                        <Link href={route('employees.create')}>
-                            <Button data-tour="onboard-btn" className="bg-[#ddfa88] hover:bg-[#cbf458] text-[#00482f] font-bold text-xs gap-1.5 rounded-xs shadow-sm">
-                                <UserPlus className="w-3.5 h-3.5" />
-                                <span>Onboard Employee</span>
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-            }
+            title="Staff Directory"
+            subtitle="Search and filter personnel records across Head Office and active project sites."
         >
             <Head title="Staff Directory - Elhadar Engineering HRMS" />
 
-            {/* Consolidated Lifecycle Filter Tabs */}
-            <div data-tour="lifecycle-tabs" className="flex flex-wrap items-center gap-2 mb-6">
-                {[
-                    { label: 'All Staff', val: '', count: stats.total_headcount, color: '#008254' },
-                    { label: 'Permanent', val: 'Permanent', count: stats.permanent_count, color: '#008254' },
-                    { label: 'Probation Pipeline', val: 'Probation', count: stats.probation_count, color: '#b45309' },
-                    { label: 'Project Contracts', val: 'Contract', count: stats.contract_count, color: '#2563eb' },
-                    { label: 'Separated Archive', val: 'Separated', count: stats.separated_count, color: '#6b7280' },
-                ].map((tab) => {
-                    const isActive = (status || '') === tab.val;
-                    const hasAttention = tab.val === 'Probation' && tab.count > 0;
-                    return (
-                        <button
-                            key={tab.label}
-                            type="button"
-                            onClick={() => {
-                                setStatus(tab.val);
-                                handleFilter({ status: tab.val });
-                            }}
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all border ${
-                                isActive
-                                    ? `bg-[#008254] text-white border-[#008254] shadow-md`
-                                    : 'bg-white text-[#3d4045] border-[#d8d9da] hover:bg-[#f7f7f7] hover:text-[#008254]'
-                            }`}
-                        >
-                            <span className="flex items-center gap-1">{tab.label}{hasAttention && <span className="text-[10px] bg-[#b45309]/10 text-[#b45309] px-1.5 py-0.5 rounded">attention</span>}</span>
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                isActive ? 'bg-white/20 text-white' : 'bg-[#f1f5f9] text-[#64666a]'
-                            }`}>
-                                {tab.count}
-                            </span>
-                        </button>
-                    );
-                })}
+            {/* Actions Toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+                <div data-tour="lifecycle-tabs" className="flex flex-wrap items-center gap-2">
+                    {[
+                        { label: 'All Staff', val: '', count: stats.total_headcount },
+                        { label: 'Permanent', val: 'Permanent', count: stats.permanent_count },
+                        { label: 'Probation Pipeline', val: 'Probation', count: stats.probation_count },
+                        { label: 'Project Contracts', val: 'Contract', count: stats.contract_count },
+                        { label: 'Separated Archive', val: 'Separated', count: stats.separated_count },
+                    ].map((tab) => {
+                        const isActive = (status || '') === tab.val;
+                        const hasAttention = tab.val === 'Probation' && tab.count > 0;
+                        return (
+                            <button
+                                key={tab.val}
+                                type="button"
+                                onClick={() => {
+                                    setStatus(tab.val);
+                                    handleFilter({ status: tab.val });
+                                }}
+                                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center gap-2 ${
+                                    isActive
+                                        ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                                        : 'bg-card text-foreground border-border hover:bg-muted'
+                                }`}
+                            >
+                                <span className="flex items-center gap-1">
+                                    {tab.label}
+                                    {hasAttention && (
+                                        <span className="text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-400 px-1.5 py-0.2 rounded font-semibold">
+                                            attention
+                                        </span>
+                                    )}
+                                </span>
+                                <Badge
+                                    variant="secondary"
+                                    className={`text-[10px] px-1.5 py-0 rounded-full font-mono ${
+                                        isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'
+                                    }`}
+                                >
+                                    {tab.count}
+                                </Badge>
+                            </button>
+                        );
+                    })}
+                </div>
 
-                <div className="ml-auto">
+                <div className="flex flex-wrap items-center gap-2">
+                    {/* Excel Export Dropdown */}
+                    <div className="relative">
+                        <Button
+                            type="button"
+                            onClick={() => setExportMenuOpen(!exportMenuOpen)}
+                            variant="outline"
+                            size="sm"
+                            className="border-border bg-card text-foreground hover:bg-muted font-medium text-xs gap-1.5 rounded-md"
+                        >
+                            <Download className="w-3.5 h-3.5 text-primary" />
+                            <span>Export</span>
+                            <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                        </Button>
+                        {exportMenuOpen && (
+                            <div className="absolute right-0 mt-1 w-56 bg-card border border-border rounded-md shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+                                <a
+                                    href={route('export.employees', { search, department_id: departmentId, work_place: workPlace, status })}
+                                    className="flex items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted"
+                                    onClick={() => setExportMenuOpen(false)}
+                                >
+                                    <Download className="w-3.5 h-3.5 text-primary" />
+                                    <span>Export Filtered View (CSV)</span>
+                                </a>
+                                <a
+                                    href={route('export.employees', { status: 'Permanent' })}
+                                    className="flex items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted"
+                                    onClick={() => setExportMenuOpen(false)}
+                                >
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+                                    <span>Export All Active Staff (CSV)</span>
+                                </a>
+                                <div className="border-t border-border my-1" />
+                                <a
+                                    href={route('import.template')}
+                                    className="flex items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted"
+                                    onClick={() => setExportMenuOpen(false)}
+                                >
+                                    <FileSpreadsheet className="w-3.5 h-3.5 text-primary" />
+                                    <span>Download Blank Template (CSV)</span>
+                                </a>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Excel Sync Modal Trigger */}
+                    <Button
+                        type="button"
+                        onClick={() => setShowImportModal(true)}
+                        variant="outline"
+                        size="sm"
+                        className="border-border bg-card text-foreground hover:bg-muted font-medium text-xs gap-1.5 rounded-md"
+                    >
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-primary" />
+                        <span>Excel Sync</span>
+                    </Button>
+
+                    <Button
+                        type="button"
+                        onClick={() => setIsTourOpen(true)}
+                        variant="outline"
+                        size="sm"
+                        className="border-border bg-card text-foreground hover:bg-muted font-medium text-xs gap-1.5 rounded-md"
+                    >
+                        <Compass className="w-3.5 h-3.5 text-primary" />
+                        <span>Tour Directory</span>
+                    </Button>
+
+                    <Link href={route('employees.create')}>
+                        <Button data-tour="onboard-btn" size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs gap-1.5 rounded-md shadow-xs">
+                            <UserPlus className="w-3.5 h-3.5" />
+                            <span>Onboard Employee</span>
+                        </Button>
+                    </Link>
+
                     <ViewToggle value={viewMode} onChange={setViewMode} />
                 </div>
             </div>
 
             {/* Bulk Action Toolbar */}
             {selectedIds.size > 0 && (
-                <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 bg-[#effcf8] border border-[#b7ecda] rounded-xl animate-in fade-in slide-in-from-top-2 duration-200">
-                    <span className="text-sm font-bold text-[#00482f]">
+                <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 bg-[#f5f5f7] border border-[#d2d2d7] rounded-xl animate-in fade-in slide-in-from-top-2 duration-200">
+                    <span className="text-sm font-bold text-[#1d1d1f]">
                         {selectedIds.size} employee{selectedIds.size > 1 ? 's' : ''} selected
                     </span>
                     <div className="flex flex-wrap items-center gap-2">
@@ -469,13 +475,13 @@ export default function Index({ employees, filters, stats, departments, workplac
                             variant="outline"
                             size="sm"
                             onClick={() => setSelectedIds(new Set())}
-                            className="text-xs border-[#d8d9da] text-[#3d4045] hover:text-black"
+                            className="text-xs border-[#d2d2d7] text-[#424245] hover:text-black"
                         >
                             Clear selection
                         </Button>
                         <Button
                             size="sm"
-                            className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold gap-1.5"
+                            className="bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-bold gap-1.5"
                             onClick={() => {
                                 // bulk confirm permanent for probationers
                                 setSelectedIds(new Set());
@@ -489,11 +495,11 @@ export default function Index({ employees, filters, stats, departments, workplac
             )}
 
             {/* Filter and Search Bar */}
-            <Card data-tour="filters-bar" className="border-[#d8d9da] bg-white mb-6">
+            <Card data-tour="filters-bar" className="border-[#d2d2d7] bg-white mb-6">
                 <CardContent className="p-4">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
                         <div data-tour="search-input" className="relative md:col-span-6 lg:col-span-6">
-                            <Search className="w-4 h-4 absolute left-3 top-3 text-[#64666a]" />
+                            <Search className="w-4 h-4 absolute left-3 top-3 text-[#6e6e73]" />
                             <Input
                                 placeholder="Search name, file no, phone, TIN, POESSA..."
                                 value={search}
@@ -504,7 +510,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') handleFilter({ search });
                                 }}
-                                className="pl-10 pr-10 bg-[#f7f7f7] border-[#d8d9da] text-sm h-11 rounded-xl focus:border-[#008254] focus:ring-1 focus:ring-[#008254]"
+                                className="pl-10 pr-10 bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11 rounded-xl focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc]"
                             />
                             {search && (
                                 <button
@@ -513,7 +519,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                                         setSearch('');
                                         debouncedFilter({ search: '' });
                                     }}
-                                    className="absolute right-3 top-3 text-[#64666a] hover:text-black"
+                                    className="absolute right-3 top-3 text-[#6e6e73] hover:text-black"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
@@ -521,16 +527,16 @@ export default function Index({ employees, filters, stats, departments, workplac
                         </div>
 
                         <div data-tour="department-filter" className="md:col-span-2 lg:col-span-2">
-                            <Select value={departmentId || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setDepartmentId(next); handleFilter({ department_id: next }); }}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder={`All Departments (${departments.length})`} /></SelectTrigger><SelectContent><SelectItem value="__all__">All Departments ({departments.length})</SelectItem>{departments.map((d) => (<SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>))}</SelectContent></Select>
+                            <Select value={departmentId || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setDepartmentId(next); handleFilter({ department_id: next }); }}><SelectTrigger className="w-full h-10 rounded-xs border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue placeholder={`All Departments (${departments.length})`} /></SelectTrigger><SelectContent><SelectItem value="__all__">All Departments ({departments.length})</SelectItem>{departments.map((d) => (<SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>))}</SelectContent></Select>
                         </div>
 
                         <div data-tour="workplace-filter" className="md:col-span-2 lg:col-span-2">
-                            <Select value={workPlace || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setWorkPlace(next); handleFilter({ work_place: next }); }}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder="All Workplaces" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Workplaces ({workplaces.length > 0 ? workplaces.length : 'All'})</SelectItem><SelectItem value="H.O">Head Office (H.O)</SelectItem><SelectItem value="Project">All Project Sites</SelectItem>{workplaces.filter(w => w !== 'H.O' && w !== 'Head Office').map((w) => (<SelectItem key={w} value={w}>{w}</SelectItem>))}</SelectContent></Select>
+                            <Select value={workPlace || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setWorkPlace(next); handleFilter({ work_place: next }); }}><SelectTrigger className="w-full h-10 rounded-xs border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue placeholder="All Workplaces" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Workplaces ({workplaces.length > 0 ? workplaces.length : 'All'})</SelectItem><SelectItem value="H.O">Head Office (H.O)</SelectItem><SelectItem value="Project">All Project Sites</SelectItem>{workplaces.filter(w => w !== 'H.O' && w !== 'Head Office').map((w) => (<SelectItem key={w} value={w}>{w}</SelectItem>))}</SelectContent></Select>
                         </div>
 
                         <div data-tour="status-filter" className="md:col-span-2 lg:col-span-2 flex flex-col gap-2">
                             <Select value={status || '__all__'} onValueChange={(v) => { const next = v === '__all__' ? '' : v; setStatus(next); handleFilter({ status: next }); }}>
-                                <SelectTrigger className="w-full h-11 md:h-10 rounded-xl md:rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-sm md:text-xs text-[#3d4045]"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+                                <SelectTrigger className="w-full h-11 md:h-10 rounded-xl md:rounded-xs border-[#d2d2d7] bg-[#f5f5f7] text-sm md:text-xs text-[#424245]"><SelectValue placeholder="All Statuses" /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="__all__">All Statuses</SelectItem>
                                     <SelectItem value="Permanent">Permanent</SelectItem>
@@ -542,7 +548,7 @@ export default function Index({ employees, filters, stats, departments, workplac
 
                             <Button
                                 onClick={() => handleFilter({ search })}
-                                className="bg-[#008254] hover:bg-[#006642] text-white h-11 px-4 text-sm font-bold rounded-xl"
+                                className="bg-[#0066cc] hover:bg-[#0071e3] text-white h-11 px-4 text-sm font-bold rounded-xl"
                             >
                                 Filter
                             </Button>
@@ -552,7 +558,7 @@ export default function Index({ employees, filters, stats, departments, workplac
             </Card>
 
             {/* Comparison Data Table (Strictly Styled per NerdWallet DESIGN.md) */}
-            <Card data-tour="data-table" className="border-[#d8d9da] bg-white overflow-hidden shadow-sm">
+            <Card data-tour="data-table" className="border-[#d2d2d7] bg-white overflow-hidden shadow-sm">
                 {viewMode === 'table' ? (
                 <Table>
                     <TableHeader>
@@ -561,7 +567,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                                 <Checkbox
                                     checked={selectedIds.size > 0 && [...selectedIds].every((id) => employees.data.some((e) => e.id === id))}
                                     onCheckedChange={() => selectAllOnPage()}
-                                    className="rounded border-[#d8d9da] data-[state=checked]:bg-[#008254] data-[state=checked]:text-white"
+                                    className="rounded border-[#d2d2d7] data-[state=checked]:bg-[#0066cc] data-[state=checked]:text-white"
                                 />
                             </TableHead>
                             <TableHead className="w-14 text-center">Photo</TableHead>
@@ -581,11 +587,11 @@ export default function Index({ employees, filters, stats, departments, workplac
                             <TableRow>
                                 <TableCell colSpan={11} className="text-center py-16">
                                     <div className="flex flex-col items-center gap-3">
-                                        <div className="w-16 h-16 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64666a]">
+                                        <div className="w-16 h-16 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#6e6e73]">
                                             <Eye className="w-8 h-8" />
                                         </div>
                                         <h4 className="text-sm font-bold text-black">No personnel records found</h4>
-                                        <p className="text-xs text-[#64666a] max-w-xs">
+                                        <p className="text-xs text-[#6e6e73] max-w-xs">
                                             Try broadening your search or resetting the filters below.
                                         </p>
                                         <Button
@@ -598,7 +604,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                                                 setStatus('');
                                                 debouncedFilter({ search: '', department_id: '', work_place: '', status: '' });
                                             }}
-                                            className="text-xs border-[#d8d9da] text-[#008254] hover:bg-[#effcf8]"
+                                            className="text-xs border-[#d2d2d7] text-[#0066cc] hover:bg-[#f5f5f7]"
                                         >
                                             Reset filters
                                         </Button>
@@ -609,30 +615,30 @@ export default function Index({ employees, filters, stats, departments, workplac
                             employees.data.map((emp, idx) => (
                                 <TableRow 
                                     key={emp.id} 
-                                    className={`hover:bg-[#effcf8]/50 transition-colors border-b border-[#ebebec]/50 ${
+                                    className={`hover:bg-[#f5f5f7]/50 transition-colors border-b border-[#e8e8ed]/50 ${
                                         emp.status === 'Separated' ? 'opacity-60 bg-[#fafafa]' : ''
-                                    } ${emp.status === 'Probation' ? 'border-l-2 border-l-[#b45309]' : ''} ${isSelected(emp.id) ? 'bg-[#effcf8]' : ''}`}
+                                    } ${emp.status === 'Probation' ? 'border-l-2 border-l-[#b45309]' : ''} ${isSelected(emp.id) ? 'bg-[#f5f5f7]' : ''}`}
                                 >
                                     <TableCell className="w-10 text-center py-2.5">
                                         <Checkbox
                                             checked={isSelected(emp.id)}
                                             onCheckedChange={() => toggleSelect(emp.id)}
-                                            className="rounded border-[#d8d9da] data-[state=checked]:bg-[#008254] data-[state=checked]:text-white"
+                                            className="rounded border-[#d2d2d7] data-[state=checked]:bg-[#0066cc] data-[state=checked]:text-white"
                                         />
                                     </TableCell>
                                     <TableCell className="w-14 text-center py-2.5">
                                         <EmployeeAvatar name={emp.full_name} src={emp.profile_photo_url} size="sm" className="mx-auto" />
                                     </TableCell>
-                                    <TableCell className="font-bold text-[#008254] text-xs">
+                                    <TableCell className="font-bold text-[#0066cc] text-xs">
                                         {emp.file_no}
                                     </TableCell>
                                     <TableCell>
                                         <div>
                                             <div className="font-bold text-black text-sm">{emp.full_name}</div>
-                                            <div className="text-xs text-[#64666a]">{emp.gender}</div>
+                                            <div className="text-xs text-[#6e6e73]">{emp.gender}</div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-xs text-[#3d4045]">
+                                    <TableCell className="text-xs text-[#424245]">
                                         {emp.department?.name || 'General Operations'}
                                     </TableCell>
                                     <TableCell className="text-xs font-medium text-black">
@@ -640,13 +646,13 @@ export default function Index({ employees, filters, stats, departments, workplac
                                     </TableCell>
                                     <TableCell>
                                         <span className={`inline-flex items-center gap-1 text-xs font-semibold ${
-                                            emp.work_place === 'Project' ? 'text-[#008254]' : 'text-[#3d4045]'
+                                            emp.work_place === 'Project' ? 'text-[#0066cc]' : 'text-[#424245]'
                                         }`}>
                                             <MapPin className="w-3 h-3" />
                                             {emp.work_place}
                                         </span>
                                     </TableCell>
-                                    <TableCell className="text-xs text-[#64666a]">
+                                    <TableCell className="text-xs text-[#6e6e73]">
                                         {emp.employment_date_ec}
                                     </TableCell>
                                     <TableCell className="text-right font-bold text-black text-sm">
@@ -663,7 +669,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                                                 size="sm"
                                                 onClick={() => setPeekEmployee(emp)}
                                                 title="Quick Preview Drawer"
-                                                className="h-8 px-2 text-[#64666a] hover:text-[#008254] hover:bg-[#effcf8]"
+                                                className="h-8 px-2 text-[#6e6e73] hover:text-[#0066cc] hover:bg-[#f5f5f7]"
                                             >
                                                 <Eye className="w-3.5 h-3.5" />
                                             </Button>
@@ -672,7 +678,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                                                     variant="outline" 
                                                     size="sm"
                                                     {...(idx === 0 ? { 'data-tour': 'first-dossier-btn' } : {})}
-                                                    className="border-[#d8d9da] hover:bg-[#effcf8] text-[#008254] font-semibold text-xs h-8 gap-1.5 rounded-xs"
+                                                    className="border-[#d2d2d7] hover:bg-[#f5f5f7] text-[#0066cc] font-semibold text-xs h-8 gap-1.5 rounded-xs"
                                                 >
                                                     <span>View Profile</span>
                                                 </Button>
@@ -688,11 +694,11 @@ export default function Index({ employees, filters, stats, departments, workplac
                     <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
                         {employees.data.length === 0 ? (
                             <div className="col-span-full py-16 flex flex-col items-center gap-3">
-                                <div className="w-16 h-16 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64666a]">
+                                <div className="w-16 h-16 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#6e6e73]">
                                     <Eye className="w-8 h-8" />
                                 </div>
                                 <h4 className="text-sm font-bold text-black">No personnel records found</h4>
-                                <p className="text-xs text-[#64666a] max-w-xs text-center">
+                                <p className="text-xs text-[#6e6e73] max-w-xs text-center">
                                     Try broadening your search or resetting the filters below.
                                 </p>
                                 <Button
@@ -705,7 +711,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                                         setStatus('');
                                         debouncedFilter({ search: '', department_id: '', work_place: '', status: '' });
                                     }}
-                                    className="text-xs border-[#d8d9da] text-[#008254] hover:bg-[#effcf8]"
+                                    className="text-xs border-[#d2d2d7] text-[#0066cc] hover:bg-[#f5f5f7]"
                                 >
                                     Reset filters
                                 </Button>
@@ -714,7 +720,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                             employees.data.map((emp) => (
                                 <div
                                     key={emp.id}
-                                    className="rounded-xl border border-[#ebebec] bg-white p-6 transition-all hover:shadow-lg hover:-translate-y-1 hover:border-[#008254]/30"
+                                    className="rounded-xl border border-[#e8e8ed] bg-white p-6 transition-all hover:shadow-lg hover:-translate-y-1 hover:border-[#0066cc]/30"
                                 >
                                     <div className="flex items-start gap-4">
                                         <div className="shrink-0">
@@ -725,17 +731,17 @@ export default function Index({ employees, filters, stats, departments, workplac
                                                 <h4 className="truncate text-base font-bold text-black">{emp.full_name}</h4>
                                                 {getStatusBadge(emp.status)}
                                             </div>
-                                            <p className="text-[11px] font-semibold text-[#008254]">
-                                                {emp.file_no} · {emp.gender}
+                                            <p className="text-[11px] font-semibold text-[#0066cc]">
+                                                {emp.file_no} Â· {emp.gender}
                                             </p>
-                                            <p className="mt-2 truncate text-sm font-medium text-[#3d4045]">{emp.position}</p>
-                                            <p className="truncate text-[11px] text-[#64666a]">
+                                            <p className="mt-2 truncate text-sm font-medium text-[#424245]">{emp.position}</p>
+                                            <p className="truncate text-[11px] text-[#6e6e73]">
                                                 {emp.department?.name || 'General Operations'}
                                             </p>
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] text-[#64666a]">
+                                    <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] text-[#6e6e73]">
                                         <span className="inline-flex items-center gap-1.5">
                                             <MapPin className="h-3 w-3" />
                                             {emp.work_place}
@@ -746,11 +752,11 @@ export default function Index({ employees, filters, stats, departments, workplac
                                         </span>
                                     </div>
 
-                                    <div className="mt-5 flex items-center justify-between gap-2 border-t border-[#ebebec] pt-4">
+                                    <div className="mt-5 flex items-center justify-between gap-2 border-t border-[#e8e8ed] pt-4">
                                         <span className="text-sm font-bold text-black">
                                             {formatCurrency(emp.current_salary?.total_salary || emp.current_salary?.basic_salary)}
                                         </span>
-                                        <Link href={route('employees.show', emp.id)} className="flex items-center gap-1 text-xs font-semibold text-[#008254] hover:underline">
+                                        <Link href={route('employees.show', emp.id)} className="flex items-center gap-1 text-xs font-semibold text-[#0066cc] hover:underline">
                                             <Eye className="w-3 h-3" />
                                             View profile
                                         </Link>
@@ -763,15 +769,15 @@ export default function Index({ employees, filters, stats, departments, workplac
 
                 {/* Pagination */}
                 {employees.last_page > 1 && (
-                    <div data-tour="pagination" className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-[#64666a]">
+                    <div data-tour="pagination" className="p-4 border-t border-[#e8e8ed] bg-[#f5f5f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-[#6e6e73]">
                         <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-medium text-[#3d4045]">Showing</span>
+                            <span className="font-medium text-[#424245]">Showing</span>
                             <strong className="text-black">{employees.from || 0}</strong>
-                            <span className="text-[#64666a]">to</span>
+                            <span className="text-[#6e6e73]">to</span>
                             <strong className="text-black">{employees.to || 0}</strong>
-                            <span className="text-[#64666a]">of</span>
+                            <span className="text-[#6e6e73]">of</span>
                             <strong className="text-black">{employees.total}</strong>
-                            <span className="font-medium text-[#3d4045]">records</span>
+                            <span className="font-medium text-[#424245]">records</span>
                         </div>
                         <div className="flex gap-1">
                             {employees.links.map((link, idx) => (
@@ -781,10 +787,10 @@ export default function Index({ employees, filters, stats, departments, workplac
                                     preserveState
                                     className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm font-medium border transition-colors ${
                                         link.active
-                                            ? 'bg-[#008254] text-white border-[#008254] font-bold shadow-sm'
+                                            ? 'bg-[#0066cc] text-white border-[#0066cc] font-bold shadow-sm'
                                             : link.url
-                                                ? 'bg-white text-[#3d4045] border-[#d8d9da] hover:bg-[#effcf8] hover:text-[#008254]'
-                                                : 'bg-white/50 text-[#b1b3b5] border-[#ebebec] cursor-not-allowed'
+                                                ? 'bg-white text-[#424245] border-[#d2d2d7] hover:bg-[#f5f5f7] hover:text-[#0066cc]'
+                                                : 'bg-white/50 text-[#b1b3b5] border-[#e8e8ed] cursor-not-allowed'
                                     }`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />
@@ -796,35 +802,35 @@ export default function Index({ employees, filters, stats, departments, workplac
 
             {/* Excel Sync & Ingestion Modal (Shadcn Dialog) */}
             <Dialog open={showImportModal} onOpenChange={setShowImportModal}>
-                <DialogContent className="max-w-2xl bg-white border-[#d8d9da] p-6 max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-2xl bg-white border-[#d2d2d7] p-6 max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-base font-bold text-black flex items-center gap-2">
-                            <FileSpreadsheet className="w-5 h-5 text-[#008254]" />
+                            <FileSpreadsheet className="w-5 h-5 text-[#0066cc]" />
                             Excel Master List Sync &amp; Ingestion
                         </DialogTitle>
-                        <DialogDescription className="text-xs text-[#64666a]">
+                        <DialogDescription className="text-xs text-[#6e6e73]">
                             Ingest or update staff records directly from official master spreadsheet with automated column mapping.
                         </DialogDescription>
                     </DialogHeader>
 
                     {!previewData ? (
                         <div className="space-y-4 pt-2">
-                            <div className="border-2 border-dashed border-[#b7ecda] bg-[#effcf8]/50 rounded-lg p-6 text-center hover:border-[#008254] transition-colors">
-                                <UploadCloud className="w-10 h-10 text-[#008254] mx-auto mb-2" />
+                            <div className="border-2 border-dashed border-[#d2d2d7] bg-[#f5f5f7]/50 rounded-lg p-6 text-center hover:border-[#0066cc] transition-colors">
+                                <UploadCloud className="w-10 h-10 text-[#0066cc] mx-auto mb-2" />
                                 <p className="text-xs font-bold text-black mb-1">
                                     Select an Excel (.xlsx, .xls) or CSV spreadsheet file
                                 </p>
-                                <p className="text-[11px] text-[#64666a] mb-4">
+                                <p className="text-[11px] text-[#6e6e73] mb-4">
                                     Accepts 2019/2025 E.C. Master List formats with column mapping.
                                 </p>
                                 <Input
                                     type="file"
                                     accept=".xlsx,.xls,.csv"
                                     onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-                                    className="text-xs text-[#3d4045] file:mr-3 file:py-1.5 file:px-3 file:rounded-xs file:border-0 file:text-xs file:font-semibold file:bg-[#008254] file:text-white hover:file:bg-[#006642] cursor-pointer h-auto py-1"
+                                    className="text-xs text-[#424245] file:mr-3 file:py-1.5 file:px-3 file:rounded-xs file:border-0 file:text-xs file:font-semibold file:bg-[#0066cc] file:text-white hover:file:bg-[#0071e3] cursor-pointer h-auto py-1"
                                 />
                                 {importFile && (
-                                    <p className="mt-3 text-xs font-semibold text-[#008254]">
+                                    <p className="mt-3 text-xs font-semibold text-[#0066cc]">
                                         Selected: {importFile.name} ({(importFile.size / 1024).toFixed(1)} KB)
                                     </p>
                                 )}
@@ -836,10 +842,10 @@ export default function Index({ employees, filters, stats, departments, workplac
                                 </div>
                             )}
 
-                            <DialogFooter className="flex justify-between items-center pt-3 border-t border-[#ebebec]">
+                            <DialogFooter className="flex justify-between items-center pt-3 border-t border-[#e8e8ed]">
                                 <a
                                     href={route('import.template')}
-                                    className="text-xs font-semibold text-[#008254] hover:underline flex items-center gap-1"
+                                    className="text-xs font-semibold text-[#0066cc] hover:underline flex items-center gap-1"
                                 >
                                     <Download className="w-3.5 h-3.5" />
                                     Download Sample Template
@@ -849,7 +855,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                                         type="button"
                                         variant="outline"
                                         onClick={() => setShowImportModal(false)}
-                                        className="text-xs border-[#d8d9da]"
+                                        className="text-xs border-[#d2d2d7]"
                                     >
                                         Cancel
                                     </Button>
@@ -857,7 +863,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                                         type="button"
                                         disabled={!importFile || isUploading}
                                         onClick={handleUploadPreview}
-                                        className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold gap-1.5"
+                                        className="bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-bold gap-1.5"
                                     >
                                         {isUploading ? (
                                             <>
@@ -878,30 +884,30 @@ export default function Index({ employees, filters, stats, departments, workplac
                         <div className="space-y-4 pt-2">
                             {/* Summary Stats */}
                             <div className="grid grid-cols-4 gap-2 text-center">
-                                <div className="p-2.5 bg-[#effcf8] border border-[#b7ecda] rounded-xs">
-                                    <p className="text-[10px] font-bold uppercase text-[#008254]">Total Scanned</p>
+                                <div className="p-2.5 bg-[#f5f5f7] border border-[#d2d2d7] rounded-xs">
+                                    <p className="text-[10px] font-bold uppercase text-[#0066cc]">Total Scanned</p>
                                     <p className="text-xl font-bold text-black">{previewData.summary.total_scanned}</p>
                                 </div>
-                                <div className="p-2.5 bg-[#effcf8] border border-[#b7ecda] rounded-xs">
-                                    <p className="text-[10px] font-bold uppercase text-[#008254]">New Staff</p>
-                                    <p className="text-xl font-bold text-[#008254]">{previewData.summary.new_count}</p>
+                                <div className="p-2.5 bg-[#f5f5f7] border border-[#d2d2d7] rounded-xs">
+                                    <p className="text-[10px] font-bold uppercase text-[#0066cc]">New Staff</p>
+                                    <p className="text-xl font-bold text-[#0066cc]">{previewData.summary.new_count}</p>
                                 </div>
-                                <div className="p-2.5 bg-[#f7f7f7] border border-[#d8d9da] rounded-xs">
-                                    <p className="text-[10px] font-bold uppercase text-[#64666a]">Updates</p>
-                                    <p className="text-xl font-bold text-[#3d4045]">{previewData.summary.update_count}</p>
+                                <div className="p-2.5 bg-[#f5f5f7] border border-[#d2d2d7] rounded-xs">
+                                    <p className="text-[10px] font-bold uppercase text-[#6e6e73]">Updates</p>
+                                    <p className="text-xl font-bold text-[#424245]">{previewData.summary.update_count}</p>
                                 </div>
-                                <div className={`p-2.5 border rounded-xs ${previewData.summary.error_count > 0 ? 'bg-[#fdf2f2] border-[#f8b4b4]' : 'bg-[#f7f7f7] border-[#d8d9da]'}`}>
+                                <div className={`p-2.5 border rounded-xs ${previewData.summary.error_count > 0 ? 'bg-[#fdf2f2] border-[#f8b4b4]' : 'bg-[#f5f5f7] border-[#d2d2d7]'}`}>
                                     <p className="text-[10px] font-bold uppercase text-[#de2828]">Errors</p>
-                                    <p className={`text-xl font-bold ${previewData.summary.error_count > 0 ? 'text-[#de2828]' : 'text-[#64666a]'}`}>
+                                    <p className={`text-xl font-bold ${previewData.summary.error_count > 0 ? 'text-[#de2828]' : 'text-[#6e6e73]'}`}>
                                         {previewData.summary.error_count}
                                     </p>
                                 </div>
                             </div>
 
                             {/* Preview Samples Table */}
-                            <div className="border border-[#d8d9da] rounded-xs overflow-hidden max-h-56 overflow-x-auto overflow-y-auto">
+                            <div className="border border-[#d2d2d7] rounded-xs overflow-hidden max-h-56 overflow-x-auto overflow-y-auto">
                                 <table className="w-full min-w-[520px] text-left text-xs">
-                                    <thead className="bg-[#f7f7f7] text-[#64666a] border-b border-[#d8d9da]">
+                                    <thead className="bg-[#f5f5f7] text-[#6e6e73] border-b border-[#d2d2d7]">
                                         <tr>
                                             <th className="p-2 font-bold">File no</th>
                                             <th className="p-2 font-bold">Full name</th>
@@ -910,13 +916,13 @@ export default function Index({ employees, filters, stats, departments, workplac
                                             <th className="p-2 font-bold">Salary</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-[#ebebec]">
+                                    <tbody className="divide-y divide-[#e8e8ed]">
                                         {previewData.all_valid_payload.slice(0, 8).map((r: any, i: number) => (
-                                            <tr key={i} className="hover:bg-[#effcf8]/40">
-                                                <td className="p-2 font-bold text-[#008254]">{r.file_no}</td>
+                                            <tr key={i} className="hover:bg-[#f5f5f7]/40">
+                                                <td className="p-2 font-bold text-[#0066cc]">{r.file_no}</td>
                                                 <td className="p-2 font-semibold text-black">{r.full_name}</td>
-                                                <td className="p-2 text-[#3d4045]">{r.department_name}</td>
-                                                <td className="p-2 text-[#64666a]">{r.position}</td>
+                                                <td className="p-2 text-[#424245]">{r.department_name}</td>
+                                                <td className="p-2 text-[#6e6e73]">{r.position}</td>
                                                 <td className="p-2 font-bold text-black">{formatCurrency(r.basic_salary)}</td>
                                             </tr>
                                         ))}
@@ -935,19 +941,19 @@ export default function Index({ employees, filters, stats, departments, workplac
                                 </div>
                             )}
 
-                            <DialogFooter className="flex justify-between items-center pt-3 border-t border-[#ebebec]">
+                            <DialogFooter className="flex justify-between items-center pt-3 border-t border-[#e8e8ed]">
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={() => setPreviewData(null)}
-                                    className="text-xs border-[#d8d9da]"
+                                    className="text-xs border-[#d2d2d7]"
                                 >
                                     Re-upload Different File
                                 </Button>
                                 <Button
                                     type="button"
                                     onClick={handleExecuteImport}
-                                    className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold gap-1.5"
+                                    className="bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-bold gap-1.5"
                                 >
                                     <CheckCircle2 className="w-3.5 h-3.5" />
                                     Confirm &amp; Sync {previewData.all_valid_payload.length} Records
@@ -960,7 +966,7 @@ export default function Index({ employees, filters, stats, departments, workplac
 
             {/* Quick Employee Peek Sheet Drawer */}
             <Sheet open={Boolean(peekEmployee)} onOpenChange={(open) => !open && setPeekEmployee(null)}>
-                <SheetContent className="bg-white border-[#d8d9da] p-6 sm:max-w-md overflow-y-auto">
+                <SheetContent className="bg-white border-[#d2d2d7] p-6 sm:max-w-md overflow-y-auto">
                     {peekEmployee && (
                         <div className="space-y-6 pt-2">
                             <SheetHeader className="text-left">
@@ -974,44 +980,44 @@ export default function Index({ employees, filters, stats, departments, workplac
                                         <SheetTitle className="text-base font-bold text-black">
                                             {peekEmployee.full_name}
                                         </SheetTitle>
-                                        <SheetDescription className="text-xs text-[#64666a]">
+                                        <SheetDescription className="text-xs text-[#6e6e73]">
                                             {peekEmployee.file_no} &bull; {peekEmployee.position}
                                         </SheetDescription>
                                     </div>
                                 </div>
                             </SheetHeader>
 
-                            <div className="space-y-3 divide-y divide-[#ebebec] text-xs">
+                            <div className="space-y-3 divide-y divide-[#e8e8ed] text-xs">
                                 <div className="pt-2 flex justify-between">
-                                    <span className="text-[#64666a]">Department:</span>
+                                    <span className="text-[#6e6e73]">Department:</span>
                                     <span className="font-semibold text-black">{peekEmployee.department?.name || 'General Operations'}</span>
                                 </div>
                                 <div className="pt-2 flex justify-between">
-                                    <span className="text-[#64666a]">Work Site:</span>
+                                    <span className="text-[#6e6e73]">Work Site:</span>
                                     <span className="font-semibold text-black">{peekEmployee.work_place}</span>
                                 </div>
                                 <div className="pt-2 flex justify-between">
-                                    <span className="text-[#64666a]">Status:</span>
+                                    <span className="text-[#6e6e73]">Status:</span>
                                     <span>{getStatusBadge(peekEmployee.status)}</span>
                                 </div>
                                 <div className="pt-2 flex justify-between">
-                                    <span className="text-[#64666a]">Employment Date (E.C.):</span>
+                                    <span className="text-[#6e6e73]">Employment Date (E.C.):</span>
                                     <span className="font-semibold text-black">{peekEmployee.employment_date_ec}</span>
                                 </div>
                                 <div className="pt-2 flex justify-between">
-                                    <span className="text-[#64666a]">Compensation:</span>
-                                    <span className="font-bold text-[#008254]">{formatCurrency(peekEmployee.current_salary?.total_salary || peekEmployee.current_salary?.basic_salary)}</span>
+                                    <span className="text-[#6e6e73]">Compensation:</span>
+                                    <span className="font-bold text-[#0066cc]">{formatCurrency(peekEmployee.current_salary?.total_salary || peekEmployee.current_salary?.basic_salary)}</span>
                                 </div>
                             </div>
 
-                            <div className="flex gap-2 pt-4 border-t border-[#ebebec]">
+                            <div className="flex gap-2 pt-4 border-t border-[#e8e8ed]">
                                 <Link href={route('employees.edit', peekEmployee.id)} className="flex-1">
-                                    <Button variant="outline" className="w-full text-xs font-semibold border-[#d8d9da] hover:bg-[#effcf8]">
+                                    <Button variant="outline" className="w-full text-xs font-semibold border-[#d2d2d7] hover:bg-[#f5f5f7]">
                                         Edit Profile
                                     </Button>
                                 </Link>
                                 <Link href={route('employees.show', peekEmployee.id)} className="flex-1">
-                                    <Button className="w-full bg-[#008254] hover:bg-[#006a44] text-white text-xs font-bold">
+                                    <Button className="w-full bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-bold">
                                         Full Dossier
                                     </Button>
                                 </Link>
@@ -1035,7 +1041,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                         onClick={() => {
                             toast.success(`Exporting ${selectedIds.size} selected employee records...`);
                         }}
-                        className="text-xs font-bold text-[#b7ecda] hover:text-white flex items-center gap-1.5 cursor-pointer"
+                        className="text-xs font-bold text-[#d2d2d7] hover:text-white flex items-center gap-1.5 cursor-pointer"
                     >
                         <Download className="w-3.5 h-3.5" />
                         <span>Export Selected (CSV)</span>
@@ -1060,3 +1066,6 @@ export default function Index({ employees, filters, stats, departments, workplac
         </AuthenticatedLayout>
     );
 }
+
+
+

@@ -58,6 +58,9 @@ secrets.txt
 # System / deploy artifacts
 elhadar_deploy.tar.gz
 update_2019.tar.gz
+artifacts/
+apple/
+scripts/
 
 # Logs
 *.log

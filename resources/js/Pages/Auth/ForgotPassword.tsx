@@ -1,4 +1,4 @@
-import InputError from '@/Components/InputError';
+﻿import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Button } from '@/Components/ui/button';
@@ -22,19 +22,19 @@ export default function ForgotPassword({ status }: { status?: string }) {
         <GuestLayout>
             <Head title="Forgot Password" />
 
-            <div className="mb-4 text-sm text-[#595959]">
+            <div className="mb-4 text-sm text-muted-foreground">
                 Forgot your password? No problem. Just let us know your email
                 address and we will email you a password reset link that will
                 allow you to choose a new one.
             </div>
 
             {status && (
-                <div className="mb-4 text-sm font-semibold text-[#008254] bg-[#effcf8] p-3 border border-[#b7ecda] rounded-xs">
+                <div className="mb-4 text-sm font-semibold text-primary bg-primary/10 border border-primary/30 rounded-xl p-3">
                     {status}
                 </div>
             )}
 
-            <form onSubmit={submit}>
+            <form onSubmit={submit} aria-busy={processing}>
                 <div>
                     <InputLabel htmlFor="email" value="Email Address" />
 
@@ -44,26 +44,26 @@ export default function ForgotPassword({ status }: { status?: string }) {
                             type="email"
                             name="email"
                             value={data.email}
-                            className="block w-full rounded-xs border-[#d8d9da] bg-white text-sm shadow-sm focus-visible:ring-[#008254] focus-visible:border-[#008254]"
+                            className="block w-full rounded-xl border-input bg-background text-sm shadow-sm focus-visible:ring-ring/30 focus-visible:border-ring"
                             autoFocus
                             onChange={(e) => setData('email', e.target.value)}
                         />
                     </div>
 
-                    <InputError message={errors.email} className="mt-2 text-xs text-[#de2828]" />
+                    <InputError message={errors.email} className="mt-2 text-xs" />
                 </div>
 
                 <div className="mt-4 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
                     <Link
                         href={route('login')}
-                        className="flex items-center justify-center sm:justify-start gap-1 text-xs text-[#008254] hover:underline"
+                        className="flex items-center justify-center sm:justify-start gap-1 text-xs text-primary hover:underline"
                     >
                         <ArrowLeft className="h-3.5 w-3.5" />
                         Back to Sign In
                     </Link>
 
                     <Button
-                        className="w-full sm:w-auto bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase tracking-wider rounded-xs"
+                        className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold rounded-full normal-case tracking-normal disabled:pointer-events-none disabled:opacity-50"
                         disabled={processing}
                     >
                         Email Password Reset Link

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+﻿import { useRef, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import EmployeeAvatar from '@/Components/EmployeeAvatar';
@@ -201,7 +201,7 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
 
     const displayCompanyExp = employee.company_experience && !employee.company_experience.startsWith('=') && !employee.company_experience.includes('DATEDIF') && !employee.company_experience.includes('Year,')
         ? employee.company_experience
-        : (tenure?.formatted || '—');
+        : (tenure?.formatted || 'â€”');
 
     const displayTotalExp = employee.total_experience && !employee.total_experience.startsWith('=') && !employee.total_experience.includes('DATEDIF') && !employee.total_experience.includes('Year,')
         ? employee.total_experience
@@ -214,14 +214,14 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
             {/* Back to Directory Button */}
             <div className="mb-4">
                 <Link href={route('employees.index')}>
-                    <Button variant="outline" size="sm" className="gap-2 text-xs font-semibold text-[#008254] border-[#d8d9da] hover:bg-[#effcf8]">
+                    <Button variant="outline" size="sm" className="gap-2 text-xs font-semibold text-[#0066cc] border-[#d2d2d7] hover:bg-[#f5f5f7]">
                         <ArrowLeft className="w-3.5 h-3.5" /> Back to Staff Directory
                     </Button>
                 </Link>
             </div>
 
             {/* Header Profile Dossier Card */}
-            <Card className="border-[#d8d9da] bg-white mb-6 overflow-hidden">
+            <Card className="border-[#d2d2d7] bg-white mb-6 overflow-hidden">
                 <div className="p-4 sm:p-6 lg:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                         <div className="relative group shrink-0">
@@ -245,7 +245,7 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                                     type="button"
                                     onClick={handleDeletePhoto}
                                     title="Remove photo"
-                                    className="absolute bottom-0 right-0 bg-white p-1 rounded-full border border-red-200 text-red-600 hover:bg-red-50 shadow-xs transition-colors cursor-pointer"
+                                    className="absolute bottom-0 right-0 bg-white p-1 rounded-full border border-[#ffd1cf] text-[#ff3b30] hover:bg-[#fff5f5] shadow-xs transition-colors cursor-pointer"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -260,28 +260,28 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                         </div>
                         <div>
                             <div className="flex flex-wrap items-center gap-2 mb-1">
-                                <span className="text-xs font-bold px-2.5 py-0.5 rounded-xs bg-[#effcf8] text-[#008254] border border-[#b7ecda]">
+                                <span className="text-xs font-bold px-2.5 py-0.5 rounded-xs bg-[#f5f5f7] text-[#0066cc] border border-[#d2d2d7]">
                                     {employee.file_no}
                                 </span>
-                                <Badge variant={employee.status === 'Permanent' ? 'mint' : 'secondary'}>
+                                <Badge variant={employee.status === 'Permanent' ? 'secondary' : employee.status === 'Separated' ? 'destructive' : 'outline'}>
                                     {employee.status}
                                 </Badge>
                             </div>
                             <h1 className="text-2xl font-bold text-black tracking-tight">
                                 {employee.full_name}
                             </h1>
-                            <div className="flex flex-col gap-1.5 text-xs text-[#3d4045] mt-1.5 font-medium">
+                            <div className="flex flex-col gap-1.5 text-xs text-[#424245] mt-1.5 font-medium">
                                 <span className="flex items-center gap-1.5">
-                                    <Building2 className="w-3.5 h-3.5 text-[#008254] shrink-0" />
+                                    <Building2 className="w-3.5 h-3.5 text-[#0066cc] shrink-0" />
                                     {employee.department?.name || 'General Engineering'}
                                 </span>
                                 <span className="flex items-center gap-1.5">
-                                    <MapPin className="w-3.5 h-3.5 text-[#008254] shrink-0" />
+                                    <MapPin className="w-3.5 h-3.5 text-[#0066cc] shrink-0" />
                                     {employee.work_place}
                                 </span>
                                 <span>{employee.position}</span>
                                 {employee.phone && (
-                                    <span className="flex items-center gap-1.5 font-semibold text-[#008254]">
+                                    <span className="flex items-center gap-1.5 font-semibold text-[#0066cc]">
                                         <Phone className="w-3.5 h-3.5 shrink-0" />
                                         {formatEthPhone(employee.phone)}
                                     </span>
@@ -291,20 +291,20 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                     </div>
 
                     <div className="flex flex-col items-end gap-2.5 w-full md:w-auto">
-                        <div className="flex flex-col items-start sm:items-end w-full md:w-auto p-4 rounded-lg bg-[#f7f7f7] border border-[#ebebec]">
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">
+                        <div className="flex flex-col items-start sm:items-end w-full md:w-auto p-4 rounded-lg bg-[#f5f5f7] border border-[#e8e8ed]">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-[#6e6e73]">
                                 Total Monthly Compensation
                             </span>
-                            <span className="text-xl sm:text-2xl font-bold text-[#008254] mt-0.5 break-words">
+                            <span className="text-xl sm:text-2xl font-bold text-[#0066cc] mt-0.5 break-words">
                                 {formatCurrency(salary?.total_salary || salary?.basic_salary)}
                             </span>
-                            <span className="text-[11px] text-[#64666a]">
+                            <span className="text-[11px] text-[#6e6e73]">
                                 Basic: {formatCurrency(salary?.basic_salary)}
                             </span>
                         </div>
                         <Link href={route('employees.edit', employee.id)} className="w-full">
-                            <Button size="sm" variant="outline" className="w-full text-xs font-semibold gap-1.5 border-[#d8d9da] hover:bg-[#effcf8] hover:text-[#008254] rounded-xs">
-                                <Edit className="w-3.5 h-3.5 text-[#008254]" />
+                            <Button size="sm" variant="outline" className="w-full text-xs font-semibold gap-1.5 border-[#d2d2d7] hover:bg-[#f5f5f7] hover:text-[#0066cc] rounded-xs">
+                                <Edit className="w-3.5 h-3.5 text-[#0066cc]" />
                                 <span>Edit Profile</span>
                             </Button>
                         </Link>
@@ -312,39 +312,39 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                 </div>
 
                 {/* Statutory Fast-Facts Ribbon (NerdWallet Comparison Spec) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 border-t border-[#ebebec] bg-[#effcf8]/40 divide-y sm:divide-y-0 sm:divide-x divide-[#ebebec]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 border-t border-[#e8e8ed] bg-[#f5f5f7]/40 divide-y sm:divide-y-0 sm:divide-x divide-[#e8e8ed]">
                     <div className="p-4">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#64666a] block">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#6e6e73] block">
                             Tenure of Service
                         </span>
                         <span className="text-base font-bold text-black mt-1 block">
                             {tenure.formatted}
                         </span>
-                        <span className="text-[11px] text-[#008254] font-medium block">
+                        <span className="text-[11px] text-[#0066cc] font-medium block">
                             Since {employee.employment_date_ec} E.C.
                         </span>
                     </div>
 
                     <div className="p-4">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#64666a] block">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#6e6e73] block">
                             Annual Leave Entitlement
                         </span>
                         <span className="text-base font-bold text-black mt-1 block">
                             {annualLeaveEntitlement} Working Days
                         </span>
-                        <span className="text-[11px] text-[#64666a] block" title="Annual leave set by the Ethiopian Labour Proclamation No. 1156/2019 (Articles 77–78)">
+                        <span className="text-[11px] text-[#6e6e73] block" title="Annual leave set by the Ethiopian Labour Proclamation No. 1156/2019 (Articles 77â€“78)">
                             16 days + 1 day per 2 years of service
                         </span>
                     </div>
 
                     <div className="p-4">
                         <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64666a] block">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-[#6e6e73] block">
                                 Retirement Status
                             </span>
                             {retirementInfo && (
                                 <Badge 
-                                    variant={retirementInfo.is_retired ? 'destructive' : (retirementInfo.is_near ? 'lime' : 'mint')}
+                                    variant={retirementInfo.is_retired ? 'destructive' : (retirementInfo.is_near ? 'outline' : 'secondary')}
                                     className="text-[10px] py-0 px-1.5 font-bold"
                                 >
                                     {retirementInfo.status_label || (retirementInfo.is_retired ? 'Retired' : 'Not Retired')}
@@ -354,7 +354,7 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                         <span className="text-base font-bold text-black mt-1 block">
                             {retirementInfo ? retirementInfo.retirement_date : 'Not recorded'}
                         </span>
-                        <span className="text-[11px] text-[#64666a] block">
+                        <span className="text-[11px] text-[#6e6e73] block">
                             {retirementInfo 
                                 ? (retirementInfo.is_retired 
                                     ? 'Statutory age reached (60 yrs)' 
@@ -364,13 +364,13 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                     </div>
 
                     <div className="p-4">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#64666a] block">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#6e6e73] block">
                             Banking & Payroll
                         </span>
                         <span className="text-base font-bold text-black mt-1 block break-words">
                             {employee.bank_account_no || 'No account logged'}
                         </span>
-                        <span className="text-[11px] text-[#008254] font-medium block">
+                        <span className="text-[11px] text-[#0066cc] font-medium block">
                             {employee.bank_name || 'CBE'}
                         </span>
                     </div>
@@ -379,7 +379,7 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
 
             {/* Section 1 to 7 Master List Tabs */}
             <Tabs defaultValue="section1" className="w-full">
-                <TabsList className="w-full overflow-x-auto flex-nowrap justify-start gap-2 sm:gap-4 border-b border-[#ebebec] scrollbar-thin mb-4 pb-0">
+                <TabsList className="w-full overflow-x-auto flex-nowrap justify-start gap-2 sm:gap-4 border-b border-[#e8e8ed] scrollbar-thin mb-4 pb-0">
                     <TabsTrigger value="section1" className="shrink-0 text-xs font-semibold px-2 sm:px-3 py-2.5">
                         1. Personal Identification
                     </TabsTrigger>
@@ -406,95 +406,95 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                 {/* TAB 1: SECTION 1 - PERSONAL IDENTIFICATION */}
                 <TabsContent value="section1" className="space-y-6">
                     {/* Identity & Age Banner */}
-                    <div className="p-4 rounded-lg bg-[#effcf8] border border-[#b7ecda] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="p-4 rounded-lg bg-[#f5f5f7] border border-[#d2d2d7] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 rounded-full bg-white border-2 border-[#008254] flex flex-col items-center justify-center shadow-xs shrink-0">
-                                <span className="text-2xl font-extrabold text-[#008254] leading-none">
-                                    {employee.age ?? (employee.birth_date ? new Date().getFullYear() - new Date(employee.birth_date).getFullYear() : '—')}
+                            <div className="w-16 h-16 rounded-full bg-white border-2 border-[#0066cc] flex flex-col items-center justify-center shadow-xs shrink-0">
+                                <span className="text-2xl font-extrabold text-[#0066cc] leading-none">
+                                    {employee.age ?? (employee.birth_date ? new Date().getFullYear() - new Date(employee.birth_date).getFullYear() : 'â€”')}
                                 </span>
-                                <span className="text-[9px] font-bold text-[#64666a] uppercase">Years</span>
+                                <span className="text-[9px] font-bold text-[#6e6e73] uppercase">Years</span>
                             </div>
                             <div>
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-[#008254] block">
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-[#0066cc] block">
                                     Section 1: Date of Birth &amp; Age
                                 </span>
                                 <div className="flex flex-wrap items-center gap-3 text-sm mt-0.5 font-bold text-black">
                                     <span>{employee.birth_date_ec ? `${employee.birth_date_ec} E.C.` : 'No E.C. DOB'}</span>
-                                    <span className="text-[#64666a] font-normal">|</span>
-                                    <span className="text-[#3d4045] font-semibold">{employee.birth_date ? `${employee.birth_date} G.C.` : 'No G.C. DOB'}</span>
+                                    <span className="text-[#6e6e73] font-normal">|</span>
+                                    <span className="text-[#424245] font-semibold">{employee.birth_date ? `${employee.birth_date} G.C.` : 'No G.C. DOB'}</span>
                                 </div>
                                 <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xs text-[#64666a]">Marital Status:</span>
-                                    <span className="text-xs font-bold text-[#008254] px-2 py-0.5 rounded-xs bg-white border border-[#b7ecda]">
+                                    <span className="text-xs text-[#6e6e73]">Marital Status:</span>
+                                    <span className="text-xs font-bold text-[#0066cc] px-2 py-0.5 rounded-xs bg-white border border-[#d2d2d7]">
                                         {employee.marital_status || 'Single'}
                                     </span>
                                 </div>
                             </div>
                         </div>
                         <div className="flex flex-col items-start sm:items-end">
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64666a]">Retirement Status</span>
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-[#6e6e73]">Retirement Status</span>
                             <div className="flex items-center gap-2 mt-1">
                                 <Badge 
-                                    variant={retirementInfo?.is_retired ? 'destructive' : (retirementInfo?.is_near ? 'lime' : 'mint')}
+                                    variant={retirementInfo?.is_retired ? 'destructive' : (retirementInfo?.is_near ? 'outline' : 'secondary')}
                                     className="text-xs font-bold px-2 py-0.5"
                                 >
                                     {retirementInfo?.status_label || (retirementInfo?.is_retired ? 'Retired' : 'Active (Not Retired)')}
                                 </Badge>
                             </div>
-                            <span className="text-xs text-[#64666a] mt-0.5">
+                            <span className="text-xs text-[#6e6e73] mt-0.5">
                                 {retirementInfo ? `${retirementInfo.retirement_date} (${Math.round(retirementInfo.days_remaining / 365)} yrs remaining)` : 'DOB required'}
                             </span>
                         </div>
                     </div>
 
                     {/* Section 1 Master Attributes Grid */}
-                    <Card className="border-[#d8d9da] bg-white">
+                    <Card className="border-[#d2d2d7] bg-white">
                         <CardHeader>
                             <CardTitle>Section 1: Personal Identification Attributes</CardTitle>
                             <CardDescription>Verified personal identification and demographic records</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-2">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-xs">
-                                <div className="p-3.5 rounded-xs bg-[#f7f7f7] border border-[#ebebec]">
-                                    <span className="text-[#64666a] block text-[11px] font-medium">Personnel File No:</span>
+                                <div className="p-3.5 rounded-xs bg-[#f5f5f7] border border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73] block text-[11px] font-medium">Personnel File No:</span>
                                     <span className="font-bold text-black text-sm mt-0.5 block">{employee.file_no}</span>
                                 </div>
-                                <div className="p-3.5 rounded-xs bg-[#f7f7f7] border border-[#ebebec]">
-                                    <span className="text-[#64666a] block text-[11px] font-medium">Full Name with Grand Father:</span>
+                                <div className="p-3.5 rounded-xs bg-[#f5f5f7] border border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73] block text-[11px] font-medium">Full Name with Grand Father:</span>
                                     <span className="font-bold text-black text-sm mt-0.5 block">{employee.full_name}</span>
                                 </div>
-                                <div className="p-3.5 rounded-xs bg-[#f7f7f7] border border-[#ebebec]">
-                                    <span className="text-[#64666a] block text-[11px] font-medium">Gender:</span>
+                                <div className="p-3.5 rounded-xs bg-[#f5f5f7] border border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73] block text-[11px] font-medium">Gender:</span>
                                     <span className="font-semibold text-black text-sm mt-0.5 block">{employee.gender}</span>
                                 </div>
-                                <div className="p-3.5 rounded-xs bg-[#f7f7f7] border border-[#ebebec]">
-                                    <span className="text-[#64666a] block text-[11px] font-medium">Marital Status:</span>
+                                <div className="p-3.5 rounded-xs bg-[#f5f5f7] border border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73] block text-[11px] font-medium">Marital Status:</span>
                                     <span className="font-semibold text-black text-sm mt-0.5 block">{employee.marital_status || 'Single'}</span>
                                 </div>
-                                <div className="p-3.5 rounded-xs bg-[#f7f7f7] border border-[#ebebec]">
-                                    <span className="text-[#64666a] block text-[11px] font-medium">Date of Birth E.C.:</span>
-                                    <span className="font-bold text-[#008254] text-sm mt-0.5 block">{employee.birth_date_ec ? `${employee.birth_date_ec} E.C.` : '—'}</span>
+                                <div className="p-3.5 rounded-xs bg-[#f5f5f7] border border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73] block text-[11px] font-medium">Date of Birth E.C.:</span>
+                                    <span className="font-bold text-[#0066cc] text-sm mt-0.5 block">{employee.birth_date_ec ? `${employee.birth_date_ec} E.C.` : 'â€”'}</span>
                                 </div>
-                                <div className="p-3.5 rounded-xs bg-[#f7f7f7] border border-[#ebebec]">
-                                    <span className="text-[#64666a] block text-[11px] font-medium">Date of Birth G.C.:</span>
-                                    <span className="font-semibold text-black text-sm mt-0.5 block">{employee.birth_date ? `${employee.birth_date} G.C.` : '—'}</span>
+                                <div className="p-3.5 rounded-xs bg-[#f5f5f7] border border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73] block text-[11px] font-medium">Date of Birth G.C.:</span>
+                                    <span className="font-semibold text-black text-sm mt-0.5 block">{employee.birth_date ? `${employee.birth_date} G.C.` : 'â€”'}</span>
                                 </div>
-                                <div className="p-3.5 rounded-xs bg-[#effcf8] border border-[#b7ecda]">
-                                    <span className="text-[#008254] block text-[11px] font-semibold">Calculated Age:</span>
-                                    <span className="font-bold text-[#008254] text-base mt-0.5 block">
-                                        {employee.age ? `${employee.age} Years Old` : '—'}
+                                <div className="p-3.5 rounded-xs bg-[#f5f5f7] border border-[#d2d2d7]">
+                                    <span className="text-[#0066cc] block text-[11px] font-semibold">Calculated Age:</span>
+                                    <span className="font-bold text-[#0066cc] text-base mt-0.5 block">
+                                        {employee.age ? `${employee.age} Years Old` : 'â€”'}
                                     </span>
                                 </div>
-                                <div className="p-3.5 rounded-xs bg-[#effcf8] border border-[#b7ecda]">
-                                    <span className="text-[#008254] block text-[11px] font-semibold">Retirement Status:</span>
+                                <div className="p-3.5 rounded-xs bg-[#f5f5f7] border border-[#d2d2d7]">
+                                    <span className="text-[#0066cc] block text-[11px] font-semibold">Retirement Status:</span>
                                     <span className="font-bold text-black text-sm mt-0.5 block">
                                         {retirementInfo?.status_label || (retirementInfo?.is_retired ? 'Retired' : 'Active (Not Retired)')}
                                     </span>
                                 </div>
-                                <div className="p-3.5 rounded-xs bg-[#f7f7f7] border border-[#ebebec]">
-                                    <span className="text-[#64666a] block text-[11px] font-medium">Scheduled Retirement Date:</span>
+                                <div className="p-3.5 rounded-xs bg-[#f5f5f7] border border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73] block text-[11px] font-medium">Scheduled Retirement Date:</span>
                                     <span className="font-semibold text-black text-sm mt-0.5 block">
-                                        {retirementInfo?.retirement_date || '—'}
+                                        {retirementInfo?.retirement_date || 'â€”'}
                                     </span>
                                 </div>
                             </div>
@@ -505,47 +505,47 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                 {/* TAB 2: SECTION 2 - EMPLOYMENT DETAILS */}
                 <TabsContent value="section2" className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Card className="border-[#d8d9da] bg-white">
+                        <Card className="border-[#d2d2d7] bg-white">
                             <CardHeader>
                                 <CardTitle>Section 2: Employment Details &amp; Assignment</CardTitle>
                                 <CardDescription>Contractual assignment, project site, job grade and dual start dates</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4 pt-2">
-                                <div className="p-3.5 rounded-xs bg-[#effcf8] border border-[#b7ecda]">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-[#008254]">Date of Employment</span>
+                                <div className="p-3.5 rounded-xs bg-[#f5f5f7] border border-[#d2d2d7]">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-[#0066cc]">Date of Employment</span>
                                     <div className="flex justify-between items-center mt-1">
                                         <span className="text-sm font-bold text-black">Ethiopian Calendar:</span>
-                                        <span className="font-bold text-[#008254]">{employee.employment_date_ec} E.C.</span>
+                                        <span className="font-bold text-[#0066cc]">{employee.employment_date_ec} E.C.</span>
                                     </div>
                                     <div className="flex justify-between items-center mt-0.5">
-                                        <span className="text-xs text-[#64666a]">Gregorian Equivalent:</span>
+                                        <span className="text-xs text-[#6e6e73]">Gregorian Equivalent:</span>
                                         <span className="text-xs font-semibold text-black">{employee.employment_date} G.C.</span>
                                     </div>
                                 </div>
 
                                 {(employee.status === 'Separated' || employee.separation) && (
-                                    <div className="p-3.5 rounded-xs bg-red-50 border border-red-200">
+                                    <div className="p-3.5 rounded-xs bg-red-50 border border-[#ffd1cf]">
                                         <div className="flex items-center justify-between">
                                             <span className="text-xs font-bold uppercase tracking-wider text-red-700">Date of Termination</span>
                                             <Badge variant="destructive" className="text-[10px]">Separated</Badge>
                                         </div>
                                         <div className="flex justify-between items-center mt-1">
                                             <span className="text-sm font-bold text-black">Ethiopian Calendar:</span>
-                                            <span className="font-bold text-red-700">{employee.separation?.termination_date_ec || '—'} E.C.</span>
+                                            <span className="font-bold text-red-700">{employee.separation?.termination_date_ec || 'â€”'} E.C.</span>
                                         </div>
                                         <div className="flex justify-between items-center mt-0.5">
-                                            <span className="text-xs text-[#64666a]">Gregorian Equivalent:</span>
-                                            <span className="text-xs font-semibold text-black">{employee.separation?.effective_date || '—'} G.C.</span>
+                                            <span className="text-xs text-[#6e6e73]">Gregorian Equivalent:</span>
+                                            <span className="text-xs font-semibold text-black">{employee.separation?.effective_date || 'â€”'} G.C.</span>
                                         </div>
                                         {employee.separation?.separation_type && (
-                                            <div className="flex justify-between items-center mt-1 pt-1 border-t border-red-200/60 text-xs">
-                                                <span className="text-[#64666a]">Separation Type:</span>
+                                            <div className="flex justify-between items-center mt-1 pt-1 border-t border-[#ffd1cf]/60 text-xs">
+                                                <span className="text-[#6e6e73]">Separation Type:</span>
                                                 <span className="font-semibold text-black">{employee.separation.separation_type.replace(/_/g, ' ')}</span>
                                             </div>
                                         )}
                                         {employee.separation?.reason && (
                                             <div className="flex justify-between items-center mt-0.5 text-xs">
-                                                <span className="text-[#64666a]">Reason:</span>
+                                                <span className="text-[#6e6e73]">Reason:</span>
                                                 <span className="font-medium text-black">{employee.separation.reason}</span>
                                             </div>
                                         )}
@@ -553,80 +553,80 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                                 )}
 
                                 <div className="space-y-2 pt-2 text-xs">
-                                    <div className="flex justify-between items-center py-1.5 border-b border-[#ebebec]">
-                                        <span className="text-[#64666a]">Department:</span>
-                                        <span className="font-semibold text-black">{employee.department?.name || '—'}</span>
+                                    <div className="flex justify-between items-center py-1.5 border-b border-[#e8e8ed]">
+                                        <span className="text-[#6e6e73]">Department:</span>
+                                        <span className="font-semibold text-black">{employee.department?.name || 'â€”'}</span>
                                     </div>
-                                    <div className="flex justify-between items-center py-1.5 border-b border-[#ebebec]">
-                                        <span className="text-[#64666a]">Work Place / Project:</span>
+                                    <div className="flex justify-between items-center py-1.5 border-b border-[#e8e8ed]">
+                                        <span className="text-[#6e6e73]">Work Place / Project:</span>
                                         <span className="font-semibold text-black">{employee.work_place}</span>
                                     </div>
-                                    <div className="flex justify-between items-center py-1.5 border-b border-[#ebebec]">
-                                        <span className="text-[#64666a]">Job Title:</span>
+                                    <div className="flex justify-between items-center py-1.5 border-b border-[#e8e8ed]">
+                                        <span className="text-[#6e6e73]">Job Title:</span>
                                         <span className="font-semibold text-black">{employee.position}</span>
                                     </div>
-                                    <div className="flex justify-between items-center py-1.5 border-b border-[#ebebec]">
-                                        <span className="text-[#64666a]">Job Grade:</span>
-                                        <span className="font-bold text-[#008254]">
-                                            {employee.grade ? `Grade ${employee.grade}` : '—'}
+                                    <div className="flex justify-between items-center py-1.5 border-b border-[#e8e8ed]">
+                                        <span className="text-[#6e6e73]">Job Grade:</span>
+                                        <span className="font-bold text-[#0066cc]">
+                                            {employee.grade ? `Grade ${employee.grade}` : 'â€”'}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between items-center py-1.5 border-b border-[#ebebec]">
-                                        <span className="text-[#64666a]">Steps:</span>
-                                        <span className="font-bold text-[#008254]">
-                                            {employee.step ? `Step ${employee.step}` : '—'}
+                                    <div className="flex justify-between items-center py-1.5 border-b border-[#e8e8ed]">
+                                        <span className="text-[#6e6e73]">Steps:</span>
+                                        <span className="font-bold text-[#0066cc]">
+                                            {employee.step ? `Step ${employee.step}` : 'â€”'}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between items-center py-1.5 border-b border-[#ebebec]">
-                                        <span className="text-[#64666a]">Term of Employment:</span>
-                                        <Badge variant={employee.status === 'Permanent' ? 'mint' : 'secondary'}>
+                                    <div className="flex justify-between items-center py-1.5 border-b border-[#e8e8ed]">
+                                        <span className="text-[#6e6e73]">Term of Employment:</span>
+                                        <Badge variant={employee.status === 'Permanent' ? 'secondary' : employee.status === 'Separated' ? 'destructive' : 'outline'}>
                                             {employee.status}
                                         </Badge>
                                     </div>
-                                    <div className="flex justify-between items-center py-1.5 border-b border-[#ebebec]">
-                                        <span className="text-[#64666a]">Contract Classification:</span>
+                                    <div className="flex justify-between items-center py-1.5 border-b border-[#e8e8ed]">
+                                        <span className="text-[#6e6e73]">Contract Classification:</span>
                                         <span className="font-semibold text-black">{employee.contract_type}</span>
                                     </div>
                                     <div className="flex justify-between items-center py-1.5">
-                                        <span className="text-[#64666a]">Employment Type:</span>
+                                        <span className="text-[#6e6e73]">Employment Type:</span>
                                         <span className="font-semibold text-black">{employee.employment_type}</span>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="border-[#d8d9da] bg-white">
+                        <Card className="border-[#d2d2d7] bg-white">
                             <CardHeader>
                                 <CardTitle>Milestones, Tenure &amp; Leave</CardTitle>
                                 <CardDescription>Accumulated longevity and statutory leave entitlements</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4 pt-2">
-                                <div className="p-4 rounded-xs bg-[#effcf8] border border-[#b7ecda]">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-[#008254] block">Accumulated Service Tenure</span>
+                                <div className="p-4 rounded-xs bg-[#f5f5f7] border border-[#d2d2d7]">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-[#0066cc] block">Accumulated Service Tenure</span>
                                     <span className="text-xl font-bold text-black block mt-1">{tenure.formatted}</span>
-                                    <span className="text-xs text-[#64666a] block mt-0.5">Continuous service since {employee.employment_date_ec} E.C.</span>
+                                    <span className="text-xs text-[#6e6e73] block mt-0.5">Continuous service since {employee.employment_date_ec} E.C.</span>
                                 </div>
 
-                                <div className="p-4 rounded-xs bg-[#f7f7f7] border border-[#d8d9da] flex items-center justify-between">
+                                <div className="p-4 rounded-xs bg-[#f5f5f7] border border-[#d2d2d7] flex items-center justify-between">
                                     <div>
-                                        <span className="text-xs text-[#64666a] font-medium block">Active Annual Entitlement</span>
-                                        <span className="text-2xl font-bold text-[#008254] block mt-0.5">{annualLeaveEntitlement} Days</span>
-                                        <span className="text-[11px] text-[#64666a] block mt-0.5">Proclamation 1156/2019 (16 days + 1 day / 2 yrs)</span>
+                                        <span className="text-xs text-[#6e6e73] font-medium block">Active Annual Entitlement</span>
+                                        <span className="text-2xl font-bold text-[#0066cc] block mt-0.5">{annualLeaveEntitlement} Days</span>
+                                        <span className="text-[11px] text-[#6e6e73] block mt-0.5">Proclamation 1156/2019 (16 days + 1 day / 2 yrs)</span>
                                     </div>
-                                    <Award className="w-8 h-8 text-[#008254]/40" />
+                                    <Award className="w-8 h-8 text-[#0066cc]/40" />
                                 </div>
 
-                                <div className="p-3.5 rounded-xs bg-[#f7f7f7] border border-[#ebebec]">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-[#64666a]">Probation Details</span>
+                                <div className="p-3.5 rounded-xs bg-[#f5f5f7] border border-[#e8e8ed]">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-[#6e6e73]">Probation Details</span>
                                     <div className="flex justify-between items-center mt-1 text-xs">
-                                        <span className="text-[#3d4045]">Probation Status:</span>
-                                        <Badge variant={employee.probation_status === 'Passed' ? 'mint' : 'lime'}>
+                                        <span className="text-[#424245]">Probation Status:</span>
+                                        <Badge variant={employee.probation_status === 'Passed' ? 'secondary' : 'outline'}>
                                             {employee.probation_status}
                                         </Badge>
                                     </div>
                                     {employee.probation_end_date && (
                                         <div className="flex justify-between items-center mt-1.5 text-xs">
-                                            <span className="text-[#64666a]">Probation End Date:</span>
+                                            <span className="text-[#6e6e73]">Probation End Date:</span>
                                             <span className="font-bold text-black">{employee.probation_end_date}</span>
                                         </div>
                                     )}
@@ -639,49 +639,49 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                 {/* TAB 3: SECTION 3 - EDUCATION & QUALIFICATIONS */}
                 <TabsContent value="section3" className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Card className="border-[#d8d9da] bg-white">
+                        <Card className="border-[#d2d2d7] bg-white">
                             <CardHeader>
                                 <CardTitle>Section 3: Education &amp; Qualifications</CardTitle>
                                 <CardDescription>Academic degrees, certifying institution, and accreditation</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3 pt-2 text-xs">
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Educational Qualification:</span>
-                                    <span className="font-bold text-black text-sm">{employee.education_status || '—'}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Educational Qualification:</span>
+                                    <span className="font-bold text-black text-sm">{employee.education_status || 'â€”'}</span>
                                 </div>
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Institution Graduated from:</span>
-                                    <span className="font-semibold text-black text-sm">{employee.institution || '—'}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Institution Graduated from:</span>
+                                    <span className="font-semibold text-black text-sm">{employee.institution || 'â€”'}</span>
                                 </div>
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Year of Graduation E.C.:</span>
-                                    <span className="font-semibold text-black text-sm">{employee.graduation_year_ec ? `${employee.graduation_year_ec} E.C.` : '—'}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Year of Graduation E.C.:</span>
+                                    <span className="font-semibold text-black text-sm">{employee.graduation_year_ec ? `${employee.graduation_year_ec} E.C.` : 'â€”'}</span>
                                 </div>
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Cost Sharing Status:</span>
-                                    <span className="font-semibold text-black text-sm">{employee.cost_sharing_status || '—'}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Cost Sharing Status:</span>
+                                    <span className="font-semibold text-black text-sm">{employee.cost_sharing_status || 'â€”'}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2.5">
-                                    <span className="text-[#64666a]">Professional License:</span>
-                                    <span className="font-bold text-[#008254] text-sm">{employee.professional_license || '—'}</span>
+                                    <span className="text-[#6e6e73]">Professional License:</span>
+                                    <span className="font-bold text-[#0066cc] text-sm">{employee.professional_license || 'â€”'}</span>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="border-[#d8d9da] bg-white">
+                        <Card className="border-[#d2d2d7] bg-white">
                             <CardHeader>
                                 <CardTitle>Trainings &amp; Professional Certifications</CardTitle>
                                 <CardDescription>Institutional capacity development records</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4 pt-2">
-                                <div className="p-4 rounded-xs bg-[#effcf8] border border-[#b7ecda] text-xs">
-                                    <span className="font-bold text-[#008254] block text-sm">Trainings Acquired</span>
-                                    <p className="text-[#3d4045] mt-1.5 leading-relaxed">
+                                <div className="p-4 rounded-xs bg-[#f5f5f7] border border-[#d2d2d7] text-xs">
+                                    <span className="font-bold text-[#0066cc] block text-sm">Trainings Acquired</span>
+                                    <p className="text-[#424245] mt-1.5 leading-relaxed">
                                         Specialized engineering workshops, statutory occupational safety courses, and certified vocational training programs.
                                     </p>
                                 </div>
-                                <div className="p-3.5 rounded-xs bg-[#f7f7f7] border border-[#ebebec] text-xs flex justify-between items-center">
-                                    <span className="text-[#64666a]">HRMS Training Registry Status:</span>
+                                <div className="p-3.5 rounded-xs bg-[#f5f5f7] border border-[#e8e8ed] text-xs flex justify-between items-center">
+                                    <span className="text-[#6e6e73]">HRMS Training Registry Status:</span>
                                     <Badge variant="mint" className="text-xs font-semibold">Active &amp; Compliant</Badge>
                                 </div>
                             </CardContent>
@@ -691,7 +691,7 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
 
                 {/* TAB 4: SECTION 4 - COMPENSATION & PAYROLL */}
                 <TabsContent value="section4" className="max-w-3xl">
-                    <Card className="border-[#d8d9da] bg-white shadow-xs">
+                    <Card className="border-[#d2d2d7] bg-white shadow-xs">
                         <CardHeader>
                             <CardTitle>Section 4: Itemized Earnings, Allowances &amp; Deductions</CardTitle>
                             <CardDescription>Monthly contractual basic earnings, active allowances, statutory contributions, and net compensation</CardDescription>
@@ -699,136 +699,136 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                         <CardContent className="space-y-4 pt-2">
                             {/* Base and Active Allowances */}
                             <div className="space-y-2">
-                                <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
+                                <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
                                     <span className="text-sm font-semibold text-black">Gross Basic Salary</span>
                                     <span className="font-bold text-black text-sm">{formatCurrency(salary?.basic_salary)}</span>
                                 </div>
                                 {Number(salary?.responsibility_allowance) > 0 && (
-                                    <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
-                                        <span className="text-xs text-[#3d4045]">Responsibility Allowance</span>
-                                        <span className="font-semibold text-[#008254] text-xs">{formatCurrency(salary?.responsibility_allowance)}</span>
+                                    <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
+                                        <span className="text-xs text-[#424245]">Responsibility Allowance</span>
+                                        <span className="font-semibold text-[#0066cc] text-xs">{formatCurrency(salary?.responsibility_allowance)}</span>
                                     </div>
                                 )}
                                 {Number(salary?.project_allowance) > 0 && (
-                                    <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
-                                        <span className="text-xs text-[#3d4045]">Project Site Allowance</span>
-                                        <span className="font-semibold text-[#008254] text-xs">{formatCurrency(salary?.project_allowance)}</span>
+                                    <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
+                                        <span className="text-xs text-[#424245]">Project Site Allowance</span>
+                                        <span className="font-semibold text-[#0066cc] text-xs">{formatCurrency(salary?.project_allowance)}</span>
                                     </div>
                                 )}
                                 {Number(salary?.position_allowance) > 0 && (
-                                    <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
-                                        <span className="text-xs text-[#3d4045]">Position / Title Allowance</span>
-                                        <span className="font-semibold text-[#008254] text-xs">{formatCurrency(salary?.position_allowance)}</span>
+                                    <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
+                                        <span className="text-xs text-[#424245]">Position / Title Allowance</span>
+                                        <span className="font-semibold text-[#0066cc] text-xs">{formatCurrency(salary?.position_allowance)}</span>
                                     </div>
                                 )}
                                 {Number(salary?.daily_allowance) > 0 && (
-                                    <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
-                                        <span className="text-xs text-[#3d4045]">Daily Allowance</span>
-                                        <span className="font-semibold text-[#008254] text-xs">{formatCurrency(salary?.daily_allowance)}</span>
+                                    <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
+                                        <span className="text-xs text-[#424245]">Daily Allowance</span>
+                                        <span className="font-semibold text-[#0066cc] text-xs">{formatCurrency(salary?.daily_allowance)}</span>
                                     </div>
                                 )}
                                 {Number(salary?.desert_allowance) > 0 && (
-                                    <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
-                                        <span className="text-xs text-[#3d4045]">Desert Allowance</span>
-                                        <span className="font-semibold text-[#008254] text-xs">{formatCurrency(salary?.desert_allowance)}</span>
+                                    <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
+                                        <span className="text-xs text-[#424245]">Desert Allowance</span>
+                                        <span className="font-semibold text-[#0066cc] text-xs">{formatCurrency(salary?.desert_allowance)}</span>
                                     </div>
                                 )}
                                 {Number(salary?.house_allowance) > 0 && (
-                                    <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
-                                        <span className="text-xs text-[#3d4045]">Housing Allowance</span>
-                                        <span className="font-semibold text-[#008254] text-xs">{formatCurrency(salary?.house_allowance)}</span>
+                                    <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
+                                        <span className="text-xs text-[#424245]">Housing Allowance</span>
+                                        <span className="font-semibold text-[#0066cc] text-xs">{formatCurrency(salary?.house_allowance)}</span>
                                     </div>
                                 )}
                                 {Number(salary?.transport_allowance) > 0 && (
-                                    <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
-                                        <span className="text-xs text-[#3d4045]">Transport Allowance</span>
-                                        <span className="font-semibold text-[#008254] text-xs">{formatCurrency(salary?.transport_allowance)}</span>
+                                    <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
+                                        <span className="text-xs text-[#424245]">Transport Allowance</span>
+                                        <span className="font-semibold text-[#0066cc] text-xs">{formatCurrency(salary?.transport_allowance)}</span>
                                     </div>
                                 )}
                                 {Number(salary?.fuel_allowance_amount) > 0 && (
-                                    <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
-                                        <span className="text-xs text-[#3d4045]">
+                                    <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
+                                        <span className="text-xs text-[#424245]">
                                             Fuel Allowance {salary?.fuel_allowance_litres ? `(${salary.fuel_allowance_litres} L)` : ''}
                                         </span>
-                                        <span className="font-semibold text-[#008254] text-xs">{formatCurrency(salary?.fuel_allowance_amount)}</span>
+                                        <span className="font-semibold text-[#0066cc] text-xs">{formatCurrency(salary?.fuel_allowance_amount)}</span>
                                     </div>
                                 )}
                                 {Number(salary?.perdiem) > 0 && (
-                                    <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
-                                        <span className="text-xs text-[#3d4045]">Regular Perdiem</span>
-                                        <span className="font-semibold text-[#008254] text-xs">{formatCurrency(salary?.perdiem)}</span>
+                                    <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
+                                        <span className="text-xs text-[#424245]">Regular Perdiem</span>
+                                        <span className="font-semibold text-[#0066cc] text-xs">{formatCurrency(salary?.perdiem)}</span>
                                     </div>
                                 )}
                                 {Number(salary?.monthly_perdiem) > 0 && (
-                                    <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
-                                        <span className="text-xs text-[#3d4045]">Monthly Regular Perdiem</span>
-                                        <span className="font-semibold text-[#008254] text-xs">{formatCurrency(salary?.monthly_perdiem)}</span>
+                                    <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
+                                        <span className="text-xs text-[#424245]">Monthly Regular Perdiem</span>
+                                        <span className="font-semibold text-[#0066cc] text-xs">{formatCurrency(salary?.monthly_perdiem)}</span>
                                     </div>
                                 )}
                                 {Number(salary?.hardship_allowance) > 0 && (
-                                    <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
-                                        <span className="text-xs text-[#3d4045]">Hardship Allowance</span>
-                                        <span className="font-semibold text-[#008254] text-xs">{formatCurrency(salary?.hardship_allowance)}</span>
+                                    <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
+                                        <span className="text-xs text-[#424245]">Hardship Allowance</span>
+                                        <span className="font-semibold text-[#0066cc] text-xs">{formatCurrency(salary?.hardship_allowance)}</span>
                                     </div>
                                 )}
                                 {Number(salary?.food_allowance) > 0 && (
-                                    <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
-                                        <span className="text-xs text-[#3d4045]">Food Allowance</span>
-                                        <span className="font-semibold text-[#008254] text-xs">{formatCurrency(salary?.food_allowance)}</span>
+                                    <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
+                                        <span className="text-xs text-[#424245]">Food Allowance</span>
+                                        <span className="font-semibold text-[#0066cc] text-xs">{formatCurrency(salary?.food_allowance)}</span>
                                     </div>
                                 )}
                                 {Number(salary?.mobile_allowance) > 0 && (
-                                    <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
-                                        <span className="text-xs text-[#3d4045]">Mobile Allowance</span>
-                                        <span className="font-semibold text-[#008254] text-xs">{formatCurrency(salary?.mobile_allowance)}</span>
+                                    <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
+                                        <span className="text-xs text-[#424245]">Mobile Allowance</span>
+                                        <span className="font-semibold text-[#0066cc] text-xs">{formatCurrency(salary?.mobile_allowance)}</span>
                                     </div>
                                 )}
                                 {Number(salary?.other_allowance) > 0 && (
-                                    <div className="flex justify-between items-center py-2 border-b border-[#ebebec]">
-                                        <span className="text-xs text-[#3d4045]">Other Allowance</span>
-                                        <span className="font-semibold text-[#008254] text-xs">{formatCurrency(salary?.other_allowance)}</span>
+                                    <div className="flex justify-between items-center py-2 border-b border-[#e8e8ed]">
+                                        <span className="text-xs text-[#424245]">Other Allowance</span>
+                                        <span className="font-semibold text-[#0066cc] text-xs">{formatCurrency(salary?.other_allowance)}</span>
                                     </div>
                                 )}
                             </div>
 
                             {/* Total Gross Earning Banner */}
-                            <div className="flex justify-between items-center bg-[#effcf8] p-3 rounded-xs border border-[#b7ecda]">
+                            <div className="flex justify-between items-center bg-[#f5f5f7] p-3 rounded-xs border border-[#d2d2d7]">
                                 <span className="text-sm font-bold text-black uppercase">Total Gross Earning</span>
-                                <span className="font-bold text-[#008254] text-lg">
+                                <span className="font-bold text-[#0066cc] text-lg">
                                     {formatCurrency(salary?.total_salary || salary?.basic_salary)}
                                 </span>
                             </div>
 
                             {/* Statutory Deductions & Company Contributions (only if active) */}
                             {(Number(salary?.taxable_salary) > 0 || Number(salary?.income_tax) > 0 || Number(salary?.pension_employee) > 0 || Number(salary?.pension_company) > 0 || Number(salary?.total_deductions) > 0) && (
-                                <div className="space-y-2 pt-2 border-t border-[#ebebec]">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-[#64666a] block mb-1">Statutory Deductions &amp; Pension Contributions</span>
+                                <div className="space-y-2 pt-2 border-t border-[#e8e8ed]">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-[#6e6e73] block mb-1">Statutory Deductions &amp; Pension Contributions</span>
                                     {Number(salary?.taxable_salary) > 0 && (
-                                        <div className="flex justify-between items-center py-1.5 border-b border-[#ebebec]">
-                                            <span className="text-xs text-[#3d4045]">Taxable Salary</span>
+                                        <div className="flex justify-between items-center py-1.5 border-b border-[#e8e8ed]">
+                                            <span className="text-xs text-[#424245]">Taxable Salary</span>
                                             <span className="font-medium text-black text-xs">{formatCurrency(salary?.taxable_salary)}</span>
                                         </div>
                                     )}
                                     {Number(salary?.income_tax) > 0 && (
-                                        <div className="flex justify-between items-center py-1.5 border-b border-[#ebebec]">
-                                            <span className="text-xs text-[#3d4045]">Employment Income Tax</span>
+                                        <div className="flex justify-between items-center py-1.5 border-b border-[#e8e8ed]">
+                                            <span className="text-xs text-[#424245]">Employment Income Tax</span>
                                             <span className="font-medium text-[#de2828] text-xs">{formatCurrency(salary?.income_tax)}</span>
                                         </div>
                                     )}
                                     {Number(salary?.pension_employee) > 0 && (
-                                        <div className="flex justify-between items-center py-1.5 border-b border-[#ebebec]">
-                                            <span className="text-xs text-[#3d4045]">Pension - Employee Share (7%)</span>
+                                        <div className="flex justify-between items-center py-1.5 border-b border-[#e8e8ed]">
+                                            <span className="text-xs text-[#424245]">Pension - Employee Share (7%)</span>
                                             <span className="font-medium text-[#de2828] text-xs">{formatCurrency(salary?.pension_employee)}</span>
                                         </div>
                                     )}
                                     {Number(salary?.pension_company) > 0 && (
-                                        <div className="flex justify-between items-center py-1.5 border-b border-[#ebebec]">
-                                            <span className="text-xs text-[#3d4045]">Pension - Company Share (11%)</span>
-                                            <span className="font-bold text-[#008254] text-xs">{formatCurrency(salary?.pension_company)}</span>
+                                        <div className="flex justify-between items-center py-1.5 border-b border-[#e8e8ed]">
+                                            <span className="text-xs text-[#424245]">Pension - Company Share (11%)</span>
+                                            <span className="font-bold text-[#0066cc] text-xs">{formatCurrency(salary?.pension_company)}</span>
                                         </div>
                                     )}
                                     {Number(salary?.total_deductions) > 0 && (
-                                        <div className="flex justify-between items-center py-1.5 border-b border-[#ebebec]">
+                                        <div className="flex justify-between items-center py-1.5 border-b border-[#e8e8ed]">
                                             <span className="text-xs font-semibold text-black">Total Statutory Deductions</span>
                                             <span className="font-bold text-[#de2828] text-xs">{formatCurrency(salary?.total_deductions)}</span>
                                         </div>
@@ -838,7 +838,7 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
 
                             {/* Net Take-Home Pay Banner */}
                             {((salary?.total_salary || 0) > 0) && (
-                                <div className="flex justify-between items-center bg-[#f7f7f7] p-3 rounded-xs border border-[#ebebec]">
+                                <div className="flex justify-between items-center bg-[#f5f5f7] p-3 rounded-xs border border-[#e8e8ed]">
                                     <span className="text-xs font-bold text-black uppercase">Net Take-Home Pay</span>
                                     <span className="font-bold text-black text-base">
                                         {formatCurrency((salary?.total_salary || 0) - (salary?.total_deductions || 0))}
@@ -852,56 +852,56 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                 {/* TAB 5: SECTION 5 - EXPERIENCE & PERFORMANCE */}
                 <TabsContent value="section5" className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Card className="border-[#d8d9da] bg-white">
+                        <Card className="border-[#d2d2d7] bg-white">
                             <CardHeader>
                                 <CardTitle>Section 5: Experience &amp; Service Longevity</CardTitle>
                                 <CardDescription>Elhadar tenure, external experience, and machinery assignment</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3 pt-2 text-xs">
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Elhadar Company Experience:</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Elhadar Company Experience:</span>
                                     <span className="font-bold text-black text-sm">{displayCompanyExp}</span>
                                 </div>
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Previous Outside Experience:</span>
-                                    <span className="font-semibold text-black text-sm">{employee.previous_experience || '—'}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Previous Outside Experience:</span>
+                                    <span className="font-semibold text-black text-sm">{employee.previous_experience || 'â€”'}</span>
                                 </div>
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Total Accumulated Experience:</span>
-                                    <span className="font-bold text-[#008254] text-sm">{displayTotalExp}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Total Accumulated Experience:</span>
+                                    <span className="font-bold text-[#0066cc] text-sm">{displayTotalExp}</span>
                                 </div>
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Job Grade &amp; Step:</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Job Grade &amp; Step:</span>
                                     <span className="font-semibold text-black text-sm">
-                                        Grade {employee.grade || '—'} / Step {employee.step || '—'}
+                                        Grade {employee.grade || 'â€”'} / Step {employee.step || 'â€”'}
                                     </span>
                                 </div>
                                 {employee.plate_number && (
                                     <div className="flex justify-between items-center py-2.5">
-                                        <span className="text-[#64666a]">Assigned Vehicle / Plate No:</span>
-                                        <span className="font-bold text-[#008254] text-sm">{employee.plate_number}</span>
+                                        <span className="text-[#6e6e73]">Assigned Vehicle / Plate No:</span>
+                                        <span className="font-bold text-[#0066cc] text-sm">{employee.plate_number}</span>
                                     </div>
                                 )}
                             </CardContent>
                         </Card>
 
-                        <Card className="border-[#d8d9da] bg-white">
+                        <Card className="border-[#d2d2d7] bg-white">
                             <CardHeader>
                                 <CardTitle>Performance Reviews &amp; Disciplinary Record</CardTitle>
                                 <CardDescription>Official appraisal scores and disciplinary standing</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3 pt-2 text-xs">
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Performance Appraisal Round 1:</span>
-                                    <span className="font-bold text-black text-sm">{employee.performance_score_round_1 || '—'}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Performance Appraisal Round 1:</span>
+                                    <span className="font-bold text-black text-sm">{employee.performance_score_round_1 || 'â€”'}</span>
                                 </div>
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Performance Appraisal Round 2:</span>
-                                    <span className="font-bold text-black text-sm">{employee.performance_score_round_2 || '—'}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Performance Appraisal Round 2:</span>
+                                    <span className="font-bold text-black text-sm">{employee.performance_score_round_2 || 'â€”'}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2.5">
-                                    <span className="text-[#64666a]">Disciplinary Action:</span>
-                                    <span className={`font-semibold text-sm ${employee.disciplinary_action ? 'text-[#de2828]' : 'text-[#008254]'}`}>
+                                    <span className="text-[#6e6e73]">Disciplinary Action:</span>
+                                    <span className={`font-semibold text-sm ${employee.disciplinary_action ? 'text-[#de2828]' : 'text-[#0066cc]'}`}>
                                         {employee.disciplinary_action || 'Clean Record (None)'}
                                     </span>
                                 </div>
@@ -912,40 +912,40 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
 
                 {/* TAB 6: SECTION 6 - FINANCIAL & LEGAL IDS */}
                 <TabsContent value="section6" className="space-y-6">
-                    <Card className="border-[#d8d9da] bg-white">
+                    <Card className="border-[#d2d2d7] bg-white">
                         <CardHeader>
                             <CardTitle>Section 6: Financial, Banking &amp; Pension Identifiers</CardTitle>
                             <CardDescription>Governmental pension registries, disbursement accounts, and TIN</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-2">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-xs">
-                                <div className="p-4 rounded-xs bg-[#f7f7f7] border border-[#ebebec]">
-                                    <span className="text-[#64666a] block text-[11px] font-medium">Commercial Bank Name:</span>
+                                <div className="p-4 rounded-xs bg-[#f5f5f7] border border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73] block text-[11px] font-medium">Commercial Bank Name:</span>
                                     <span className="font-bold text-black text-sm mt-0.5 block">{employee.bank_name || 'Commercial Bank of Ethiopia'}</span>
                                 </div>
-                                <div className="p-4 rounded-xs bg-[#effcf8] border border-[#b7ecda]">
-                                    <span className="text-[#008254] block text-[11px] font-semibold">Bank Account Number:</span>
-                                    <span className="font-extrabold text-[#008254] text-base mt-0.5 block">{employee.bank_account_no || '—'}</span>
+                                <div className="p-4 rounded-xs bg-[#f5f5f7] border border-[#d2d2d7]">
+                                    <span className="text-[#0066cc] block text-[11px] font-semibold">Bank Account Number:</span>
+                                    <span className="font-extrabold text-[#0066cc] text-base mt-0.5 block">{employee.bank_account_no || 'â€”'}</span>
                                 </div>
-                                <div className="p-4 rounded-xs bg-[#f7f7f7] border border-[#ebebec]">
-                                    <span className="text-[#64666a] block text-[11px] font-medium">Tax Identification Number (TIN):</span>
-                                    <span className="font-bold text-black text-sm mt-0.5 block">{employee.tin_no || '—'}</span>
+                                <div className="p-4 rounded-xs bg-[#f5f5f7] border border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73] block text-[11px] font-medium">Tax Identification Number (TIN):</span>
+                                    <span className="font-bold text-black text-sm mt-0.5 block">{employee.tin_no || 'â€”'}</span>
                                 </div>
-                                <div className="p-4 rounded-xs bg-[#effcf8] border border-[#b7ecda]">
-                                    <span className="text-[#008254] block text-[11px] font-semibold">POESSA Pension No:</span>
-                                    <span className="font-bold text-[#008254] text-sm mt-0.5 block">{employee.poessa_no || '—'}</span>
+                                <div className="p-4 rounded-xs bg-[#f5f5f7] border border-[#d2d2d7]">
+                                    <span className="text-[#0066cc] block text-[11px] font-semibold">POESSA Pension No:</span>
+                                    <span className="font-bold text-[#0066cc] text-sm mt-0.5 block">{employee.poessa_no || 'â€”'}</span>
                                 </div>
-                                <div className="p-4 rounded-xs bg-[#effcf8] border border-[#b7ecda]">
-                                    <span className="text-[#008254] block text-[11px] font-semibold">PSSSA Pension No:</span>
-                                    <span className="font-bold text-[#008254] text-sm mt-0.5 block">{employee.psssa_no || '—'}</span>
+                                <div className="p-4 rounded-xs bg-[#f5f5f7] border border-[#d2d2d7]">
+                                    <span className="text-[#0066cc] block text-[11px] font-semibold">PSSSA Pension No:</span>
+                                    <span className="font-bold text-[#0066cc] text-sm mt-0.5 block">{employee.psssa_no || 'â€”'}</span>
                                 </div>
-                                <div className="p-4 rounded-xs bg-[#f7f7f7] border border-[#ebebec]">
-                                    <span className="text-[#64666a] block text-[11px] font-medium">Social Security Number:</span>
-                                    <span className="font-bold text-black text-sm mt-0.5 block">{employee.social_security_no || '—'}</span>
+                                <div className="p-4 rounded-xs bg-[#f5f5f7] border border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73] block text-[11px] font-medium">Social Security Number:</span>
+                                    <span className="font-bold text-black text-sm mt-0.5 block">{employee.social_security_no || 'â€”'}</span>
                                 </div>
                                 {employee.plate_number && (
-                                    <div className="p-4 rounded-xs bg-[#f7f7f7] border border-[#ebebec] md:col-span-2 lg:col-span-1">
-                                        <span className="text-[#64666a] block text-[11px] font-medium">Assigned Vehicle / Plate No:</span>
+                                    <div className="p-4 rounded-xs bg-[#f5f5f7] border border-[#e8e8ed] md:col-span-2 lg:col-span-1">
+                                        <span className="text-[#6e6e73] block text-[11px] font-medium">Assigned Vehicle / Plate No:</span>
                                         <span className="font-bold text-black text-sm mt-0.5 block">{employee.plate_number}</span>
                                     </div>
                                 )}
@@ -957,70 +957,70 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                 {/* TAB 7: SECTION 7 - CONTACT INFORMATION & SECTION 8 REMARKS */}
                 <TabsContent value="section7" className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Card className="border-[#d8d9da] bg-white">
+                        <Card className="border-[#d2d2d7] bg-white">
                             <CardHeader>
                                 <CardTitle>Section 7: Contact Information &amp; Emergency</CardTitle>
                                 <CardDescription>Primary communications and next of kin contacts</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3 pt-2 text-xs">
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Primary Telephone No:</span>
-                                    <span className="font-bold text-black text-sm">{formatEthPhone(employee.phone) || employee.phone || '—'}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Primary Telephone No:</span>
+                                    <span className="font-bold text-black text-sm">{formatEthPhone(employee.phone) || employee.phone || 'â€”'}</span>
                                 </div>
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">E-mail Address:</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">E-mail Address:</span>
                                     <span className="font-semibold text-black text-sm">{employee.email || 'None on file'}</span>
                                 </div>
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Emergency Contact Person:</span>
-                                    <span className="font-bold text-black text-sm">{employee.emergency_contact_name || '—'}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Emergency Contact Person:</span>
+                                    <span className="font-bold text-black text-sm">{employee.emergency_contact_name || 'â€”'}</span>
                                 </div>
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Relationship:</span>
-                                    <span className="font-bold text-[#008254] text-sm">{employee.emergency_contact_relationship || '—'}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Relationship:</span>
+                                    <span className="font-bold text-[#0066cc] text-sm">{employee.emergency_contact_relationship || 'â€”'}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2.5">
-                                    <span className="text-[#64666a]">Emergency Contact Phone:</span>
-                                    <span className="font-bold text-[#008254] text-sm">{employee.emergency_contact_phone || '—'}</span>
+                                    <span className="text-[#6e6e73]">Emergency Contact Phone:</span>
+                                    <span className="font-bold text-[#0066cc] text-sm">{employee.emergency_contact_phone || 'â€”'}</span>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="border-[#d8d9da] bg-white">
+                        <Card className="border-[#d2d2d7] bg-white">
                             <CardHeader>
                                 <CardTitle>Residential Address Details</CardTitle>
                                 <CardDescription>Official domicile recorded for statutory notification</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3 pt-2 text-xs">
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Region:</span>
-                                    <span className="font-semibold text-black text-sm">{employee.region || '—'}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Region:</span>
+                                    <span className="font-semibold text-black text-sm">{employee.region || 'â€”'}</span>
                                 </div>
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">City:</span>
-                                    <span className="font-semibold text-black text-sm">{employee.city || '—'}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">City:</span>
+                                    <span className="font-semibold text-black text-sm">{employee.city || 'â€”'}</span>
                                 </div>
-                                <div className="flex justify-between items-center py-2.5 border-b border-[#ebebec]">
-                                    <span className="text-[#64666a]">Sub-City (Kifle Ketema):</span>
-                                    <span className="font-semibold text-black text-sm">{employee.sub_city || '—'}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#e8e8ed]">
+                                    <span className="text-[#6e6e73]">Sub-City (Kifle Ketema):</span>
+                                    <span className="font-semibold text-black text-sm">{employee.sub_city || 'â€”'}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2.5">
-                                    <span className="text-[#64666a]">Woreda / House Number:</span>
-                                    <span className="font-semibold text-black text-sm">{employee.woreda || '—'} / {employee.house_no || '—'}</span>
+                                    <span className="text-[#6e6e73]">Woreda / House Number:</span>
+                                    <span className="font-semibold text-black text-sm">{employee.woreda || 'â€”'} / {employee.house_no || 'â€”'}</span>
                                 </div>
                             </CardContent>
                         </Card>
                     </div>
 
                     {/* Section 8: Expandable Remarks & Personnel Notes Card */}
-                    <Card className="border-[#d8d9da] bg-white overflow-hidden">
+                    <Card className="border-[#d2d2d7] bg-white overflow-hidden">
                         <CardHeader 
-                            className="py-3 px-6 border-b border-[#ebebec] bg-[#f7f7f7]/80 cursor-pointer select-none hover:bg-[#effcf8]/60 transition-colors"
+                            className="py-3 px-6 border-b border-[#e8e8ed] bg-[#f5f5f7]/80 cursor-pointer select-none hover:bg-[#f5f5f7]/60 transition-colors"
                             onClick={() => setRemarksExpanded(!remarksExpanded)}
                         >
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <FileText className="w-4 h-4 text-[#008254]" />
+                                    <FileText className="w-4 h-4 text-[#0066cc]" />
                                     <CardTitle className="text-sm font-bold text-black">
                                         Section 8: Remarks &amp; Personnel Notes
                                     </CardTitle>
@@ -1030,15 +1030,15 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                                         <Badge variant="secondary" className="text-[10px] ml-2">No Remarks</Badge>
                                     )}
                                 </div>
-                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-[#64666a]">
+                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-[#6e6e73]">
                                     {remarksExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                 </Button>
                             </div>
                         </CardHeader>
                         {remarksExpanded && (
-                            <CardContent className="p-6 text-xs text-[#3d4045] whitespace-pre-wrap leading-relaxed bg-white">
+                            <CardContent className="p-6 text-xs text-[#424245] whitespace-pre-wrap leading-relaxed bg-white">
                                 {employee.remarks || (
-                                    <span className="text-[#64666a] italic">
+                                    <span className="text-[#6e6e73] italic">
                                         No official remarks or personnel notes logged for this employee.
                                     </span>
                                 )}
@@ -1050,17 +1050,17 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
 
             {/* Delete Profile Portrait Confirmation Dialog */}
             <AlertDialog open={deletePhotoOpen} onOpenChange={setDeletePhotoOpen}>
-                <AlertDialogContent className="bg-white border-[#d8d9da]">
+                <AlertDialogContent className="bg-white border-[#d2d2d7]">
                     <AlertDialogHeader>
                         <AlertDialogTitle className="text-base font-bold text-black">
                             Remove Profile Photo?
                         </AlertDialogTitle>
-                        <AlertDialogDescription className="text-xs text-[#64666a]">
+                        <AlertDialogDescription className="text-xs text-[#6e6e73]">
                             Are you sure you want to remove the profile photo for <strong className="text-black">{employee.full_name}</strong>? This will revert the dossier avatar to default initials.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="gap-2 sm:gap-0">
-                        <AlertDialogCancel className="text-xs h-9 border-[#d8d9da] hover:bg-[#f7f7f7]">
+                        <AlertDialogCancel className="text-xs h-9 border-[#d2d2d7] hover:bg-[#f5f5f7]">
                             Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
@@ -1075,3 +1075,5 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
         </AuthenticatedLayout>
     );
 }
+
+

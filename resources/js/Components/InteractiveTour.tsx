@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { 
@@ -243,7 +243,7 @@ export default function InteractiveTour({
                             height: targetRect.height,
                             borderRadius: '6px',
                         }}
-                        className="pointer-events-none z-[9992] border-2 border-[#008254] ring-4 ring-[#008254]/30 shadow-[0_0_25px_rgba(0,130,84,0.5)] transition-all duration-300 ease-out"
+                        className="pointer-events-none z-[9992] border-2 border-[#0066cc] ring-4 ring-[#0066cc]/30 shadow-[0_0_25px_rgba(0,130,84,0.5)] transition-all duration-300 ease-out"
                     />
 
                     {/* Animated Pulsing Beacon Marker */}
@@ -255,8 +255,8 @@ export default function InteractiveTour({
                         }}
                         className="pointer-events-none z-[9993] flex h-5 w-5"
                     >
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#008254] opacity-80" />
-                        <span className="relative inline-flex rounded-full h-5 w-5 bg-[#008254] border-2 border-white shadow-sm" />
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0066cc] opacity-80" />
+                        <span className="relative inline-flex rounded-full h-5 w-5 bg-[#0066cc] border-2 border-white shadow-sm" />
                     </div>
                 </>
             )}
@@ -271,16 +271,16 @@ export default function InteractiveTour({
                     width: '380px',
                     maxWidth: 'calc(100vw - 32px)',
                 }}
-                className="z-[9995] bg-white rounded-xs border border-[#d8d9da] shadow-[0_20px_50px_rgba(0,0,0,0.25)] flex flex-col overflow-hidden transition-all duration-300 ease-out animate-in fade-in zoom-in-95"
+                className="z-[9995] bg-white rounded-xs border border-[#d2d2d7] shadow-[0_20px_50px_rgba(0,0,0,0.25)] flex flex-col overflow-hidden transition-all duration-300 ease-out animate-in fade-in zoom-in-95"
             >
                 {/* Popover Header */}
-                <div className="bg-[#008254] text-white p-3.5 flex items-center justify-between border-b border-[#006a44]">
+                <div className="bg-[#0066cc] text-white p-3.5 flex items-center justify-between border-b border-[#0071e3]">
                     <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-xs bg-[#effcf8] text-[#008254] flex items-center justify-center font-bold">
+                        <div className="w-6 h-6 rounded-xs bg-[#f5f5f7] text-[#0066cc] flex items-center justify-center font-bold">
                             <Compass className="w-3.5 h-3.5" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-bold tracking-wider uppercase text-[#e3faf2]">
+                            <p className="text-[10px] font-bold tracking-wider uppercase text-[#f5f5f7]">
                                 {tourTitle}
                             </p>
                             <p className="text-xs font-bold text-white">
@@ -291,13 +291,13 @@ export default function InteractiveTour({
 
                     <div className="flex items-center gap-2">
                         {step.badge && (
-                            <Badge className="bg-[#ddfa88] hover:bg-[#ddfa88] text-[#00482f] text-[10px] font-bold px-1.5 py-0.5 rounded-xs border-0">
+                            <Badge className="bg-[#2997ff] hover:bg-[#2997ff] text-[#1d1d1f] text-[10px] font-bold px-1.5 py-0.5 rounded-xs border-0">
                                 {step.badge}
                             </Badge>
                         )}
                         <button
                             onClick={onClose}
-                            className="text-white/80 hover:text-white p-1 rounded-xs hover:bg-[#006a44] transition-colors"
+                            className="text-white/80 hover:text-white p-1 rounded-xs hover:bg-[#0071e3] transition-colors"
                             title="Close Tour (Esc)"
                         >
                             <X className="w-4 h-4" />
@@ -306,9 +306,9 @@ export default function InteractiveTour({
                 </div>
 
                 {/* Progress Bar */}
-                <div className="w-full bg-[#ebebec] h-1">
+                <div className="w-full bg-[#e8e8ed] h-1">
                     <div
-                        className="bg-[#008254] h-1 transition-all duration-300"
+                        className="bg-[#0066cc] h-1 transition-all duration-300"
                         style={{ width: `${progressPercent}%` }}
                     />
                 </div>
@@ -319,24 +319,24 @@ export default function InteractiveTour({
                         <h3 className="text-base font-bold text-black tracking-tight leading-tight flex items-center gap-1.5">
                             <span>{step.title}</span>
                         </h3>
-                        <p className="text-xs text-[#3d4045] leading-relaxed mt-1.5 font-normal">
+                        <p className="text-xs text-[#424245] leading-relaxed mt-1.5 font-normal">
                             {step.content}
                         </p>
                     </div>
 
                     {step.tip && (
-                        <div className="bg-[#effcf8] border border-[#008254]/25 p-2.5 rounded-xs flex items-start gap-2 text-[11px] text-[#00482f] font-medium leading-normal">
-                            <Sparkles className="w-3.5 h-3.5 text-[#008254] shrink-0 mt-0.5" />
+                        <div className="bg-[#f5f5f7] border border-[#0066cc]/25 p-2.5 rounded-xs flex items-start gap-2 text-[11px] text-[#1d1d1f] font-medium leading-normal">
+                            <Sparkles className="w-3.5 h-3.5 text-[#0066cc] shrink-0 mt-0.5" />
                             <span>{step.tip}</span>
                         </div>
                     )}
                 </div>
 
                 {/* Popover Footer with Actions */}
-                <div className="px-4 py-3 bg-[#f7f7f7] border-t border-[#ebebec] flex items-center justify-between">
+                <div className="px-4 py-3 bg-[#f5f5f7] border-t border-[#e8e8ed] flex items-center justify-between">
                     <button
                         onClick={onClose}
-                        className="text-xs font-semibold text-[#64666a] hover:text-black transition-colors"
+                        className="text-xs font-semibold text-[#6e6e73] hover:text-black transition-colors"
                     >
                         Skip Tour
                     </button>
@@ -347,7 +347,7 @@ export default function InteractiveTour({
                             size="sm"
                             onClick={() => setCurrentStepIndex((prev) => Math.max(0, prev - 1))}
                             disabled={isFirstStep}
-                            className="h-8 px-2.5 text-xs font-semibold border-[#d8d9da] text-[#3d4045] rounded-xs disabled:opacity-40"
+                            className="h-8 px-2.5 text-xs font-semibold border-[#d2d2d7] text-[#424245] rounded-xs disabled:opacity-40"
                         >
                             <ChevronLeft className="w-3.5 h-3.5 mr-0.5" />
                             Back
@@ -357,7 +357,7 @@ export default function InteractiveTour({
                             <Button
                                 size="sm"
                                 onClick={onClose}
-                                className="h-8 px-3.5 text-xs font-bold bg-[#008254] hover:bg-[#006a44] text-white rounded-xs gap-1 shadow-sm"
+                                className="h-8 px-3.5 text-xs font-bold bg-[#0066cc] hover:bg-[#0071e3] text-white rounded-xs gap-1 shadow-sm"
                             >
                                 <Check className="w-3.5 h-3.5" />
                                 Done
@@ -366,7 +366,7 @@ export default function InteractiveTour({
                             <Button
                                 size="sm"
                                 onClick={() => setCurrentStepIndex((prev) => Math.min(steps.length - 1, prev + 1))}
-                                className="h-8 px-3.5 text-xs font-bold bg-[#008254] hover:bg-[#006a44] text-white rounded-xs gap-1 shadow-sm"
+                                className="h-8 px-3.5 text-xs font-bold bg-[#0066cc] hover:bg-[#0071e3] text-white rounded-xs gap-1 shadow-sm"
                             >
                                 Next
                                 <ChevronRight className="w-3.5 h-3.5" />
@@ -378,3 +378,4 @@ export default function InteractiveTour({
         </div>
     );
 }
+

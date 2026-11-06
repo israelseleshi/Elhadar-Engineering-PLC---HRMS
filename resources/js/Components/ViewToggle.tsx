@@ -27,7 +27,7 @@ export default function ViewToggle({ value, onChange, className }: ViewTogglePro
             role="group"
             aria-label="Switch between table and grid view"
             className={cn(
-                'inline-flex items-center gap-0.5 rounded-xs border border-[#d8d9da] bg-[#f7f7f7] p-0.5',
+                'inline-flex items-center gap-0.5 rounded-lg border border-border bg-muted/60 p-0.5',
                 className
             )}
         >
@@ -43,11 +43,11 @@ export default function ViewToggle({ value, onChange, className }: ViewTogglePro
                         title={label}
                         onClick={() => onChange(mode)}
                         className={cn(
-                            'inline-flex h-8 items-center gap-1.5 rounded-[3px] px-2.5 text-[11px] font-semibold transition-colors',
-                            'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#008254]',
+                            'inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors',
+                            'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary',
                             isActive
-                                ? 'border border-[#ebebec] bg-white text-[#008254] shadow-xs'
-                                : 'border border-transparent text-[#64666a] hover:text-[#3d4045]'
+                                ? 'bg-card text-foreground shadow-xs border border-border'
+                                : 'border border-transparent text-muted-foreground hover:text-foreground'
                         )}
                     >
                         <Icon className="h-3.5 w-3.5" />
@@ -79,3 +79,4 @@ export function useViewMode(storageKey: string, fallback: ViewMode = 'table') {
 
     return [viewMode, setViewMode] as const;
 }
+

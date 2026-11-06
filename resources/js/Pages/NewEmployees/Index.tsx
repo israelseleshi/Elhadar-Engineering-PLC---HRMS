@@ -115,7 +115,7 @@ export default function Index({ newHires, filters, stats, departments, workplace
     const hasActiveFilters = Boolean(search || departmentId || workPlace || status);
 
     const formatCurrency = (amount?: number) => {
-        if (!amount || amount <= 0) return '—';
+        if (!amount || amount <= 0) return 'â€”';
         return new Intl.NumberFormat('en-ET', {
             style: 'currency',
             currency: 'ETB',
@@ -134,11 +134,11 @@ export default function Index({ newHires, filters, stats, departments, workplace
     const getStatusBadge = (empStatus: string) => {
         switch (empStatus) {
             case 'Permanent':
-                return <Badge variant="mint" className="gap-1 font-bold"><CheckCircle2 className="w-3 h-3 text-[#008254]" /> Permanent</Badge>;
+                return <Badge className="gap-1 font-medium bg-[#e8f5e9] text-[#1f7a3d] border border-[#cdebd6] hover:bg-[#e8f5e9]"><CheckCircle2 className="w-3 h-3" /> Permanent</Badge>;
             case 'Contract':
                 return <Badge variant="secondary">Contract</Badge>;
             case 'Probation':
-                return <Badge variant="lime">Under Probation</Badge>;
+                return <Badge className="font-medium bg-[#fff7e6] text-[#8a5a00] border border-[#f3d9a4] hover:bg-[#fff7e6]">Under Probation</Badge>;
             case 'Separated':
                 return <Badge variant="destructive">Separated</Badge>;
             default:
@@ -148,43 +148,39 @@ export default function Index({ newHires, filters, stats, departments, workplace
 
     return (
         <AuthenticatedLayout
-            header={
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                            <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-white">New Employees</h2>
-                            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-xs bg-[#ddfa88] text-[#00482f] text-[11px] font-bold uppercase tracking-wide">
-                                Hamle 1, 2018 E.C.
-                            </span>
-                        </div>
-                        <p className="mt-1 text-sm text-[#e3faf2] font-light max-w-2xl">
-                            Onboarding roster of everyone hired on or after {formatDate(cutoff)}.
-                            {stats.joined_this_month > 0 && ` ${stats.joined_this_month} joined this month.`}
-                        </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                        {hasActiveFilters && (
-                            <Button
-                                type="button"
-                                onClick={clearFilters}
-                                variant="outline"
-                                className="bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/25 gap-1.5 rounded-xs"
-                            >
-                                <X className="w-3.5 h-3.5 text-[#ddfa88]" />
-                                <span>Clear Filters</span>
-                            </Button>
-                        )}
-                        <Link href={route('employees.index')}>
-                            <Button className="bg-[#ddfa88] hover:bg-[#cbf458] text-[#00482f] font-bold text-xs gap-1.5 rounded-xs shadow-sm">
-                                <Users className="w-3.5 h-3.5" />
-                                <span>Full Staff Directory</span>
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-            }
+            title="New Employees"
+            subtitle={`Onboarding roster of personnel hired on or after ${formatDate(cutoff)}.${stats.joined_this_month > 0 ? ` ${stats.joined_this_month} joined this month.` : ''}`}
         >
             <Head title="New Employees - Elhadar Engineering HRMS" />
+
+            {/* Quick Actions & Header Info */}
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+                <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 text-xs font-semibold">
+                        Cutoff: Hamle 1, 2018 E.C.
+                    </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                    {hasActiveFilters && (
+                        <Button
+                            type="button"
+                            onClick={clearFilters}
+                            variant="outline"
+                            size="sm"
+                            className="border-border bg-card text-foreground hover:bg-muted font-medium text-xs gap-1.5 rounded-md"
+                        >
+                            <X className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span>Clear Filters</span>
+                        </Button>
+                    )}
+                    <Link href={route('employees.index')}>
+                        <Button size="sm" variant="outline" className="border-border bg-card text-foreground hover:bg-muted font-medium text-xs gap-1.5 rounded-md">
+                            <Users className="w-3.5 h-3.5 text-primary" />
+                            <span>Full Staff Directory</span>
+                        </Button>
+                    </Link>
+                </div>
+            </div>
 
             {/* Lifecycle Filter Tabs */}
             <div className="flex flex-wrap items-center gap-2 mb-4">
@@ -204,15 +200,15 @@ export default function Index({ newHires, filters, stats, departments, workplace
                                 setStatus(tab.val);
                                 handleFilter({ status: tab.val });
                             }}
-                            className={`px-3 py-1.5 rounded-xs text-xs font-semibold flex items-center gap-2 transition-all border ${
+                            className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all border ${
                                 isActive
-                                    ? 'bg-[#008254] text-white border-[#008254] shadow-xs'
-                                    : 'bg-white text-[#3d4045] border-[#d8d9da] hover:bg-[#effcf8] hover:text-[#008254]'
+                                    ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-sm'
+                                    : 'bg-white text-[#424245] border-[#d2d2d7] hover:bg-[#f5f5f7] hover:text-[#0066cc]'
                             }`}
                         >
                             <span>{tab.label}</span>
                             <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                isActive ? 'bg-white/20 text-white' : 'bg-[#effcf8] text-[#008254]'
+                                isActive ? 'bg-white/20 text-white' : 'bg-[#f5f5f7] text-[#0066cc]'
                             }`}>
                                 {tab.count}
                             </span>
@@ -226,11 +222,11 @@ export default function Index({ newHires, filters, stats, departments, workplace
             </div>
 
             {/* Filter and Search Bar */}
-            <Card className="border-[#d8d9da] bg-white mb-6">
+            <Card className="border-[#d2d2d7] bg-white mb-6">
                 <CardContent className="p-4">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
                         <div className="relative md:col-span-1">
-                            <Search className="w-4 h-4 absolute left-3 top-3 text-[#64666a]" />
+                            <Search className="w-4 h-4 absolute left-3 top-3 text-[#6e6e73]" />
                             <Input
                                 placeholder="Search name, file no, phone, position..."
                                 value={search}
@@ -238,21 +234,21 @@ export default function Index({ newHires, filters, stats, departments, workplace
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') handleFilter({ search });
                                 }}
-                                className="pl-9 bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                className="pl-9 bg-[#f5f5f7] border-[#d2d2d7] text-xs h-10"
                             />
                         </div>
 
                         <div>
-                            <Select value={departmentId || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setDepartmentId(next); handleFilter({ department_id: next }); }}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder={`All Departments (${departments.length})`} /></SelectTrigger><SelectContent><SelectItem value="__all__">All Departments ({departments.length})</SelectItem>{departments.map((d) => (<SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>))}</SelectContent></Select>
+                            <Select value={departmentId || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setDepartmentId(next); handleFilter({ department_id: next }); }}><SelectTrigger className="w-full h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue placeholder={`All Departments (${departments.length})`} /></SelectTrigger><SelectContent><SelectItem value="__all__">All Departments ({departments.length})</SelectItem>{departments.map((d) => (<SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>))}</SelectContent></Select>
                         </div>
 
                         <div>
-                            <Select value={workPlace || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setWorkPlace(next); handleFilter({ work_place: next }); }}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder="All Workplaces" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Workplaces ({workplaces.length > 0 ? workplaces.length : 'All'})</SelectItem><SelectItem value="H.O">Head Office (H.O)</SelectItem><SelectItem value="Project">All Project Sites</SelectItem>{workplaces.filter(w => w !== 'H.O' && w !== 'Head Office').map((w) => (<SelectItem key={w} value={w}>{w}</SelectItem>))}</SelectContent></Select>
+                            <Select value={workPlace || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setWorkPlace(next); handleFilter({ work_place: next }); }}><SelectTrigger className="w-full h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue placeholder="All Workplaces" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Workplaces ({workplaces.length > 0 ? workplaces.length : 'All'})</SelectItem><SelectItem value="H.O">Head Office (H.O)</SelectItem><SelectItem value="Project">All Project Sites</SelectItem>{workplaces.filter(w => w !== 'H.O' && w !== 'Head Office').map((w) => (<SelectItem key={w} value={w}>{w}</SelectItem>))}</SelectContent></Select>
                         </div>
 
                         <div className="flex flex-wrap gap-2">
                             <Select value={status || '__all__'} onValueChange={(v) => { const next = v === '__all__' ? '' : v; setStatus(next); handleFilter({ status: next }); }}>
-                                <SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+                                <SelectTrigger className="w-full h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue placeholder="All Statuses" /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="__all__">All Statuses</SelectItem>
                                     <SelectItem value="Permanent">Permanent</SelectItem>
@@ -264,7 +260,7 @@ export default function Index({ newHires, filters, stats, departments, workplace
 
                             <Button
                                 onClick={() => handleFilter({ search })}
-                                className="bg-[#008254] hover:bg-[#006642] text-white h-10 px-4 text-xs font-bold uppercase rounded-xs"
+                                className="bg-[#0066cc] hover:bg-[#0071e3] text-white h-10 px-4 text-xs font-bold uppercase rounded-xl"
                             >
                                 Filter
                             </Button>
@@ -274,7 +270,7 @@ export default function Index({ newHires, filters, stats, departments, workplace
             </Card>
 
             {/* New Hires Table */}
-            <Card className="border-[#d8d9da] bg-white overflow-hidden shadow-sm">
+            <Card className="border-[#d2d2d7] bg-white overflow-hidden shadow-sm">
                 {viewMode === 'table' ? (
                 <Table>
                     <TableHeader>
@@ -296,26 +292,26 @@ export default function Index({ newHires, filters, stats, departments, workplace
                     <TableBody>
                         {newHires.data.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={12} className="text-center py-12 text-[#64666a]">
+                                <TableCell colSpan={12} className="text-center py-12 text-[#6e6e73]">
                                     No new employees found on or after {formatDate(cutoff)} matching your filter criteria.
                                 </TableCell>
                             </TableRow>
                         ) : (
                             newHires.data.map((emp) => (
-                                <TableRow key={emp.id} className="hover:bg-[#effcf8]/50">
+                                <TableRow key={emp.id} className="hover:bg-[#f5f5f7]/50">
                                     <TableCell className="w-14 text-center py-2.5">
                                         <EmployeeAvatar name={emp.full_name} src={emp.profile_photo_url} size="sm" className="mx-auto" />
                                     </TableCell>
-                                    <TableCell className="font-bold text-[#008254] text-xs">
+                                    <TableCell className="font-bold text-[#0066cc] text-xs">
                                         {emp.file_no}
                                     </TableCell>
                                     <TableCell>
                                         <div>
                                             <div className="font-bold text-black text-sm">{emp.full_name}</div>
-                                            <div className="text-xs text-[#64666a]">{emp.gender}</div>
+                                            <div className="text-xs text-[#6e6e73]">{emp.gender}</div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-xs text-[#3d4045]">
+                                    <TableCell className="text-xs text-[#424245]">
                                         {emp.department?.name || 'General Operations'}
                                     </TableCell>
                                     <TableCell className="text-xs font-medium text-black">
@@ -323,7 +319,7 @@ export default function Index({ newHires, filters, stats, departments, workplace
                                     </TableCell>
                                     <TableCell>
                                         <span className={`inline-flex items-center gap-1 text-xs font-semibold ${
-                                            emp.work_place === 'Project' ? 'text-[#008254]' : 'text-[#3d4045]'
+                                            emp.work_place === 'Project' ? 'text-[#0066cc]' : 'text-[#424245]'
                                         }`}>
                                             <MapPin className="w-3 h-3" />
                                             {emp.work_place}
@@ -332,11 +328,11 @@ export default function Index({ newHires, filters, stats, departments, workplace
                                     <TableCell className="text-xs font-semibold text-black">
                                         {formatDate(emp.employment_date)}
                                     </TableCell>
-                                    <TableCell className="text-xs text-[#64666a]">
+                                    <TableCell className="text-xs text-[#6e6e73]">
                                         {emp.employment_date_ec}
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded-xs bg-[#effcf8] text-[#008254] border border-[#b7ecda] font-bold text-[11px] whitespace-nowrap">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-xl bg-[#f5f5f7] text-[#0066cc] border border-[#d2d2d7] font-bold text-[11px] whitespace-nowrap">
                                             {formatTenure(emp.days_since_joining)}
                                         </span>
                                     </TableCell>
@@ -351,7 +347,7 @@ export default function Index({ newHires, filters, stats, departments, workplace
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="border-[#d8d9da] hover:bg-[#effcf8] text-[#008254] font-semibold text-xs h-8 gap-1.5 rounded-xs"
+                                                className="border-[#d2d2d7] hover:bg-[#f5f5f7] text-[#0066cc] font-semibold text-xs h-8 gap-1.5 rounded-xl"
                                             >
                                                 <Eye className="w-3.5 h-3.5" />
                                                 <span>View Profile</span>
@@ -366,30 +362,30 @@ export default function Index({ newHires, filters, stats, departments, workplace
                 ) : (
                     <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
                         {newHires.data.length === 0 ? (
-                            <div className="col-span-full py-12 text-center text-xs text-[#64666a]">
+                            <div className="col-span-full py-12 text-center text-xs text-[#6e6e73]">
                                 No new employees found on or after {formatDate(cutoff)} matching your filter criteria.
                             </div>
                         ) : (
                             newHires.data.map((emp) => (
                                 <div
                                     key={emp.id}
-                                    className="rounded-xs border border-[#ebebec] bg-[#f7f7f7] p-4 transition-colors hover:border-[#b7ecda] hover:bg-white"
+                                    className="rounded-xl border border-[#e8e8ed] bg-[#f5f5f7] p-4 transition-colors hover:border-[#d2d2d7] hover:bg-white"
                                 >
                                     <div className="flex items-start gap-3">
                                         <EmployeeAvatar name={emp.full_name} src={emp.profile_photo_url} size="md" />
                                         <div className="min-w-0 flex-1">
                                             <p className="truncate text-sm font-bold text-black">{emp.full_name}</p>
-                                            <p className="text-[11px] font-semibold text-[#008254]">
-                                                {emp.file_no} · {emp.gender}
+                                            <p className="text-[11px] font-semibold text-[#0066cc]">
+                                                {emp.file_no} Â· {emp.gender}
                                             </p>
-                                            <p className="mt-1.5 truncate text-xs font-medium text-[#3d4045]">{emp.position}</p>
-                                            <p className="truncate text-[11px] text-[#64666a]">
+                                            <p className="mt-1.5 truncate text-xs font-medium text-[#424245]">{emp.position}</p>
+                                            <p className="truncate text-[11px] text-[#6e6e73]">
                                                 {emp.department?.name || 'General Operations'}
                                             </p>
                                         </div>
                                     </div>
 
-                                    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#64666a]">
+                                    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#6e6e73]">
                                         <span className="inline-flex items-center gap-1">
                                             <MapPin className="h-3 w-3" />
                                             {emp.work_place}
@@ -404,7 +400,7 @@ export default function Index({ newHires, filters, stats, departments, workplace
                                         </span>
                                     </div>
 
-                                    <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#ebebec] pt-3">
+                                    <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#e8e8ed] pt-3">
                                         {getStatusBadge(emp.status)}
                                         <span className="text-xs font-bold text-black">
                                             {formatCurrency(emp.current_salary?.total_salary || emp.current_salary?.basic_salary)}
@@ -415,7 +411,7 @@ export default function Index({ newHires, filters, stats, departments, workplace
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className="w-full border-[#d8d9da] hover:bg-[#effcf8] text-[#008254] font-semibold text-xs h-8 gap-1.5 rounded-xs"
+                                            className="w-full border-[#d2d2d7] hover:bg-[#f5f5f7] text-[#0066cc] font-semibold text-xs h-8 gap-1.5 rounded-xl"
                                         >
                                             <Eye className="w-3.5 h-3.5" />
                                             View Profile
@@ -429,7 +425,7 @@ export default function Index({ newHires, filters, stats, departments, workplace
 
                 {/* Pagination */}
                 {newHires.last_page > 1 && (
-                    <div className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#64666a]">
+                    <div className="p-4 border-t border-[#e8e8ed] bg-[#f5f5f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#6e6e73]">
                         <div>
                             Showing <strong>{newHires.from || 0}</strong> to <strong>{newHires.to || 0}</strong> of <strong>{newHires.total}</strong> new hires
                         </div>
@@ -439,12 +435,12 @@ export default function Index({ newHires, filters, stats, departments, workplace
                                     key={idx}
                                     href={link.url || '#'}
                                     preserveState
-                                    className={`px-3 py-1.5 rounded-xs text-xs font-medium border transition-colors ${
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                                         link.active
-                                            ? 'bg-[#008254] text-white border-[#008254] font-bold'
+                                            ? 'bg-[#0066cc] text-white border-[#0066cc] font-bold'
                                             : link.url
-                                            ? 'bg-white text-[#3d4045] border-[#d8d9da] hover:bg-[#effcf8]'
-                                            : 'bg-white/50 text-[#b1b3b5] border-[#ebebec] cursor-not-allowed'
+                                            ? 'bg-white text-[#424245] border-[#d2d2d7] hover:bg-[#f5f5f7]'
+                                            : 'bg-white/50 text-[#b1b3b5] border-[#e8e8ed] cursor-not-allowed'
                                     }`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />
@@ -455,15 +451,17 @@ export default function Index({ newHires, filters, stats, departments, workplace
             </Card>
 
             {/* Cutoff Notice */}
-            <div className="mt-4 flex items-start gap-2 text-[11px] text-[#64666a]">
-                <Briefcase className="w-3.5 h-3.5 text-[#008254] mt-0.5 shrink-0" />
+            <div className="mt-4 flex items-start gap-2 text-[11px] text-[#6e6e73]">
+                <Briefcase className="w-3.5 h-3.5 text-[#0066cc] mt-0.5 shrink-0" />
                 <p>
                     This roster is scoped to employees whose employment date is on or after{' '}
-                    <strong className="text-[#3d4045]">{formatDate(cutoff)}</strong> (Hamle 1, 2018 E.C.).
-                    Change the cutoff from <strong className="text-[#3d4045]">Statutory Settings</strong> by
-                    editing the <code className="px-1 py-0.5 bg-[#f7f7f7] border border-[#ebebec] rounded-xs">new_hire_cutoff_date</code> parameter.
+                    <strong className="text-[#424245]">{formatDate(cutoff)}</strong> (Hamle 1, 2018 E.C.).
+                    Change the cutoff from <strong className="text-[#424245]">Statutory Settings</strong> by
+                    editing the <code className="px-1 py-0.5 bg-[#f5f5f7] border border-[#e8e8ed] rounded-xl">new_hire_cutoff_date</code> parameter.
                 </p>
             </div>
         </AuthenticatedLayout>
     );
 }
+
+

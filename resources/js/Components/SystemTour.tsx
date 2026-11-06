@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import Modal from '@/Components/Modal';
 import { Button } from '@/Components/ui/button';
@@ -75,7 +75,7 @@ export const TOUR_STEPS: TourStep[] = [
     },
     {
         id: 3,
-        title: '360° Employee Digital Profile',
+        title: '360Â° Employee Digital Profile',
         category: 'Phase 2: Complete Profile',
         icon: ShieldCheck,
         proclamation: 'Proclamation 1156/2019 & 1268/2022',
@@ -169,7 +169,7 @@ export const TOUR_STEPS: TourStep[] = [
         category: 'Phase 3: Capacity Building',
         icon: GraduationCap,
         proclamation: 'Technical Skill Development',
-        description: 'Tracks certified vocational and technical engineering courses, accredited training institutions, certificate serial numbers, and 1–5 performance impact ratings.',
+        description: 'Tracks certified vocational and technical engineering courses, accredited training institutions, certificate serial numbers, and 1â€“5 performance impact ratings.',
         keyHighlights: [
             'Logs courses, accredited institutions, and completion dates',
             '1 to 5 performance impact evaluation scoring',
@@ -198,7 +198,7 @@ export const TOUR_STEPS: TourStep[] = [
         title: 'Separations & Statutory Severance Estimator',
         category: 'Phase 4: Exit Governance',
         icon: UserMinus,
-        proclamation: 'Labour Proclamation 1156/2019, Arts. 39–41',
+        proclamation: 'Labour Proclamation 1156/2019, Arts. 39â€“41',
         description: 'Exit management suite with an interactive statutory severance calculator applying Ethiopian labor law formulas (30 days basic wage for year 1, +1/3 month per subsequent year, capped at 12 months).',
         keyHighlights: [
             'Live formula estimation modal based on employee hire date and basic salary',
@@ -345,7 +345,7 @@ export default function SystemTour({ open, onClose }: Props) {
         <Modal show={open} onClose={onClose} maxWidth="2xl">
             <div className="bg-white rounded-xs overflow-hidden">
                 {/* Tour Header Banner */}
-                <div className="bg-[#00482f] text-white p-5 flex items-center justify-between border-b border-[#003824]">
+                <div className="bg-[#1d1d1f] text-white p-5 flex items-center justify-between border-b border-[#000000]">
                     <div className="flex items-center gap-2.5">
                         <ApplicationLogo className="w-8 h-8 shrink-0" />
                         <div>
@@ -353,12 +353,12 @@ export default function SystemTour({ open, onClose }: Props) {
                                 <h3 className="text-base font-bold text-white tracking-tight">
                                     El-Hadar HRMS System Tour
                                 </h3>
-                                <Badge className="bg-[#ddfa88] text-[#00482f] text-[10px] font-bold border-none">
+                                <Badge className="bg-[#2997ff] text-[#1d1d1f] text-[10px] font-bold border-none">
                                     18 Core Modules
                                 </Badge>
                             </div>
                             <p className="text-xs text-white/70">
-                                Step {step.id} of {TOUR_STEPS.length} • {step.category}
+                                Step {step.id} of {TOUR_STEPS.length} â€¢ {step.category}
                             </p>
                         </div>
                     </div>
@@ -372,9 +372,9 @@ export default function SystemTour({ open, onClose }: Props) {
                 </div>
 
                 {/* Progress Bar */}
-                <div className="w-full bg-[#ebebec] h-1.5">
+                <div className="w-full bg-[#e8e8ed] h-1.5">
                     <div
-                        className="bg-[#008254] h-1.5 transition-all duration-300"
+                        className="bg-[#0066cc] h-1.5 transition-all duration-300"
                         style={{ width: `${progressPercent}%` }}
                     />
                 </div>
@@ -382,16 +382,16 @@ export default function SystemTour({ open, onClose }: Props) {
                 {/* Main Step Content */}
                 <div className="p-6">
                     <div className="flex items-start gap-4 mb-4">
-                        <div className="w-12 h-12 rounded-xs bg-[#effcf8] text-[#008254] flex items-center justify-center shrink-0 border border-[#008254]/20">
+                        <div className="w-12 h-12 rounded-xs bg-[#f5f5f7] text-[#0066cc] flex items-center justify-center shrink-0 border border-[#0066cc]/20">
                             <Icon className="w-6 h-6" />
                         </div>
                         <div className="flex-1">
                             <div className="flex flex-wrap items-center gap-2 mb-1">
-                                <Badge variant="outline" className="text-[10px] font-semibold border-[#d8d9da]">
+                                <Badge variant="outline" className="text-[10px] font-semibold border-[#d2d2d7]">
                                     {step.category}
                                 </Badge>
                                 {step.proclamation && (
-                                    <Badge className="bg-[#effcf8] text-[#008254] border border-[#008254]/30 text-[10px] font-semibold">
+                                    <Badge className="bg-[#f5f5f7] text-[#0066cc] border border-[#0066cc]/30 text-[10px] font-semibold">
                                         {step.proclamation}
                                     </Badge>
                                 )}
@@ -402,19 +402,19 @@ export default function SystemTour({ open, onClose }: Props) {
                         </div>
                     </div>
 
-                    <p className="text-xs text-[#3d4045] leading-relaxed mb-4">
+                    <p className="text-xs text-[#424245] leading-relaxed mb-4">
                         {step.description}
                     </p>
 
                     {/* Key Highlights Spec Box (NerdWallet Style) */}
-                    <div className="p-3.5 bg-[#f7f7f7] border border-[#d8d9da] rounded-xs mb-4">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#64666a] mb-2">
+                    <div className="p-3.5 bg-[#f5f5f7] border border-[#d2d2d7] rounded-xs mb-4">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#6e6e73] mb-2">
                             Key Architectural Deliverables
                         </p>
                         <ul className="space-y-1.5">
                             {step.keyHighlights.map((hl, idx) => (
-                                <li key={idx} className="text-xs text-[#3d4045] flex items-center gap-2">
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-[#008254] shrink-0" />
+                                <li key={idx} className="text-xs text-[#424245] flex items-center gap-2">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0066cc] shrink-0" />
                                     <span>{hl}</span>
                                 </li>
                             ))}
@@ -423,12 +423,12 @@ export default function SystemTour({ open, onClose }: Props) {
 
                     {/* Quick Jump Action */}
                     {step.routeUrl && (
-                        <div className="flex items-center justify-between p-2.5 bg-[#effcf8]/50 border border-[#008254]/20 rounded-xs mb-2">
-                            <span className="text-[11px] text-[#00482f] font-medium">
+                        <div className="flex items-center justify-between p-2.5 bg-[#f5f5f7]/50 border border-[#0066cc]/20 rounded-xs mb-2">
+                            <span className="text-[11px] text-[#1d1d1f] font-medium">
                                 Jump directly to this module in the app:
                             </span>
                             <Link href={step.routeUrl} onClick={onClose}>
-                                <Button size="sm" variant="outline" className="text-xs font-semibold gap-1.5 h-7 bg-white border-[#008254]/30 text-[#008254] hover:bg-[#effcf8] rounded-xs">
+                                <Button size="sm" variant="outline" className="text-xs font-semibold gap-1.5 h-7 bg-white border-[#0066cc]/30 text-[#0066cc] hover:bg-[#f5f5f7] rounded-xs">
                                     <span>{step.routeLabel || 'Open Page'}</span>
                                     <ExternalLink className="w-3 h-3" />
                                 </Button>
@@ -438,12 +438,12 @@ export default function SystemTour({ open, onClose }: Props) {
                 </div>
 
                 {/* Footer Controls */}
-                <div className="p-4 bg-[#f7f7f7] border-t border-[#ebebec] flex items-center justify-between">
+                <div className="p-4 bg-[#f5f5f7] border-t border-[#e8e8ed] flex items-center justify-between">
                     <Button
                         variant="ghost"
                         size="sm"
                         onClick={onClose}
-                        className="text-xs text-[#64666a] hover:text-black"
+                        className="text-xs text-[#6e6e73] hover:text-black"
                     >
                         Skip Tour
                     </Button>
@@ -454,7 +454,7 @@ export default function SystemTour({ open, onClose }: Props) {
                             size="sm"
                             onClick={prevStep}
                             disabled={currentStepIndex === 0}
-                            className="text-xs font-semibold border-[#d8d9da] rounded-xs gap-1"
+                            className="text-xs font-semibold border-[#d2d2d7] rounded-xs gap-1"
                         >
                             <ArrowLeft className="w-3.5 h-3.5" />
                             <span>Previous</span>
@@ -463,7 +463,7 @@ export default function SystemTour({ open, onClose }: Props) {
                         <Button
                             size="sm"
                             onClick={nextStep}
-                            className="bg-[#008254] hover:bg-[#006a44] text-white text-xs font-bold rounded-xs gap-1.5 px-4"
+                            className="bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-bold rounded-xs gap-1.5 px-4"
                         >
                             <span>{currentStepIndex === TOUR_STEPS.length - 1 ? 'Finish Tour' : 'Next Module'}</span>
                             <ArrowRight className="w-3.5 h-3.5" />
@@ -474,3 +474,4 @@ export default function SystemTour({ open, onClose }: Props) {
         </Modal>
     );
 }
+

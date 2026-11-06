@@ -161,9 +161,29 @@ jobs:
             php artisan route:cache
             php artisan view:cache
 
+            # Ensure correct web server permissions on new Vite assets
+            chmod -R 755 public/build
+            find public/build -type f -exec chmod 644 {} +
+
+            # Force LiteSpeed to reload PHP workers and flush OPcache
+            touch public/index.php
+            pkill -u $DEPLOY_USER lsphp || true
+
             # Verify application status
             php artisan about
           EOF
+
+      - name: Purge Cloudflare Cache
+        if: env.CLOUDFLARE_ZONE_ID != '' && env.CLOUDFLARE_API_TOKEN != ''
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo "Purging Cloudflare cache..."
+          curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}' || true
 
       - name: Post-deploy health check
         run: |

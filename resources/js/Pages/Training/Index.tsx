@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent } from '@/Components/ui/card';
@@ -124,12 +124,12 @@ export default function Index({ records, filters, stats, employees }: Props) {
             <Head title="Training Registry - Elhadar Engineering HRMS" />
 
             {/* Filter and Action Bar */}
-            <Card className="border-[#d8d9da] bg-white mb-6">
+            <Card className="border-[#d2d2d7] bg-white mb-6">
                 <CardContent className="p-4">
                     <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
                         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto flex-1">
                             <div className="relative w-full sm:w-80">
-                                <Search className="w-4 h-4 absolute left-3 top-3 text-[#64666a]" />
+                                <Search className="w-4 h-4 absolute left-3 top-3 text-[#6e6e73]" />
                                 <Input
                                     placeholder="Search course, institution, staff..."
                                     value={search}
@@ -137,11 +137,11 @@ export default function Index({ records, filters, stats, employees }: Props) {
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') handleFilter({ search });
                                     }}
-                                    className="pl-9 bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    className="pl-9 bg-[#f5f5f7] border-[#d2d2d7] text-xs h-10"
                                 />
                             </div>
 
-                            <Select value={impactScore || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setImpactScore(next); handleFilter({ impact_score: next }); }}><SelectTrigger className="h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder="All Impact Ratings" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Impact Ratings</SelectItem><option value="">All Impact Ratings</option>
+                            <Select value={impactScore || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setImpactScore(next); handleFilter({ impact_score: next }); }}><SelectTrigger className="h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue placeholder="All Impact Ratings" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Impact Ratings</SelectItem><option value="">All Impact Ratings</option>
                                 <SelectItem value="5">Score 5: Exceptional Impact</SelectItem>
                                 <SelectItem value="4">Score 4: High Impact</SelectItem>
                                 <SelectItem value="3">Score 3: Moderate Impact</SelectItem>
@@ -154,7 +154,7 @@ export default function Index({ records, filters, stats, employees }: Props) {
                             <ViewToggle value={viewMode} onChange={setViewMode} />
                             <Button 
                                 onClick={() => setShowModal(true)}
-                                className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase rounded-xs h-10 px-4 gap-2 shrink-0"
+                                className="bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-bold uppercase rounded-xl h-10 px-4 gap-2 shrink-0"
                             >
                                 <Plus className="w-4 h-4" />
                                 Log Training Record
@@ -165,7 +165,7 @@ export default function Index({ records, filters, stats, employees }: Props) {
             </Card>
 
             {/* Training Table */}
-            <Card className="border-[#d8d9da] bg-white overflow-hidden shadow-sm">
+            <Card className="border-[#d2d2d7] bg-white overflow-hidden shadow-sm">
                 {viewMode === 'table' ? (
                 <Table>
                     <TableHeader>
@@ -182,36 +182,36 @@ export default function Index({ records, filters, stats, employees }: Props) {
                     <TableBody>
                         {records.data.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center py-12 text-[#64666a]">
+                                <TableCell colSpan={7} className="text-center py-12 text-[#6e6e73]">
                                     No training certifications logged yet matching your filters.
                                 </TableCell>
                             </TableRow>
                         ) : (
                             records.data.map((record) => (
-                                <TableRow key={record.id} className="hover:bg-[#effcf8]/50">
-                                    <TableCell className="font-bold text-[#008254] text-xs">
+                                <TableRow key={record.id} className="hover:bg-[#f5f5f7]/50">
+                                    <TableCell className="font-bold text-[#0066cc] text-xs">
                                         {record.employee.file_no}
                                     </TableCell>
                                     <TableCell>
                                         <div className="font-bold text-black text-sm">{record.employee.full_name}</div>
-                                        <div className="text-xs text-[#64666a]">{record.employee.department?.name || 'Operations'}</div>
+                                        <div className="text-xs text-[#6e6e73]">{record.employee.department?.name || 'Operations'}</div>
                                     </TableCell>
                                     <TableCell>
                                         <div className="font-semibold text-black text-xs">{record.training_name}</div>
                                         {record.certificate_number && (
-                                            <div className="text-[11px] text-[#64666a]">Cert #: {record.certificate_number}</div>
+                                            <div className="text-[11px] text-[#6e6e73]">Cert #: {record.certificate_number}</div>
                                         )}
                                     </TableCell>
-                                    <TableCell className="text-xs text-[#3d4045]">
+                                    <TableCell className="text-xs text-[#424245]">
                                         {record.institution}
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-xs bg-[#effcf8] text-[#008254] border border-[#b7ecda] font-bold text-xs">
-                                            <Star className="w-3 h-3 fill-[#008254]" />
+                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-xl bg-[#e8f3ff] text-[#0066cc] border border-[#cfe3ff] font-semibold text-xs">
+                                            <Star className="w-3 h-3 fill-[#0066cc]" />
                                             {record.performance_impact_score} / 5
                                         </span>
                                     </TableCell>
-                                    <TableCell className="text-xs text-[#64666a]">
+                                    <TableCell className="text-xs text-[#6e6e73]">
                                         {record.end_date || record.start_date || 'Certified'}
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -219,7 +219,7 @@ export default function Index({ records, filters, stats, employees }: Props) {
                                             <Button 
                                                 variant="outline" 
                                                 size="sm"
-                                                className="border-[#d8d9da] hover:bg-[#effcf8] text-[#008254] font-semibold text-xs h-8 px-2.5 rounded-xs"
+                                                className="border-[#d2d2d7] hover:bg-[#f5f5f7] text-[#0066cc] font-semibold text-xs h-8 px-2.5 rounded-xl"
                                             >
                                                 <Eye className="w-3.5 h-3.5 mr-1" />
                                                 Profile
@@ -234,42 +234,42 @@ export default function Index({ records, filters, stats, employees }: Props) {
                 ) : (
                     <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
                         {records.data.length === 0 ? (
-                            <div className="col-span-full py-12 text-center text-xs text-[#64666a]">
+                            <div className="col-span-full py-12 text-center text-xs text-[#6e6e73]">
                                 No training certifications logged yet matching your filters.
                             </div>
                         ) : (
                             records.data.map((record) => (
                                 <div
                                     key={record.id}
-                                    className="rounded-xs border border-[#ebebec] bg-[#f7f7f7] p-4 transition-colors hover:border-[#b7ecda] hover:bg-white"
+                                    className="rounded-xl border border-[#e8e8ed] bg-[#f5f5f7] p-4 transition-colors hover:border-[#d2d2d7] hover:bg-white"
                                 >
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
                                             <p className="truncate text-sm font-bold text-black">{record.training_name}</p>
-                                            <p className="mt-0.5 text-[11px] font-semibold text-[#008254]">
-                                                {record.employee.file_no} · {record.employee.full_name}
+                                            <p className="mt-0.5 text-[11px] font-semibold text-[#0066cc]">
+                                                {record.employee.file_no} Â· {record.employee.full_name}
                                             </p>
-                                            <p className="truncate text-[11px] text-[#64666a]">
+                                            <p className="truncate text-[11px] text-[#6e6e73]">
                                                 {record.employee.department?.name || 'Operations'}
                                             </p>
                                         </div>
-                                        <span className="inline-flex shrink-0 items-center gap-1 rounded-xs border border-[#b7ecda] bg-[#effcf8] px-2 py-0.5 text-[11px] font-bold text-[#008254]">
-                                            <Star className="h-3 w-3 fill-[#008254]" />
+                                        <span className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-[#d2d2d7] bg-[#f5f5f7] px-2 py-0.5 text-[11px] font-bold text-[#0066cc]">
+                                            <Star className="h-3 w-3 fill-[#0066cc]" />
                                             {record.performance_impact_score}/5
                                         </span>
                                     </div>
 
-                                    <div className="mt-3 space-y-1 text-[11px] text-[#64666a]">
+                                    <div className="mt-3 space-y-1 text-[11px] text-[#6e6e73]">
                                         <p className="truncate">
-                                            <span className="font-semibold text-[#3d4045]">Institution:</span> {record.institution}
+                                            <span className="font-semibold text-[#424245]">Institution:</span> {record.institution}
                                         </p>
                                         {record.certificate_number && (
                                             <p className="truncate">
-                                                <span className="font-semibold text-[#3d4045]">Cert #:</span> {record.certificate_number}
+                                                <span className="font-semibold text-[#424245]">Cert #:</span> {record.certificate_number}
                                             </p>
                                         )}
                                         <p>
-                                            <span className="font-semibold text-[#3d4045]">Date:</span>{' '}
+                                            <span className="font-semibold text-[#424245]">Date:</span>{' '}
                                             {record.end_date || record.start_date || 'Certified'}
                                         </p>
                                     </div>
@@ -278,7 +278,7 @@ export default function Index({ records, filters, stats, employees }: Props) {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className="w-full border-[#d8d9da] hover:bg-[#effcf8] text-[#008254] font-semibold text-xs h-8 gap-1.5 rounded-xs"
+                                            className="w-full border-[#d2d2d7] hover:bg-[#f5f5f7] text-[#0066cc] font-semibold text-xs h-8 gap-1.5 rounded-xl"
                                         >
                                             <Eye className="w-3.5 h-3.5" />
                                             View Profile
@@ -292,7 +292,7 @@ export default function Index({ records, filters, stats, employees }: Props) {
 
                 {/* Pagination */}
                 {records.last_page > 1 && (
-                    <div className="p-4 border-t border-[#ebebec] bg-[#f7f7f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#64666a]">
+                    <div className="p-4 border-t border-[#e8e8ed] bg-[#f5f5f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#6e6e73]">
                         <div>
                             Showing <strong>{records.from || 0}</strong> to <strong>{records.to || 0}</strong> of <strong>{records.total}</strong> records
                         </div>
@@ -302,12 +302,12 @@ export default function Index({ records, filters, stats, employees }: Props) {
                                     key={idx}
                                     href={link.url || '#'}
                                     preserveState
-                                    className={`px-3 py-1.5 rounded-xs text-xs font-medium border transition-colors ${
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                                         link.active
-                                            ? 'bg-[#008254] text-white border-[#008254] font-bold'
+                                            ? 'bg-[#0066cc] text-white border-[#0066cc] font-bold'
                                             : link.url
-                                            ? 'bg-white text-[#3d4045] border-[#d8d9da] hover:bg-[#effcf8]'
-                                            : 'bg-white/50 text-[#b1b3b5] border-[#ebebec] cursor-not-allowed'
+                                            ? 'bg-white text-[#424245] border-[#d2d2d7] hover:bg-[#f5f5f7]'
+                                            : 'bg-white/50 text-[#b1b3b5] border-[#e8e8ed] cursor-not-allowed'
                                     }`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />
@@ -319,13 +319,13 @@ export default function Index({ records, filters, stats, employees }: Props) {
 
             {/* Log Training Modal (Shadcn Dialog) */}
             <Dialog open={showModal} onOpenChange={setShowModal}>
-                <DialogContent className="max-w-md bg-white border-[#d8d9da] p-6 max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-md bg-white border-[#d2d2d7] p-6 max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-base font-bold text-black flex items-center gap-2">
-                            <Plus className="w-4 h-4 text-[#008254]" />
+                            <Plus className="w-4 h-4 text-[#0066cc]" />
                             Log Certified Training Record
                         </DialogTitle>
-                        <DialogDescription className="text-xs text-[#64666a]">
+                        <DialogDescription className="text-xs text-[#6e6e73]">
                             Register formal vocational, engineering, or safety accreditation for staff.
                         </DialogDescription>
                     </DialogHeader>
@@ -335,7 +335,7 @@ export default function Index({ records, filters, stats, employees }: Props) {
                             <label className="block text-xs font-bold text-black mb-1">
                                 Employee Candidate <span className="text-[#de2828]">*</span>
                             </label>
-                            <Select value={String(data.employee_id)} onValueChange={(v) => setData('employee_id', v)}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue placeholder="Select employee" /></SelectTrigger><SelectContent>{employees.map((emp) => (<SelectItem key={emp.id} value={String(emp.id)}>{emp.file_no} — {emp.full_name}</SelectItem>))}</SelectContent></Select>
+                            <Select value={String(data.employee_id)} onValueChange={(v) => setData('employee_id', v)}><SelectTrigger className="w-full h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue placeholder="Select employee" /></SelectTrigger><SelectContent>{employees.map((emp) => (<SelectItem key={emp.id} value={String(emp.id)}>{emp.file_no} â€” {emp.full_name}</SelectItem>))}</SelectContent></Select>
                         </div>
 
                         <div>
@@ -347,7 +347,7 @@ export default function Index({ records, filters, stats, employees }: Props) {
                                 value={data.training_name}
                                 onChange={(e) => setData('training_name', e.target.value)}
                                 placeholder="e.g. Structural Concrete Safety Certification"
-                                className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                className="bg-[#f5f5f7] border-[#d2d2d7] text-xs h-10"
                             />
                         </div>
 
@@ -360,7 +360,7 @@ export default function Index({ records, filters, stats, employees }: Props) {
                                 value={data.institution}
                                 onChange={(e) => setData('institution', e.target.value)}
                                 placeholder="e.g. Ethiopian Institute of Architecture, Building & Construction"
-                                className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                className="bg-[#f5f5f7] border-[#d2d2d7] text-xs h-10"
                             />
                         </div>
 
@@ -373,14 +373,14 @@ export default function Index({ records, filters, stats, employees }: Props) {
                                     value={data.certificate_number}
                                     onChange={(e) => setData('certificate_number', e.target.value)}
                                     placeholder="CERT-2025-081"
-                                    className="bg-[#f7f7f7] border-[#d8d9da] text-xs h-10"
+                                    className="bg-[#f5f5f7] border-[#d2d2d7] text-xs h-10"
                                 />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-black mb-1">
                                     Performance Impact (1-5)
                                 </label>
-                                <Select value={String(data.performance_impact_score)} onValueChange={(v) => setData('performance_impact_score', v)}><SelectTrigger className="w-full h-10 rounded-xs border-[#d8d9da] bg-[#f7f7f7] text-xs text-[#3d4045]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="5">5 - Transformational</SelectItem>
+                                <Select value={String(data.performance_impact_score)} onValueChange={(v) => setData('performance_impact_score', v)}><SelectTrigger className="w-full h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="5">5 - Transformational</SelectItem>
                                     <SelectItem value="4">4 - High Productivity Gain</SelectItem>
                                     <SelectItem value="3">3 - Moderate Standard</SelectItem>
                                     <SelectItem value="2">2 - Basic Compliance</SelectItem>
@@ -389,19 +389,19 @@ export default function Index({ records, filters, stats, employees }: Props) {
                             </div>
                         </div>
 
-                        <DialogFooter className="flex justify-end gap-2 pt-2 border-t border-[#ebebec]">
+                        <DialogFooter className="flex justify-end gap-2 pt-2 border-t border-[#e8e8ed]">
                             <Button
                                 type="button"
                                 variant="outline"
                                 onClick={() => setShowModal(false)}
-                                className="text-xs border-[#d8d9da] rounded-xs"
+                                className="text-xs border-[#d2d2d7] rounded-xl"
                             >
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={processing}
-                                className="bg-[#008254] hover:bg-[#006642] text-white text-xs font-bold uppercase rounded-xs"
+                                className="bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-bold uppercase rounded-xl"
                             >
                                 {processing ? 'Registering...' : 'Register Certificate'}
                             </Button>
@@ -412,3 +412,5 @@ export default function Index({ records, filters, stats, employees }: Props) {
         </AuthenticatedLayout>
     );
 }
+
+
