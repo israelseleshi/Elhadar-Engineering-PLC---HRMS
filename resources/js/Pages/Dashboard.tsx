@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, useSpring, type Variants } from 'framer-motion';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import InteractiveTour, { TourStep } from '@/Components/InteractiveTour';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -214,6 +215,39 @@ const topCardVariants: Variants = {
     },
 };
 
+const dashboardTourSteps: TourStep[] = [
+    {
+        target: '[data-tour="kpi-metrics"]',
+        title: 'Key metrics',
+        content: 'Monitor active headcount and year-to-date employee turnover rates.',
+        placement: 'bottom',
+    },
+    {
+        target: '[data-tour="gender-chart"]',
+        title: 'Gender diversity',
+        content: 'View the distribution and proportion of male and female staff.',
+        placement: 'bottom',
+    },
+    {
+        target: '[data-tour="workplace-chart"]',
+        title: 'Workplace deployment',
+        content: 'Track staff stationed at regional project sites versus the head office.',
+        placement: 'top',
+    },
+    {
+        target: '[data-tour="tenure-chart"]',
+        title: 'Tenure and stability',
+        content: 'Review the proportion of permanent staff, probation pipeline, and contracts.',
+        placement: 'top',
+    },
+    {
+        target: '[data-tour="department-chart"]',
+        title: 'Department breakdown',
+        content: 'Compare workforce distribution across all operational departments.',
+        placement: 'top',
+    },
+];
+
 export default function Dashboard({
     metrics,
     alerts,
@@ -222,6 +256,20 @@ export default function Dashboard({
     employmentTenureBreakdown = [],
     recentStaff = [],
 }: Props) {
+    const [isTourOpen, setIsTourOpen] = useState(false);
+
+    useEffect(() => {
+        const handleOpenTour = () => setIsTourOpen(true);
+        window.addEventListener('open-dashboard-tour', handleOpenTour);
+
+        if (typeof window !== 'undefined' && window.location.search.includes('tour=true')) {
+            setIsTourOpen(true);
+        }
+
+        return () => {
+            window.removeEventListener('open-dashboard-tour', handleOpenTour);
+        };
+    }, []);
     const formatCurrency = (val: number) => {
         return new Intl.NumberFormat('en-ET', {
             style: 'currency',
@@ -378,7 +426,7 @@ export default function Dashboard({
                 className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-8 items-stretch"
             >
                 {/* Left Column: 2 Stacked Cards (lg:col-span-5) */}
-                <div className="lg:col-span-5 flex flex-col justify-between gap-4">
+                <div data-tour="kpi-metrics" className="lg:col-span-5 flex flex-col justify-between gap-4">
                     {/* 1. Active Headcount */}
                     <motion.div
                         variants={topCardVariants}
@@ -447,6 +495,7 @@ export default function Dashboard({
 
                 {/* Right Column: Employees by Gender Donut Card (lg:col-span-7) */}
                 <motion.div
+                    data-tour="gender-chart"
                     variants={topCardVariants}
                     whileHover={{ y: -3, transition: { duration: 0.25, ease: 'easeOut' } }}
                     className="lg:col-span-7 flex flex-col"
@@ -671,7 +720,7 @@ export default function Dashboard({
             {/* Mid Row: 2 Key Analytical Charts (Workplace Deployment & Employment Tenure) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 {/* Chart 1: Workplace Deployment (Project Sites vs. Head Office) */}
-                <Card className="border-border bg-card shadow-xs flex flex-col justify-between">
+                <Card data-tour="workplace-chart" className="border-border bg-card shadow-xs flex flex-col justify-between">
                     <CardHeader className="pb-3 border-b border-border">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2.5">
@@ -815,7 +864,7 @@ export default function Dashboard({
                 </Card>
 
                 {/* Chart 3: Employment Tenure & Statutory Stability */}
-                <Card className="border-border bg-card shadow-xs flex flex-col justify-between">
+                <Card data-tour="tenure-chart" className="border-border bg-card shadow-xs flex flex-col justify-between">
                     <CardHeader className="pb-3 border-b border-border">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2.5">
@@ -947,7 +996,7 @@ export default function Dashboard({
             </div>
 
             {/* Workforce Distribution by Department Card featuring Shadcn Bar Chart (All Operational Units) */}
-            <Card className="border-border bg-card shadow-xs">
+            <Card data-tour="department-chart" className="border-border bg-card shadow-xs">
                 <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border gap-3">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-md bg-muted text-primary flex items-center justify-center shrink-0 border border-border">
@@ -1161,6 +1210,14 @@ export default function Dashboard({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Interactive Element-Spotlight Joyride Tour */}
+            <InteractiveTour
+                steps={dashboardTourSteps}
+                isOpen={isTourOpen}
+                onClose={() => setIsTourOpen(false)}
+                tourTitle="Dashboard overview"
+            />
         </AuthenticatedLayout>
     );
 }

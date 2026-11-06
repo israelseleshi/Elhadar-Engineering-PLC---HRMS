@@ -88,6 +88,63 @@ class EmployeeTest extends TestCase
         );
     }
 
+    public function test_employee_directory_supports_multi_select_excel_column_filtering_and_sorting(): void
+    {
+        $user = User::factory()->create(['role' => 'HRAdmin']);
+        $dept1 = Department::factory()->create(['name' => 'Surveying']);
+        $dept2 = Department::factory()->create(['name' => 'Procurement']);
+        $dept3 = Department::factory()->create(['name' => 'Engineering']);
+
+        Employee::factory()->create([
+            'file_no' => 'A-01',
+            'full_name' => 'Abebe Bikila',
+            'department_id' => $dept1->id,
+            'status' => 'Permanent',
+            'position' => 'Surveyor',
+        ]);
+
+        Employee::factory()->create([
+            'file_no' => 'B-02',
+            'full_name' => 'Bekele Debele',
+            'department_id' => $dept2->id,
+            'status' => 'Contract',
+            'position' => 'Procurement Officer',
+        ]);
+
+        Employee::factory()->create([
+            'file_no' => 'C-03',
+            'full_name' => 'Chala Tadesse',
+            'department_id' => $dept3->id,
+            'status' => 'Probation',
+            'position' => 'Junior Engineer',
+        ]);
+
+        // Multi-select status filter (Permanent OR Contract)
+        $response = $this->actingAs($user)->get('/employees?status[]=Permanent&status[]=Contract');
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Employees/Index')
+            ->has('employees.data', 2)
+            ->has('positions')
+        );
+
+        // Multi-select department filter (Surveying OR Engineering)
+        $responseDept = $this->actingAs($user)->get("/employees?department_id[]={$dept1->id}&department_id[]={$dept3->id}");
+        $responseDept->assertOk();
+        $responseDept->assertInertia(fn (Assert $page) => $page
+            ->component('Employees/Index')
+            ->has('employees.data', 2)
+        );
+
+        // Sorting by full_name descending
+        $responseSort = $this->actingAs($user)->get('/employees?sort_by=full_name&sort_direction=desc');
+        $responseSort->assertOk();
+        $responseSort->assertInertia(fn (Assert $page) => $page
+            ->component('Employees/Index')
+            ->where('employees.data.0.full_name', 'Chala Tadesse')
+        );
+    }
+
     public function test_authenticated_user_can_view_360_degree_dossier_with_retirement_and_tenure(): void
     {
         $user = User::factory()->create(['role' => 'HRAdmin']);

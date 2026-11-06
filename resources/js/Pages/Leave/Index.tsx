@@ -32,64 +32,28 @@ import {
 
 const leaveTourSteps: TourStep[] = [
     {
-        target: '[data-tour="leave-header"]',
-        title: 'Statutory Annual Leave Ledger',
-        content: 'Welcome to the Statutory Leave Administration Center. This module automates continuous entitlement calculations according to Ethiopian Labour Proclamation No. 1156/2019 (Articles 77â€“80), safeguarding statutory rest rights for all personnel across project sites and head office.',
-        badge: 'Labour Proc. 1156/2019',
-        placement: 'bottom',
-        tip: 'The statutory baseline is 16 working days for the first full year of service, scaling upward with continuous tenure.',
-    },
-    {
         target: '[data-tour="leave-search"]',
-        title: 'Multi-Field Search & Active Cycle',
-        content: 'Instantly find any employee by typing their full name, filing cabinet code (e.g. A-001), or department. It also displays the active Gregorian statutory calculation cycle (e.g. 2026 G.C.).',
-        badge: 'Filter & Cycle',
+        title: 'Search and leave cycle',
+        content: 'Search staff members and check the active annual leave cycle.',
         placement: 'bottom',
-        tip: 'Press Enter to submit search queries; pagination and active filters are preserved in the URL state.',
     },
     {
         target: '[data-tour="leave-table"]',
-        title: 'Comprehensive Leave Ledger',
-        content: 'The central ledger displays employee identifiers, verified hiring date in Ethiopian Calendar (E.C.), statutory entitlement days, recorded days taken, and current net remaining balance.',
-        badge: 'Compliance Table',
+        title: 'Leave balance ledger',
+        content: 'Track statutory entitlement, days taken, and remaining leave balances.',
         placement: 'top',
-    },
-    {
-        target: '[data-tour="col-entitlement"]',
-        title: 'Automated Entitlement Formula',
-        content: 'Every entitlement is computed strictly via Article 77: 16 working days for year 1, plus 1 additional working day for every subsequent 2 completed years of continuous service. No manual calculations or spreadsheets needed.',
-        badge: 'Art. 77 Formula',
-        placement: 'top',
-        tip: 'A technician with 6 years tenure automatically receives 16 + (6/2) = 19 working days.',
     },
     {
         target: '[data-tour="balance-badge"]',
-        title: 'Visual Balance Health Alerts',
-        content: 'Color-coded tags provide immediate compliance alerts: Green indicates a healthy balance (>8 days), Amber signals caution (4â€“8 days), and Red indicates critical / exhausted balance (â‰¤3 days).',
-        badge: 'Health Alerts',
+        title: 'Balance health',
+        content: 'Color tags indicate healthy, low, or exhausted leave balances at a glance.',
         placement: 'left',
     },
     {
         target: '[data-tour="first-deduct-btn"]',
-        title: 'Record Taken Annual Leave',
-        content: 'Click "Deduct Leave" to record taken rest or personal leave. The modal validates that deducted days do not exceed remaining balance, supports half-day increments (0.5), and documents the operational reason.',
-        badge: 'Leave Deductions',
+        title: 'Deduct leave',
+        content: 'Record approved leave days taken and adjust remaining balances instantly.',
         placement: 'left',
-        tip: 'All leave deductions automatically record an immutable entry in the system audit log.',
-    },
-    {
-        target: '[data-tour="first-profile-btn"]',
-        title: '360Â° Employee Profile Access',
-        content: 'Click "Profile" to jump straight to the staff member\'s complete profileâ€”showing their full multi-year leave balance history, itemized monthly wage breakdown, allowances, and identity credentials.',
-        badge: 'Employee Profile',
-        placement: 'left',
-    },
-    {
-        target: '[data-tour="leave-pagination"]',
-        title: 'Ledger Pagination & Filter State',
-        content: 'Easily navigate through pages of workforce records while keeping your search keywords preserved across pages.',
-        badge: 'Navigation',
-        placement: 'top',
     },
 ];
 
@@ -500,7 +464,7 @@ export default function Index({ employees, filters, stats, currentYear }: Props)
                 steps={leaveTourSteps}
                 isOpen={isTourOpen}
                 onClose={() => setIsTourOpen(false)}
-                tourTitle="Statutory Leave Ledger Guided Tour"
+                tourTitle="Leave ledger tour"
             />
         </AuthenticatedLayout>
     );

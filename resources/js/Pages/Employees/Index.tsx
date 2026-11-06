@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import InteractiveTour, { TourStep } from '@/Components/InteractiveTour';
@@ -35,6 +35,7 @@ import {
     TableHeader, 
     TableRow 
 } from '@/Components/ui/table';
+import ExcelColumnFilter, { FilterOption } from '@/Components/ExcelColumnFilter';
 import { 
     MapPin, 
     Eye, 
@@ -92,9 +93,12 @@ interface Props {
     };
     filters: {
         search?: string;
-        department_id?: string;
-        work_place?: string;
-        status?: string;
+        department_id?: string | string[];
+        work_place?: string | string[];
+        status?: string | string[];
+        position?: string | string[];
+        sort_by?: string;
+        sort_direction?: 'asc' | 'desc';
     };
     stats: {
         total_headcount: number;
@@ -107,96 +111,163 @@ interface Props {
     };
     departments: { id: number; name: string }[];
     workplaces?: string[];
+    positions?: string[];
 }
+
+const toArray = (val: string | string[] | undefined): string[] => {
+    if (!val) return [];
+    if (Array.isArray(val)) return val.map(String).filter(Boolean);
+    return String(val).split(',').map((s) => s.trim()).filter(Boolean);
+};
 
 const staffDirectoryTourSteps: TourStep[] = [
     {
-        target: '[data-tour="page-header"]',
-        title: 'Staff Directory Command',
-        content: 'This is the master personnel directory for Elhadar Engineering. It consolidates all 106 confirmed staff records across regional project sites and the Addis Ababa Head Office.',
-        badge: 'Staff Registry',
+        target: '[data-tour="lifecycle-tabs"]',
+        title: 'Status filters',
+        content: 'Switch between permanent, probation, contract, and separated personnel.',
         placement: 'bottom',
-        tip: 'Centralizes the "All Permanent Employees" and "Project Employees" master spreadsheets.'
     },
     {
         target: '[data-tour="onboard-btn"]',
-        title: 'Recruitment & Onboarding Wizard',
-        content: 'Click here to launch the 4-step new hire wizard. Easily capture employee identity, workplace assignment, Kebele address hierarchy, 8 distinct statutory allowances, and physical filing codes.',
-        badge: 'New Hire Wizard',
-        placement: 'bottom',
-        tip: 'Automatically calculates 7% employee and 11% employer pension obligations.'
-    },
-    {
-        target: '[data-tour="search-input"]',
-        title: 'Instant Multi-Field Search',
-        content: 'Search by Ethiopian tripartite name (e.g. "Abay Sewmehon"), mobile phone number, or physical filing cabinet code (e.g. "A-001", "B-010"). Press Enter to filter.',
-        badge: 'Indexed Search',
-        placement: 'bottom',
-        tip: 'Filing codes match physical paper folders in the HR archive.'
-    },
-    {
-        target: '[data-tour="department-filter"]',
-        title: 'Departmental Filter',
-        content: 'Narrow down personnel by departmentâ€”such as Engineering Dept, Electro-Mechanical, Procurement, Finance, or General Operations.',
-        badge: 'Department',
+        title: 'Onboard employee',
+        content: 'Register a new hire and capture personal details, department, and salary.',
         placement: 'bottom',
     },
     {
-        target: '[data-tour="workplace-filter"]',
-        title: 'Workplace Division',
-        content: 'Filter between remote construction Project Sites and the Head Office. This workplace distinction determines site allowance eligibility and field perdiem rules.',
-        badge: 'Workplace Rules',
-        placement: 'bottom',
-    },
-    {
-        target: '[data-tour="status-filter"]',
-        title: 'Employment Lifecycle Filter',
-        content: 'Narrow your view to Permanent staff, Fixed-term Contracts, active Probationers, or historical Resigned/Separated records.',
-        badge: 'Lifecycle Stage',
+        target: '[data-tour="filters-bar"]',
+        title: 'Search and filters',
+        content: 'Search by name, file number, or phone, and filter by department or workplace.',
         placement: 'bottom',
     },
     {
         target: '[data-tour="data-table"]',
-        title: 'Master Employee Table',
-        content: 'Presents standardized columns: File No, Staff Member name and gender, Department, Position, Workplace, Ethiopian Calendar (E.C.) start date, Total Gross Monthly Salary, and Status.',
-        badge: 'Master Ledger',
+        title: 'Personnel table',
+        content: 'View employee records with compensation, employment dates, and status.',
         placement: 'top',
-        tip: 'Total Salary includes basic salary plus all 8 allowances according to company compensation rules.'
     },
     {
         target: '[data-tour="first-dossier-btn"]',
-        title: '360Â° Employee Profile',
-        content: 'Click the "View Profile" button on any employee row to open their complete personnel fileâ€”revealing all allowance breakdowns, residence, pension number, and career increments.',
-        badge: 'Profile View',
+        title: 'View profile',
+        content: "Open any employee's full profile to view credentials and career history.",
         placement: 'left',
-        tip: 'From the employee profile, you can also edit details or log statutory salary adjustments.'
     },
-    {
-        target: '[data-tour="pagination"]',
-        title: 'Server-Side Pagination & Counts',
-        content: 'Navigate through records while keeping your search keywords and filter criteria preserved in the URL query state.',
-        badge: 'Navigation',
-        placement: 'top',
-    }
 ];
 
-export default function Index({ employees, filters, stats, departments, workplaces = [] }: Props) {
+export default function Index({ employees, filters, stats, departments, workplaces = [], positions = [] }: Props) {
     const [search, setSearch] = useState(filters.search || '');
-    const [departmentId, setDepartmentId] = useState(filters.department_id || '');
-    const [workPlace, setWorkPlace] = useState(filters.work_place || '');
-    const [status, setStatus] = useState(filters.status || '');
+    const [departmentId, setDepartmentId] = useState<string[]>(toArray(filters.department_id));
+    const [workPlace, setWorkPlace] = useState<string[]>(toArray(filters.work_place));
+    const [status, setStatus] = useState<string[]>(toArray(filters.status));
+    const [position, setPosition] = useState<string[]>(toArray(filters.position));
+    const [sortBy, setSortBy] = useState(filters.sort_by || 'file_no');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(filters.sort_direction || 'asc');
     const [viewMode, setViewMode] = useViewMode('employees');
     const [isTourOpen, setIsTourOpen] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
     const [peekEmployee, setPeekEmployee] = useState<EmployeeItem | null>(null);
     const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const debouncedFilter = useCallback((updates: Record<string, string>) => {
+    useEffect(() => {
+        setSearch(filters.search || '');
+        setDepartmentId(toArray(filters.department_id));
+        setWorkPlace(toArray(filters.work_place));
+        setStatus(toArray(filters.status));
+        setPosition(toArray(filters.position));
+        setSortBy(filters.sort_by || 'file_no');
+        setSortDirection(filters.sort_direction || 'asc');
+    }, [filters.search, filters.department_id, filters.work_place, filters.status, filters.position, filters.sort_by, filters.sort_direction]);
+
+    const executeFilter = useCallback((updates: Record<string, any>) => {
+        const queryParams: Record<string, any> = {
+            search,
+            department_id: departmentId,
+            work_place: workPlace,
+            status,
+            position,
+            sort_by: sortBy,
+            sort_direction: sortDirection,
+            ...updates,
+        };
+
+        // Clean empty parameters
+        Object.keys(queryParams).forEach((k) => {
+            if (queryParams[k] === undefined || queryParams[k] === null || queryParams[k] === '') {
+                delete queryParams[k];
+            } else if (Array.isArray(queryParams[k]) && queryParams[k].length === 0) {
+                delete queryParams[k];
+            }
+        });
+
+        router.get(route('employees.index'), queryParams, { preserveState: true, replace: true });
+    }, [search, departmentId, workPlace, status, position, sortBy, sortDirection]);
+
+    const debouncedFilter = useCallback((updates: Record<string, any>) => {
         if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
         searchDebounceRef.current = setTimeout(() => {
-            router.get(route('employees.index'), { search, department_id: departmentId, work_place: workPlace, status, ...updates }, { preserveState: true, replace: true });
+            executeFilter(updates);
         }, 300);
-    }, [search, departmentId, workPlace, status]);
+    }, [executeFilter]);
+
+    const handleSort = (newSortBy: string, direction: 'asc' | 'desc') => {
+        setSortBy(newSortBy);
+        setSortDirection(direction);
+        executeFilter({ sort_by: newSortBy, sort_direction: direction });
+    };
+
+    const handleFilterUpdate = (updates: Record<string, any>) => {
+        if ('department_id' in updates) setDepartmentId(updates.department_id);
+        if ('work_place' in updates) setWorkPlace(updates.work_place);
+        if ('status' in updates) setStatus(updates.status);
+        if ('position' in updates) setPosition(updates.position);
+        if ('search' in updates) setSearch(updates.search);
+
+        executeFilter(updates);
+    };
+
+    const resetAllFilters = () => {
+        setSearch('');
+        setDepartmentId([]);
+        setWorkPlace([]);
+        setStatus([]);
+        setPosition([]);
+        setSortBy('file_no');
+        setSortDirection('asc');
+        router.get(route('employees.index'), {}, { preserveState: true, replace: true });
+    };
+
+    const departmentOptions: FilterOption[] = useMemo(() => {
+        return departments.map((d) => ({
+            label: d.name,
+            value: String(d.id),
+        }));
+    }, [departments]);
+
+    const workplaceOptions: FilterOption[] = useMemo(() => {
+        const list = ['Head Office'];
+        (workplaces || []).forEach((w) => {
+            if (w && w !== 'H.O' && w !== 'Head Office' && !list.includes(w)) {
+                list.push(w);
+            }
+        });
+        return list.map((w) => ({
+            label: w,
+            value: w,
+        }));
+    }, [workplaces]);
+
+    const statusOptions: FilterOption[] = useMemo(() => [
+        { label: 'Permanent', value: 'Permanent' },
+        { label: 'Contract', value: 'Contract' },
+        { label: 'Probation', value: 'Probation' },
+        { label: 'Separated', value: 'Separated' },
+    ], []);
+
+    const positionOptions: FilterOption[] = useMemo(() => {
+        return (positions || []).map((p) => ({
+            label: p,
+            value: p,
+        }));
+    }, [positions]);
 
     const toggleSelect = (id: number) => {
         setSelectedIds((prev) => {
@@ -245,23 +316,8 @@ export default function Index({ employees, filters, stats, departments, workplac
         };
     }, []);
 
-    const handleFilter = (updates: Record<string, string>) => {
-        const isSearchOnly = Object.keys(updates).length === 1 && 'search' in updates;
-        if (isSearchOnly) {
-            debouncedFilter(updates);
-            return;
-        }
-        router.get(
-            route('employees.index'),
-            {
-                search,
-                department_id: departmentId,
-                work_place: workPlace,
-                status,
-                ...updates,
-            },
-            { preserveState: true, replace: true }
-        );
+    const handleFilter = (updates: Record<string, any>) => {
+        handleFilterUpdate(updates);
     };
 
     const handleUploadPreview = async () => {
@@ -348,15 +404,15 @@ export default function Index({ employees, filters, stats, departments, workplac
                         { label: 'Project Contracts', val: 'Contract', count: stats.contract_count },
                         { label: 'Separated Archive', val: 'Separated', count: stats.separated_count },
                     ].map((tab) => {
-                        const isActive = (status || '') === tab.val;
+                        const isActive = tab.val === '' ? status.length === 0 : (status.length === 1 && status[0] === tab.val);
                         const hasAttention = tab.val === 'Probation' && tab.count > 0;
                         return (
                             <button
                                 key={tab.val}
                                 type="button"
                                 onClick={() => {
-                                    setStatus(tab.val);
-                                    handleFilter({ status: tab.val });
+                                    const nextStatus = tab.val ? [tab.val] : [];
+                                    handleFilterUpdate({ status: nextStatus });
                                 }}
                                 className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center gap-2 ${
                                     isActive
@@ -527,16 +583,70 @@ export default function Index({ employees, filters, stats, departments, workplac
                         </div>
 
                         <div data-tour="department-filter" className="md:col-span-2 lg:col-span-2">
-                            <Select value={departmentId || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setDepartmentId(next); handleFilter({ department_id: next }); }}><SelectTrigger className="w-full h-10 rounded-xs border-input bg-background text-foreground text-xs text-foreground/90"><SelectValue placeholder={`All Departments (${departments.length})`} /></SelectTrigger><SelectContent><SelectItem value="__all__">All Departments ({departments.length})</SelectItem>{departments.map((d) => (<SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>))}</SelectContent></Select>
+                            <Select 
+                                value={departmentId.length === 1 ? departmentId[0] : (departmentId.length > 1 ? '__multi__' : '__all__')} 
+                                onValueChange={(v) => { 
+                                    const next = v === '__all__' ? [] : [v]; 
+                                    handleFilterUpdate({ department_id: next }); 
+                                }}
+                            >
+                                <SelectTrigger className="w-full h-10 rounded-xs border-input bg-background text-foreground text-xs text-foreground/90">
+                                    <SelectValue placeholder={`All Departments (${departments.length})`}>
+                                        {departmentId.length === 0 && `All Departments (${departments.length})`}
+                                        {departmentId.length === 1 && (departments.find(d => String(d.id) === departmentId[0])?.name || departmentId[0])}
+                                        {departmentId.length > 1 && `${departmentId.length} Depts Selected`}
+                                    </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="__all__">All Departments ({departments.length})</SelectItem>
+                                    {departments.map((d) => (
+                                        <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div data-tour="workplace-filter" className="md:col-span-2 lg:col-span-2">
-                            <Select value={workPlace || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setWorkPlace(next); handleFilter({ work_place: next }); }}><SelectTrigger className="w-full h-10 rounded-xs border-input bg-background text-foreground text-xs text-foreground/90"><SelectValue placeholder="All Workplaces" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Workplaces ({workplaces.length > 0 ? workplaces.length : 'All'})</SelectItem><SelectItem value="H.O">Head Office (H.O)</SelectItem><SelectItem value="Project">All Project Sites</SelectItem>{workplaces.filter(w => w !== 'H.O' && w !== 'Head Office').map((w) => (<SelectItem key={w} value={w}>{w}</SelectItem>))}</SelectContent></Select>
+                            <Select 
+                                value={workPlace.length === 1 ? workPlace[0] : (workPlace.length > 1 ? '__multi__' : '__all__')} 
+                                onValueChange={(v) => { 
+                                    const next = v === '__all__' ? [] : [v]; 
+                                    handleFilterUpdate({ work_place: next }); 
+                                }}
+                            >
+                                <SelectTrigger className="w-full h-10 rounded-xs border-input bg-background text-foreground text-xs text-foreground/90">
+                                    <SelectValue placeholder="All Workplaces">
+                                        {workPlace.length === 0 && `All Workplaces (${workplaces.length > 0 ? workplaces.length : 'All'})`}
+                                        {workPlace.length === 1 && (workPlace[0] === 'H.O' ? 'Head Office (H.O)' : workPlace[0])}
+                                        {workPlace.length > 1 && `${workPlace.length} Sites Selected`}
+                                    </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="__all__">All Workplaces ({workplaces.length > 0 ? workplaces.length : 'All'})</SelectItem>
+                                    <SelectItem value="Head Office">Head Office (H.O)</SelectItem>
+                                    <SelectItem value="Project">All Project Sites</SelectItem>
+                                    {workplaces.filter(w => w !== 'H.O' && w !== 'Head Office').map((w) => (
+                                        <SelectItem key={w} value={w}>{w}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div data-tour="status-filter" className="md:col-span-2 lg:col-span-2 flex flex-col gap-2">
-                            <Select value={status || '__all__'} onValueChange={(v) => { const next = v === '__all__' ? '' : v; setStatus(next); handleFilter({ status: next }); }}>
-                                <SelectTrigger className="w-full h-11 md:h-10 rounded-xl md:rounded-xs border-input bg-background text-foreground text-sm md:text-xs text-foreground/90"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+                            <Select 
+                                value={status.length === 1 ? status[0] : (status.length > 1 ? '__multi__' : '__all__')} 
+                                onValueChange={(v) => { 
+                                    const next = v === '__all__' ? [] : [v]; 
+                                    handleFilterUpdate({ status: next }); 
+                                }}
+                            >
+                                <SelectTrigger className="w-full h-11 md:h-10 rounded-xl md:rounded-xs border-input bg-background text-foreground text-sm md:text-xs text-foreground/90">
+                                    <SelectValue placeholder="All Statuses">
+                                        {status.length === 0 && 'All Statuses'}
+                                        {status.length === 1 && status[0]}
+                                        {status.length > 1 && `${status.length} Statuses Selected`}
+                                    </SelectValue>
+                                </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="__all__">All Statuses</SelectItem>
                                     <SelectItem value="Permanent">Permanent</SelectItem>
@@ -547,17 +657,61 @@ export default function Index({ employees, filters, stats, departments, workplac
                             </Select>
 
                             <Button
-                                onClick={() => handleFilter({ search })}
+                                onClick={() => handleFilterUpdate({ search })}
                                 className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs h-11 px-4 text-sm font-bold rounded-xl"
                             >
                                 Filter
                             </Button>
                         </div>
                     </div>
+
+                    {/* Active Filters Pill Bar (Apple / DESIGN.md minimal pill chips) */}
+                    {(departmentId.length > 0 || workPlace.length > 0 || status.length > 0 || position.length > 0 || search) && (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-3 border-t border-border/50 text-xs mt-3">
+                            <span className="text-[11px] font-semibold text-muted-foreground mr-1">Active filters:</span>
+                            {search && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-muted border border-border text-foreground text-[11px]">
+                                    Search: &ldquo;{search}&rdquo;
+                                    <button type="button" onClick={() => { setSearch(''); handleFilterUpdate({ search: '' }); }} className="hover:text-destructive"><X className="w-3 h-3" /></button>
+                                </span>
+                            )}
+                            {departmentId.length > 0 && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#0066cc]/10 border border-[#0066cc]/20 text-[#0066cc] font-medium text-[11px]">
+                                    Dept: {departmentId.length} selected
+                                    <button type="button" onClick={() => handleFilterUpdate({ department_id: [] })} className="hover:opacity-75"><X className="w-3 h-3" /></button>
+                                </span>
+                            )}
+                            {workPlace.length > 0 && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#0066cc]/10 border border-[#0066cc]/20 text-[#0066cc] font-medium text-[11px]">
+                                    Workplace: {workPlace.length} selected
+                                    <button type="button" onClick={() => handleFilterUpdate({ work_place: [] })} className="hover:opacity-75"><X className="w-3 h-3" /></button>
+                                </span>
+                            )}
+                            {status.length > 0 && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#0066cc]/10 border border-[#0066cc]/20 text-[#0066cc] font-medium text-[11px]">
+                                    Status: {status.join(', ')}
+                                    <button type="button" onClick={() => handleFilterUpdate({ status: [] })} className="hover:opacity-75"><X className="w-3 h-3" /></button>
+                                </span>
+                            )}
+                            {position.length > 0 && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#0066cc]/10 border border-[#0066cc]/20 text-[#0066cc] font-medium text-[11px]">
+                                    Position: {position.length} selected
+                                    <button type="button" onClick={() => handleFilterUpdate({ position: [] })} className="hover:opacity-75"><X className="w-3 h-3" /></button>
+                                </span>
+                            )}
+                            <button
+                                type="button"
+                                onClick={resetAllFilters}
+                                className="text-[11px] text-muted-foreground hover:text-destructive underline ml-1 font-medium"
+                            >
+                                Clear all
+                            </button>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
-            {/* Comparison Data Table (Strictly Styled per NerdWallet DESIGN.md) */}
+            {/* Comparison Data Table (Strictly Styled per DESIGN.md) */}
             <Card data-tour="data-table" className="border-border bg-card shadow-xs overflow-hidden shadow-sm">
                 {viewMode === 'table' ? (
                 <Table>
@@ -571,14 +725,106 @@ export default function Index({ employees, filters, stats, departments, workplac
                                 />
                             </TableHead>
                             <TableHead className="w-14 text-center">Photo</TableHead>
-                            <TableHead className="w-24">File no</TableHead>
-                            <TableHead>Staff name</TableHead>
-                            <TableHead>Department</TableHead>
-                            <TableHead>Position</TableHead>
-                            <TableHead>Work place</TableHead>
-                            <TableHead>Employment date (E.C)</TableHead>
+                            
+                            <TableHead className="w-28">
+                                <ExcelColumnFilter
+                                    title="File no"
+                                    enableSort
+                                    sortKey="file_no"
+                                    currentSortBy={sortBy}
+                                    currentSortDir={sortDirection}
+                                    onSort={handleSort}
+                                />
+                            </TableHead>
+
+                            <TableHead>
+                                <ExcelColumnFilter
+                                    title="Staff name"
+                                    enableSort
+                                    sortKey="full_name"
+                                    currentSortBy={sortBy}
+                                    currentSortDir={sortDirection}
+                                    onSort={handleSort}
+                                />
+                            </TableHead>
+
+                            <TableHead>
+                                <ExcelColumnFilter
+                                    title="Department"
+                                    columnKey="department_id"
+                                    options={departmentOptions}
+                                    selectedValues={departmentId}
+                                    onApply={(vals) => handleFilterUpdate({ department_id: vals })}
+                                    onReset={() => handleFilterUpdate({ department_id: [] })}
+                                    enableSort
+                                    sortKey="department_id"
+                                    currentSortBy={sortBy}
+                                    currentSortDir={sortDirection}
+                                    onSort={handleSort}
+                                />
+                            </TableHead>
+
+                            <TableHead>
+                                <ExcelColumnFilter
+                                    title="Position"
+                                    columnKey="position"
+                                    options={positionOptions}
+                                    selectedValues={position}
+                                    onApply={(vals) => handleFilterUpdate({ position: vals })}
+                                    onReset={() => handleFilterUpdate({ position: [] })}
+                                    enableSort
+                                    sortKey="position"
+                                    currentSortBy={sortBy}
+                                    currentSortDir={sortDirection}
+                                    onSort={handleSort}
+                                />
+                            </TableHead>
+
+                            <TableHead>
+                                <ExcelColumnFilter
+                                    title="Work place"
+                                    columnKey="work_place"
+                                    options={workplaceOptions}
+                                    selectedValues={workPlace}
+                                    onApply={(vals) => handleFilterUpdate({ work_place: vals })}
+                                    onReset={() => handleFilterUpdate({ work_place: [] })}
+                                    enableSort
+                                    sortKey="work_place"
+                                    currentSortBy={sortBy}
+                                    currentSortDir={sortDirection}
+                                    onSort={handleSort}
+                                />
+                            </TableHead>
+
+                            <TableHead>
+                                <ExcelColumnFilter
+                                    title="Employment date (E.C)"
+                                    enableSort
+                                    sortKey="employment_date_ec"
+                                    currentSortBy={sortBy}
+                                    currentSortDir={sortDirection}
+                                    onSort={handleSort}
+                                />
+                            </TableHead>
+
                             <TableHead className="text-right">Total salary</TableHead>
-                            <TableHead>Status</TableHead>
+
+                            <TableHead>
+                                <ExcelColumnFilter
+                                    title="Status"
+                                    columnKey="status"
+                                    options={statusOptions}
+                                    selectedValues={status}
+                                    onApply={(vals) => handleFilterUpdate({ status: vals })}
+                                    onReset={() => handleFilterUpdate({ status: [] })}
+                                    enableSort
+                                    sortKey="status"
+                                    currentSortBy={sortBy}
+                                    currentSortDir={sortDirection}
+                                    onSort={handleSort}
+                                />
+                            </TableHead>
+
                             <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
                         </TableRow>
                     </TableHeader>
@@ -597,13 +843,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                                         <Button
                                             size="sm"
                                             variant="outline"
-                                            onClick={() => {
-                                                setSearch('');
-                                                setDepartmentId('');
-                                                setWorkPlace('');
-                                                setStatus('');
-                                                debouncedFilter({ search: '', department_id: '', work_place: '', status: '' });
-                                            }}
+                                            onClick={resetAllFilters}
                                             className="text-xs border-border text-primary hover:bg-muted/40"
                                         >
                                             Reset filters
@@ -704,13 +944,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                                 <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => {
-                                        setSearch('');
-                                        setDepartmentId('');
-                                        setWorkPlace('');
-                                        setStatus('');
-                                        debouncedFilter({ search: '', department_id: '', work_place: '', status: '' });
-                                    }}
+                                    onClick={resetAllFilters}
                                     className="text-xs border-border text-primary hover:bg-muted/40"
                                 >
                                     Reset filters
@@ -1061,7 +1295,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                 steps={staffDirectoryTourSteps}
                 isOpen={isTourOpen}
                 onClose={() => setIsTourOpen(false)}
-                tourTitle="Staff Directory Guided Tour"
+                tourTitle="Staff directory tour"
             />
         </AuthenticatedLayout>
     );

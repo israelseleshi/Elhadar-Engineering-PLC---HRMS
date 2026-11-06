@@ -1,11 +1,9 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/Components/ui/button';
-import { Badge } from '@/Components/ui/badge';
 import { 
     ChevronLeft, 
     ChevronRight, 
     X, 
-    Sparkles, 
     Check, 
     Compass
 } from 'lucide-react';
@@ -39,7 +37,7 @@ export default function InteractiveTour({
     steps,
     isOpen,
     onClose,
-    tourTitle = 'Staff Directory Interactive Tour',
+    tourTitle = 'Page tour',
 }: InteractiveTourProps) {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [targetRect, setTargetRect] = useState<TargetRect | null>(null);
@@ -241,22 +239,22 @@ export default function InteractiveTour({
                             top: targetRect.top,
                             width: targetRect.width,
                             height: targetRect.height,
-                            borderRadius: '6px',
+                            borderRadius: '10px',
                         }}
-                        className="pointer-events-none z-[9992] border-2 border-[#0066cc] ring-4 ring-[#0066cc]/30 shadow-[0_0_25px_rgba(0,130,84,0.5)] transition-all duration-300 ease-out"
+                        className="pointer-events-none z-[9992] border-2 border-primary ring-4 ring-primary/25 shadow-[0_0_20px_rgba(37,99,235,0.35)] transition-all duration-300 ease-out"
                     />
 
                     {/* Animated Pulsing Beacon Marker */}
                     <div
                         style={{
                             position: 'fixed',
-                            left: targetRect.left - 6,
-                            top: targetRect.top - 6,
+                            left: targetRect.left - 5,
+                            top: targetRect.top - 5,
                         }}
-                        className="pointer-events-none z-[9993] flex h-5 w-5"
+                        className="pointer-events-none z-[9993] flex h-4 w-4"
                     >
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0066cc] opacity-80" />
-                        <span className="relative inline-flex rounded-full h-5 w-5 bg-[#0066cc] border-2 border-white shadow-sm" />
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                        <span className="relative inline-flex rounded-full h-4 w-4 bg-primary border-2 border-background shadow-xs" />
                     </div>
                 </>
             )}
@@ -268,108 +266,84 @@ export default function InteractiveTour({
                     position: 'fixed',
                     top: popoverPos.top,
                     left: popoverPos.left,
-                    width: '380px',
+                    width: '340px',
                     maxWidth: 'calc(100vw - 32px)',
                 }}
-                className="z-[9995] bg-white rounded-xs border border-[#d2d2d7] shadow-[0_20px_50px_rgba(0,0,0,0.25)] flex flex-col overflow-hidden transition-all duration-300 ease-out animate-in fade-in zoom-in-95"
+                className="z-[9995] bg-card text-card-foreground rounded-2xl border border-border shadow-2xl flex flex-col overflow-hidden transition-all duration-200 ease-out animate-in fade-in zoom-in-95"
             >
                 {/* Popover Header */}
-                <div className="bg-[#0066cc] text-white p-3.5 flex items-center justify-between border-b border-[#0071e3]">
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-xs bg-[#f5f5f7] text-[#0066cc] flex items-center justify-center font-bold">
-                            <Compass className="w-3.5 h-3.5" />
+                <div className="px-4 pt-3.5 pb-2.5 flex items-center justify-between border-b border-border/50">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-5 h-5 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <Compass className="w-3 h-3" />
                         </div>
-                        <div>
-                            <p className="text-[10px] font-bold tracking-wider uppercase text-[#f5f5f7]">
-                                {tourTitle}
-                            </p>
-                            <p className="text-xs font-bold text-white">
-                                Step {currentStepIndex + 1} of {steps.length}
-                            </p>
-                        </div>
+                        <span className="text-xs font-medium text-muted-foreground truncate">
+                            {tourTitle}
+                        </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        {step.badge && (
-                            <Badge className="bg-[#2997ff] hover:bg-[#2997ff] text-[#1d1d1f] text-[10px] font-bold px-1.5 py-0.5 rounded-xs border-0">
-                                {step.badge}
-                            </Badge>
-                        )}
-                        <button
-                            onClick={onClose}
-                            className="text-white/80 hover:text-white p-1 rounded-xs hover:bg-[#0071e3] transition-colors"
-                            title="Close Tour (Esc)"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="w-full bg-[#e8e8ed] h-1">
-                    <div
-                        className="bg-[#0066cc] h-1 transition-all duration-300"
-                        style={{ width: `${progressPercent}%` }}
-                    />
+                    <button
+                        onClick={onClose}
+                        className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted transition-colors -mr-1"
+                        title="Close tour (Esc)"
+                    >
+                        <X className="w-3.5 h-3.5" />
+                    </button>
                 </div>
 
                 {/* Popover Body */}
-                <div className="p-4 space-y-3 bg-white">
-                    <div>
-                        <h3 className="text-base font-bold text-black tracking-tight leading-tight flex items-center gap-1.5">
-                            <span>{step.title}</span>
-                        </h3>
-                        <p className="text-xs text-[#424245] leading-relaxed mt-1.5 font-normal">
-                            {step.content}
-                        </p>
-                    </div>
-
-                    {step.tip && (
-                        <div className="bg-[#f5f5f7] border border-[#0066cc]/25 p-2.5 rounded-xs flex items-start gap-2 text-[11px] text-[#1d1d1f] font-medium leading-normal">
-                            <Sparkles className="w-3.5 h-3.5 text-[#0066cc] shrink-0 mt-0.5" />
-                            <span>{step.tip}</span>
-                        </div>
-                    )}
+                <div className="p-4 space-y-1.5">
+                    <h3 className="text-sm font-semibold text-foreground tracking-tight leading-snug">
+                        {step.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed font-normal">
+                        {step.content}
+                    </p>
                 </div>
 
                 {/* Popover Footer with Actions */}
-                <div className="px-4 py-3 bg-[#f5f5f7] border-t border-[#e8e8ed] flex items-center justify-between">
-                    <button
-                        onClick={onClose}
-                        className="text-xs font-semibold text-[#6e6e73] hover:text-black transition-colors"
-                    >
-                        Skip Tour
-                    </button>
+                <div className="px-4 py-3 bg-muted/30 border-t border-border/50 flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">
+                        {currentStepIndex + 1} of {steps.length}
+                    </span>
 
                     <div className="flex items-center gap-1.5">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentStepIndex((prev) => Math.max(0, prev - 1))}
-                            disabled={isFirstStep}
-                            className="h-8 px-2.5 text-xs font-semibold border-[#d2d2d7] text-[#424245] rounded-xs disabled:opacity-40"
+                        <button
+                            onClick={onClose}
+                            className="text-xs font-medium text-muted-foreground hover:text-foreground px-2 py-1 transition-colors mr-1"
                         >
-                            <ChevronLeft className="w-3.5 h-3.5 mr-0.5" />
-                            Back
-                        </Button>
+                            Skip
+                        </button>
+
+                        {!isFirstStep && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentStepIndex((prev) => Math.max(0, prev - 1))}
+                                className="h-7 px-2.5 text-xs font-medium rounded-lg border-border bg-card hover:bg-muted text-foreground"
+                            >
+                                <ChevronLeft className="w-3 h-3 mr-0.5" />
+                                Back
+                            </Button>
+                        )}
 
                         {isLastStep ? (
                             <Button
                                 size="sm"
                                 onClick={onClose}
-                                className="h-8 px-3.5 text-xs font-bold bg-[#0066cc] hover:bg-[#0071e3] text-white rounded-xs gap-1 shadow-sm"
+                                className="h-7 px-3 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-xs"
                             >
-                                <Check className="w-3.5 h-3.5" />
+                                <Check className="w-3 h-3 mr-1" />
                                 Done
                             </Button>
                         ) : (
                             <Button
                                 size="sm"
                                 onClick={() => setCurrentStepIndex((prev) => Math.min(steps.length - 1, prev + 1))}
-                                className="h-8 px-3.5 text-xs font-bold bg-[#0066cc] hover:bg-[#0071e3] text-white rounded-xs gap-1 shadow-sm"
+                                className="h-7 px-3 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-xs"
                             >
                                 Next
-                                <ChevronRight className="w-3.5 h-3.5" />
+                                <ChevronRight className="w-3 h-3 ml-0.5" />
                             </Button>
                         )}
                     </div>

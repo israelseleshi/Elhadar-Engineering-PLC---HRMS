@@ -163,25 +163,64 @@ class EmployeeController extends Controller
             });
         }
 
-        if ($deptId = $request->input('department_id')) {
-            $query->where('department_id', $deptId);
-        }
-
-        if ($workPlace = $request->input('work_place')) {
-            if ($workPlace === 'Head Office' || $workPlace === 'H.O') {
-                $query->whereIn('work_place', ['Head Office', 'H.O']);
-            } elseif ($workPlace === 'Project') {
-                $query->whereNotIn('work_place', ['Head Office', 'H.O']);
-            } else {
-                $query->where('work_place', $workPlace);
+        if ($deptInput = $request->input('department_id')) {
+            $deptIds = is_array($deptInput) ? $deptInput : explode(',', (string) $deptInput);
+            $deptIds = array_values(array_filter(array_map('trim', $deptIds)));
+            if (! empty($deptIds)) {
+                $query->whereIn('department_id', $deptIds);
             }
         }
 
-        if ($status = $request->input('status')) {
-            $query->where('status', $status);
+        if ($workPlaceInput = $request->input('work_place')) {
+            $workPlaces = is_array($workPlaceInput) ? $workPlaceInput : explode(',', (string) $workPlaceInput);
+            $workPlaces = array_values(array_filter(array_map('trim', $workPlaces)));
+            if (! empty($workPlaces)) {
+                $query->where(function ($q) use ($workPlaces) {
+                    $hasHO = in_array('Head Office', $workPlaces, true) || in_array('H.O', $workPlaces, true);
+                    $hasProject = in_array('Project', $workPlaces, true);
+                    $regularPlaces = array_diff($workPlaces, ['Head Office', 'H.O', 'Project']);
+
+                    if ($hasHO) {
+                        $q->orWhereIn('work_place', ['Head Office', 'H.O']);
+                    }
+                    if ($hasProject) {
+                        $q->orWhereNotIn('work_place', ['Head Office', 'H.O']);
+                    }
+                    if (! empty($regularPlaces)) {
+                        $q->orWhereIn('work_place', $regularPlaces);
+                    }
+                });
+            }
         }
 
-        $employees = $query->orderBy('file_no')->paginate(15)->withQueryString();
+        if ($statusInput = $request->input('status')) {
+            $statuses = is_array($statusInput) ? $statusInput : explode(',', (string) $statusInput);
+            $statuses = array_values(array_filter(array_map('trim', $statuses)));
+            if (! empty($statuses)) {
+                $query->whereIn('status', $statuses);
+            }
+        }
+
+        if ($positionInput = $request->input('position')) {
+            $positions = is_array($positionInput) ? $positionInput : explode(',', (string) $positionInput);
+            $positions = array_values(array_filter(array_map('trim', $positions)));
+            if (! empty($positions)) {
+                $query->whereIn('position', $positions);
+            }
+        }
+
+        // Sorting
+        $sortBy = $request->input('sort_by', 'file_no');
+        $sortDirection = strtolower((string) $request->input('sort_direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $allowedSorts = ['file_no', 'full_name', 'department_id', 'position', 'work_place', 'employment_date_ec', 'status'];
+
+        if (in_array($sortBy, $allowedSorts, true)) {
+            $query->orderBy($sortBy, $sortDirection);
+        } else {
+            $query->orderBy('file_no', 'asc');
+        }
+
+        $employees = $query->paginate(15)->withQueryString();
 
         $stats = [
             'total_headcount' => Employee::count(),
@@ -200,12 +239,19 @@ class EmployeeController extends Controller
             ->orderBy('work_place')
             ->pluck('work_place');
 
+        $positions = Employee::whereNotNull('position')
+            ->where('position', '!=', '')
+            ->distinct()
+            ->orderBy('position')
+            ->pluck('position');
+
         return Inertia::render('Employees/Index', [
             'employees' => $employees,
-            'filters' => $request->only(['search', 'department_id', 'work_place', 'status']),
+            'filters' => $request->only(['search', 'department_id', 'work_place', 'status', 'position', 'sort_by', 'sort_direction']),
             'stats' => $stats,
             'departments' => $departments,
             'workplaces' => $workplaces,
+            'positions' => $positions,
         ]);
     }
 

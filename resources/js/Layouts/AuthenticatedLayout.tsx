@@ -2,7 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
 import {
     LayoutDashboard, Users, CalendarDays, GraduationCap, UserCheck, LogOut,
-    ShieldCheck, Menu, X, TrendingUp, UserMinus, UserPlus, Sliders, Activity, Compass
+    Menu, X, TrendingUp, UserMinus, UserPlus, Sliders, Activity, Compass
 } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
 import { ThemeToggle } from '@/Components/ThemeToggle';
@@ -168,6 +168,7 @@ export default function AuthenticatedLayout({ header, title, subtitle, children 
                                         if (typeof window !== 'undefined') {
                                             if (window.location.pathname.includes('/employees') && !window.location.pathname.includes('/create')) window.dispatchEvent(new CustomEvent('open-staff-directory-tour'));
                                             else if (window.location.pathname.includes('/leave')) window.dispatchEvent(new CustomEvent('open-leave-ledger-tour'));
+                                            else if (window.location.pathname.includes('/dashboard') || window.location.pathname === '/') window.dispatchEvent(new CustomEvent('open-dashboard-tour'));
                                             else setTourOpen(true);
                                         }
                                     }} className="hidden md:inline-flex gap-1.5 text-xs font-medium rounded-full border-border">

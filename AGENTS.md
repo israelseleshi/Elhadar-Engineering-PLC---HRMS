@@ -1,6 +1,36 @@
 <laravel-boost-guidelines>
 === foundation rules ===
 
+# Codebase Memory & Graph Intelligence (codebase-memory-mcp)
+
+This project is actively indexed in the `codebase-memory-mcp` knowledge graph. ALWAYS prioritize the graph for symbol discovery, architecture mapping, and impact analysis over grep/file sweeps.
+
+## MCP Configuration & Project Identifier
+- **MCP Server:** `codebase-memory-mcp` (invoked via `call_mcp_tool`)
+- **Project Key:** `C-Users-israe-OneDrive-Documents-Elhadar-HRMS`
+
+## Tool Selection & Usage Protocol
+1. **Find definitions & symbols (models, methods, controllers, routes):**
+   - Call `search_graph` with `project: "C-Users-israe-OneDrive-Documents-Elhadar-HRMS"`, using `query: "..."` (BM25 search) or `name_pattern: ".*Pattern.*"`.
+2. **Trace call graphs & callers/callees:**
+   - Call `trace_path` with `project: "C-Users-israe-OneDrive-Documents-Elhadar-HRMS"`.
+   - `direction: "inbound"`: Locate who calls or depends on this symbol (callers).
+   - `direction: "outbound"`: Locate downstream dependencies (callees).
+3. **Read exact symbol implementations:**
+   - Call `get_code_snippet` with `project: "C-Users-israe-OneDrive-Documents-Elhadar-HRMS"` and `qualified_name`.
+4. **Blast radius & refactoring safety:**
+   - Before changing shared models, services, or methods, call `detect_changes` with `project: "C-Users-israe-OneDrive-Documents-Elhadar-HRMS"` to inspect the transitive impact set.
+5. **High-level architecture & domains:**
+   - Call `get_architecture` with `project: "C-Users-israe-OneDrive-Documents-Elhadar-HRMS"`.
+
+## When to Fall Back to Direct File/Grep Tools
+Reserve `read_file`, `search_code`, or shell grep strictly for:
+- Searching exact string literals, translation keys, or error messages.
+- Non-PHP/TS files, config files (`config/*.php`, `.env`), or raw template markup (Blade/Inertia React TSX files).
+- Files identified in `index_status` under `parse_partial` or `skipped`.
+
+
+
 # Laravel Boost Guidelines
 
 ## Foundational Context
@@ -33,6 +63,29 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 ## Frontend Bundling
 
 - If a frontend change doesn't show in the UI or you get a "Unable to locate file in Vite manifest" error, run `npm run build` or ask the user to run `npm run dev` or `composer run dev`.
+
+## UI/UX & Frontend Design System (DESIGN.md)
+
+When designing, implementing, or modifying any frontend interface, UI component, page layout, or styling (React/Inertia TSX, Blade templates, Tailwind classes):
+
+- **Strict Adherence to `DESIGN.md`:** The design system defined in `DESIGN.md` at the project root is the single source of truth for all UI/UX choices. Always consult and adhere to `DESIGN.md` when writing or refactoring UI code.
+- **Color Palette & Design Tokens:**
+  - Primary interactive color: Action Blue (`#0066cc`, focus `#0071e3`, dark-mode `#2997ff`).
+  - Text & Ink: `#1d1d1f` for primary text and headings, muted grays (`#7a7a7a`, `#333333`) for secondary copy.
+  - Backgrounds: Pure white canvas (`#ffffff`), parchment canvas (`#f5f5f7`), and pearl surface (`#fafafc`).
+  - Dividers & borders: Subtle hairline (`#e0e0e0`) and soft dividers (`#f0f0f0`).
+  - **Do NOT invent arbitrary colors, heavy saturated badges, or decorative multi-color gradients.**
+- **Typography & Proportions:**
+  - Follow Apple-inspired typography (SF Pro Display / SF Pro Text / system-ui stack).
+  - Headlines use deliberate negative letter-spacing (`tracking-tight`) with tight line heights.
+  - Maintain generous, intentional whitespace, clean padding scales, and optical alignment.
+- **Visual Aesthetic & Styling Rules:**
+  - Modern, minimalist, content-first aesthetic: UI chrome recedes so HR data and information speak for themselves.
+  - Avoid heavy drop shadows or flashy chrome borders. Rely on crisp hairlines, subtle borders, and smooth transitions.
+  - Consistent border radii (e.g., standard `rounded-lg` / `rounded-xl`).
+- **Component Reuse & State Consistency:**
+  - Always check existing components in `resources/js/Components/` before authoring new elements.
+  - Ensure uniform interactive states (hover, active, focus-visible with proper focus rings) and standard form inputs across all pages.
 
 ## Documentation Files
 
