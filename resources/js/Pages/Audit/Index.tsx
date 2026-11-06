@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { Head, router } from '@inertiajs/react';
@@ -271,7 +271,7 @@ export default function Index({ auditLogs, filters, stats, distinctActions }: Pr
                                         {dateFrom ? format(new Date(`${dateFrom}T00:00:00`), 'PPP') : 'From date'}
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0 bg-white" align="start">
+                                <PopoverContent className="w-auto p-0 bg-popover text-popover-foreground border-border" align="start">
                                     <Calendar
                                         mode="single"
                                         captionLayout="dropdown"
@@ -310,7 +310,7 @@ export default function Index({ auditLogs, filters, stats, distinctActions }: Pr
                                         {dateTo ? format(new Date(`${dateTo}T00:00:00`), 'PPP') : 'To date'}
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0 bg-white" align="start">
+                                <PopoverContent className="w-auto p-0 bg-popover text-popover-foreground border-border" align="start">
                                     <Calendar
                                         mode="single"
                                         captionLayout="dropdown"

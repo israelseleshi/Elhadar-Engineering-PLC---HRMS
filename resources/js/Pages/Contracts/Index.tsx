@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent } from '@/Components/ui/card';
@@ -199,9 +199,9 @@ export default function Index({ contracts, filters, stats }: Props) {
                                         setUrgency('all');
                                         handleFilter({ urgency: 'all' });
                                     }}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-colors ${
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                                         urgency === 'all'
-                                            ? 'bg-white text-primary shadow-sm'
+                                            ? 'bg-card text-foreground shadow-xs border border-border'
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
@@ -212,9 +212,9 @@ export default function Index({ contracts, filters, stats }: Props) {
                                         setUrgency('expiring_30');
                                         handleFilter({ urgency: 'expiring_30' });
                                     }}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-colors ${
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                                         urgency === 'expiring_30'
-                                            ? 'bg-white text-primary shadow-sm'
+                                            ? 'bg-card text-foreground shadow-xs border border-border'
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
@@ -225,9 +225,9 @@ export default function Index({ contracts, filters, stats }: Props) {
                                         setUrgency('expiring_15');
                                         handleFilter({ urgency: 'expiring_15' });
                                     }}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-colors ${
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                                         urgency === 'expiring_15'
-                                            ? 'bg-white text-primary shadow-sm'
+                                            ? 'bg-card text-foreground shadow-xs border border-border'
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
@@ -238,9 +238,9 @@ export default function Index({ contracts, filters, stats }: Props) {
                                         setUrgency('expired');
                                         handleFilter({ urgency: 'expired' });
                                     }}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-colors ${
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                                         urgency === 'expired'
-                                            ? 'bg-white text-primary shadow-sm'
+                                            ? 'bg-card text-foreground shadow-xs border border-border'
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
@@ -363,10 +363,10 @@ export default function Index({ contracts, filters, stats }: Props) {
                                     preserveState
                                     className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                                         link.active
-                                            ? 'bg-primary text-white border-[#0066cc] font-bold'
+                                            ? 'bg-primary text-primary-foreground border-primary font-bold shadow-xs'
                                             : link.url
-                                            ? 'bg-white text-foreground/90 border-border bg-card hover:bg-muted'
-                                            : 'bg-white/50 text-muted-foreground/60 border-border/60 cursor-not-allowed'
+                                            ? 'bg-card text-foreground border-border hover:bg-muted'
+                                            : 'bg-muted/40 text-muted-foreground/40 border-border/40 cursor-not-allowed'
                                     }`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />

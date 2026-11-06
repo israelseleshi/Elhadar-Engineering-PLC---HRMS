@@ -332,7 +332,7 @@ export default function Index({ employees, filters, stats, currentYear }: Props)
                             employees.data.map((emp, index) => (
                                 <div
                                     key={emp.id}
-                                    className="rounded-xs border border-border/60 bg-muted/40 p-4 transition-colors hover:border-border hover:bg-white"
+                                    className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:shadow-xs"
                                 >
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
@@ -409,12 +409,12 @@ export default function Index({ employees, filters, stats, currentYear }: Props)
                                     key={idx}
                                     href={link.url || '#'}
                                     preserveState
-                                    className={`px-3 py-1.5 rounded-xs text-xs font-medium border transition-colors ${
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                                         link.active
-                                            ? 'bg-primary text-white border-[#0066cc] font-semibold'
+                                            ? 'bg-primary text-primary-foreground border-primary font-semibold shadow-xs'
                                             : link.url
-                                            ? 'bg-white text-foreground/90 border-border bg-card hover:bg-muted'
-                                            : 'bg-white/50 text-muted-foreground/60 border-border/60 cursor-not-allowed'
+                                            ? 'bg-card text-foreground border-border hover:bg-muted'
+                                            : 'bg-muted/40 text-muted-foreground/40 border-border/40 cursor-not-allowed'
                                     }`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />

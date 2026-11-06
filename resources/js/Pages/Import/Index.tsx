@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Input } from '@/Components/ui/input';
@@ -236,7 +236,7 @@ export default function Index({ stats, recentImports }: Props) {
                                     onChange={handleFileChange}
                                     className="hidden"
                                 />
-                                <span className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold rounded-xs cursor-pointer shadow-xs transition-colors">
+                                <span className="inline-flex items-center gap-2 px-4 py-2 border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold rounded-lg cursor-pointer shadow-xs transition-colors">
                                     <UploadCloud className="w-3.5 h-3.5 text-primary" />
                                     Choose Spreadsheet File
                                 </span>
@@ -376,10 +376,10 @@ export default function Index({ stats, recentImports }: Props) {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                         <button
                             onClick={() => setActiveTab('new')}
-                            className={`p-3 border rounded-xs text-left transition-colors ${
+                            className={`p-3 border rounded-lg text-left transition-colors ${
                                 activeTab === 'new'
-                                    ? 'border-[#0066cc] bg-muted/40'
-                                    : 'border-border bg-white hover:bg-muted/40'
+                                    ? 'border-primary bg-primary/10'
+                                    : 'border-border bg-card hover:bg-muted/40'
                             }`}
                         >
                             <p className="text-[11px] font-bold uppercase tracking-wider text-primary">New Personnel (Insert)</p>
@@ -388,22 +388,22 @@ export default function Index({ stats, recentImports }: Props) {
 
                         <button
                             onClick={() => setActiveTab('update')}
-                            className={`p-3 border rounded-xs text-left transition-colors ${
+                            className={`p-3 border rounded-lg text-left transition-colors ${
                                 activeTab === 'update'
-                                    ? 'border-[#1570ef] bg-[#eff8ff]'
-                                    : 'border-border bg-white hover:bg-muted/40'
+                                    ? 'border-blue-500 bg-blue-500/10'
+                                    : 'border-border bg-card hover:bg-muted/40'
                             }`}
                         >
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#1570ef]">Existing Profiles (Update)</p>
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Existing Profiles (Update)</p>
                             <p className="text-2xl font-bold text-foreground mt-0.5">{previewData.summary.update_count}</p>
                         </button>
 
                         <button
                             onClick={() => setActiveTab('errors')}
-                            className={`p-3 border rounded-xs text-left transition-colors ${
+                            className={`p-3 border rounded-lg text-left transition-colors ${
                                 activeTab === 'errors'
-                                    ? 'border-[#de2828] bg-[#fdf2f2]'
-                                    : 'border-border bg-white hover:bg-muted/40'
+                                    ? 'border-destructive bg-destructive/10'
+                                    : 'border-border bg-card hover:bg-muted/40'
                             }`}
                         >
                             <p className="text-[11px] font-bold uppercase tracking-wider text-[#de2828]">Validation Warnings</p>

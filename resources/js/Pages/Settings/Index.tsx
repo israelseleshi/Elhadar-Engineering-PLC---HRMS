@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -115,10 +115,10 @@ export default function Index({ groupedSettings }: Props) {
                     const CategoryIcon = getCategoryIcon(category);
                     return (
                         <Card key={category} className="border-border bg-card shadow-xs">
-                            <CardHeader className="border-b border-border/60 py-4 px-4 sm:px-6 bg-muted/40/40">
+                            <CardHeader className="border-b border-border/60 py-4 px-4 sm:px-6 bg-muted/30">
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                     <div className="flex items-center gap-2.5">
-                                        <div className="w-8 h-8 rounded-xl bg-muted/40 text-primary flex items-center justify-center">
+                                        <div className="w-8 h-8 rounded-xl bg-muted text-primary flex items-center justify-center">
                                             <CategoryIcon className="w-4 h-4" />
                                         </div>
                                         <div>
@@ -141,13 +141,13 @@ export default function Index({ groupedSettings }: Props) {
                                     {items.map((item) => (
                                         <div
                                             key={item.key}
-                                            className="p-4 border border-border rounded-xl bg-white hover:border-[#b0b0b5] transition-colors"
+                                            className="p-4 border border-border rounded-xl bg-muted/20 hover:border-border/80 transition-colors"
                                         >
                                             <div className="flex items-center justify-between mb-2">
                                                 <label className="text-xs font-bold text-foreground uppercase tracking-wider">
                                                     {item.key.replace(/_/g, ' ')}
                                                 </label>
-                                                <Badge className="bg-muted/40 text-primary border border-[#0066cc]/30 text-[10px] font-semibold">
+                                                <Badge className="bg-primary/10 text-primary border border-primary/20 text-[10px] font-semibold">
                                                     {item.article}
                                                 </Badge>
                                             </div>
@@ -162,7 +162,7 @@ export default function Index({ groupedSettings }: Props) {
                                                         type="text"
                                                         value={formData[item.key] ?? ''}
                                                         onChange={(e) => handleChange(item.key, e.target.value)}
-                                                        className="h-10 text-sm font-semibold border-border focus:border-primary focus:ring-0 rounded-xl pr-16 bg-muted/40"
+                                                        className="h-10 text-sm font-semibold border-input focus:border-primary focus:ring-0 rounded-xl pr-16 bg-background text-foreground"
                                                     />
                                                     <span className="absolute right-3 top-2.5 text-xs font-bold text-muted-foreground">
                                                         {item.unit}
@@ -178,7 +178,7 @@ export default function Index({ groupedSettings }: Props) {
                 })}
 
                 {/* Bottom Sticky Action Bar */}
-                <div className="sticky bottom-2 sm:bottom-4 z-20 p-3 sm:p-4 bg-white border border-border shadow-lg rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="sticky bottom-2 sm:bottom-4 z-20 p-3 sm:p-4 bg-card/95 backdrop-blur border border-border shadow-lg rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <span className="text-xs text-muted-foreground">
                         Review parameters carefully before committing changes. All modifications create an immutable audit record.
                     </span>

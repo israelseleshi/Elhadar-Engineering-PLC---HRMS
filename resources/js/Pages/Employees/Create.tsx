@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
@@ -176,10 +176,10 @@ export default function Create({ departments }: Props) {
                             onClick={() => setStep(st.num)}
                             className={`p-3 rounded-lg border cursor-pointer transition-all ${
                                 isActive
-                                    ? 'bg-muted/40 border-[#0066cc] shadow-sm'
+                                    ? 'bg-primary/10 border-primary shadow-xs'
                                     : isDone
-                                    ? 'bg-white border-border text-primary'
-                                    : 'bg-white border-border text-muted-foreground'
+                                    ? 'bg-card border-border text-primary'
+                                    : 'bg-card border-border text-muted-foreground'
                             }`}
                         >
                             <div className="flex items-center gap-2.5">

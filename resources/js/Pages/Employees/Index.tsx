@@ -720,7 +720,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                             employees.data.map((emp) => (
                                 <div
                                     key={emp.id}
-                                    className="rounded-xl border border-border/60 bg-white p-6 transition-all hover:shadow-lg hover:-translate-y-1 hover:border-[#0066cc]/30"
+                                    className="rounded-xl border border-border bg-card p-6 transition-all hover:shadow-md hover:border-primary/40"
                                 >
                                     <div className="flex items-start gap-4">
                                         <div className="shrink-0">
@@ -787,10 +787,10 @@ export default function Index({ employees, filters, stats, departments, workplac
                                     preserveState
                                     className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm font-medium border transition-colors ${
                                         link.active
-                                            ? 'bg-primary text-white border-[#0066cc] font-bold shadow-sm'
+                                            ? 'bg-primary text-primary-foreground border-primary font-bold shadow-xs'
                                             : link.url
-                                                ? 'bg-white text-foreground/90 border-border bg-card hover:bg-muted hover:text-primary'
-                                                : 'bg-white/50 text-muted-foreground/60 border-border/60 cursor-not-allowed'
+                                                ? 'bg-card text-foreground border-border hover:bg-muted hover:text-primary'
+                                                : 'bg-muted/40 text-muted-foreground/40 border-border/40 cursor-not-allowed'
                                     }`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />

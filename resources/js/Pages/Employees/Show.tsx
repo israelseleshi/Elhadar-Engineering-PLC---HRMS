@@ -1,4 +1,4 @@
-﻿import { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import EmployeeAvatar from '@/Components/EmployeeAvatar';
@@ -408,9 +408,9 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                     {/* Identity & Age Banner */}
                     <div className="p-4 rounded-lg bg-muted/40 border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 rounded-full bg-white border-2 border-[#0066cc] flex flex-col items-center justify-center shadow-xs shrink-0">
+                            <div className="w-16 h-16 rounded-full bg-card border-2 border-primary flex flex-col items-center justify-center shadow-xs shrink-0">
                                 <span className="text-2xl font-extrabold text-primary leading-none">
-                                    {employee.age ?? (employee.birth_date ? new Date().getFullYear() - new Date(employee.birth_date).getFullYear() : 'â€”')}
+                                    {employee.age ?? (employee.birth_date ? new Date().getFullYear() - new Date(employee.birth_date).getFullYear() : '—')}
                                 </span>
                                 <span className="text-[9px] font-bold text-muted-foreground uppercase">Years</span>
                             </div>
@@ -425,7 +425,7 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                                 </div>
                                 <div className="flex items-center gap-2 mt-1">
                                     <span className="text-xs text-muted-foreground">Marital Status:</span>
-                                    <span className="text-xs font-bold text-primary px-2 py-0.5 rounded-xs bg-white border border-border">
+                                    <span className="text-xs font-bold text-primary px-2 py-0.5 rounded-md bg-card border border-border">
                                         {employee.marital_status || 'Single'}
                                     </span>
                                 </div>

@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import EmployeeAvatar from '@/Components/EmployeeAvatar';
@@ -398,7 +398,7 @@ export default function Edit({ employee, departments }: Props) {
             <Head title={`Edit ${employee.full_name} - Elhadar Engineering HRMS`} />
 
             {/* Sticky Command Bar */}
-            <div className="sticky top-0 z-30 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3 bg-white/95 backdrop-blur-md border-b border-border shadow-sm transition-all mb-6">
+            <div className="sticky top-0 z-30 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3 bg-card/95 backdrop-blur-md border-b border-border shadow-xs transition-all mb-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                         <Link href={route('employees.show', employee.id)}>
@@ -502,8 +502,8 @@ export default function Edit({ employee, departments }: Props) {
                                 }}
                                 className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                                     isActive
-                                        ? 'bg-white text-primary shadow-sm border border-border'
-                                        : 'text-muted-foreground hover:text-foreground hover:bg-white/60'
+                                        ? 'bg-card text-foreground shadow-xs border border-border'
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                                 }`}
                             >
                                 <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-primary' : sec.color}`} />
@@ -1468,7 +1468,7 @@ export default function Edit({ employee, departments }: Props) {
                 </Card>
 
                 {/* Bottom Action Footer */}
-                <div className="flex items-center justify-between p-4 bg-white border border-border rounded-sm shadow-sm">
+                <div className="flex items-center justify-between p-4 bg-card border border-border rounded-xl shadow-xs">
                     <div className="text-xs text-muted-foreground">
                         {isDirty ? (
                             <span className="text-amber-800 font-semibold flex items-center gap-1.5">
@@ -1540,19 +1540,19 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="p-4 bg-white rounded-sm border border-border">
+                                <div className="p-4 bg-muted/40 rounded-xl border border-border">
                                     <p className="text-[10px] uppercase font-bold text-muted-foreground">Basic Salary</p>
                                     <p className="text-lg font-bold text-foreground mt-0.5">{formatCurrency(employee.currentSalary.basic_salary)}</p>
                                 </div>
-                                <div className="p-4 bg-white rounded-sm border border-border">
+                                <div className="p-4 bg-muted/40 rounded-xl border border-border">
                                     <p className="text-[10px] uppercase font-bold text-muted-foreground">Total Gross Wage</p>
                                     <p className="text-lg font-bold text-primary mt-0.5">{formatCurrency(employee.currentSalary.total_salary)}</p>
                                 </div>
-                                <div className="p-4 bg-white rounded-sm border border-border">
+                                <div className="p-4 bg-muted/40 rounded-xl border border-border">
                                     <p className="text-[10px] uppercase font-bold text-muted-foreground">Pension 7% (Employee)</p>
                                     <p className="text-lg font-bold text-foreground mt-0.5">{formatCurrency(employee.currentSalary.pension_employee)}</p>
                                 </div>
-                                <div className="p-4 bg-white rounded-sm border border-border">
+                                <div className="p-4 bg-muted/40 rounded-xl border border-border">
                                     <p className="text-[10px] uppercase font-bold text-muted-foreground">Pension 11% (Company)</p>
                                     <p className="text-lg font-bold text-foreground mt-0.5">{formatCurrency(employee.currentSalary.pension_company)}</p>
                                 </div>

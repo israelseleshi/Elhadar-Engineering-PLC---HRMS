@@ -200,15 +200,15 @@ export default function Index({ newHires, filters, stats, departments, workplace
                                 setStatus(tab.val);
                                 handleFilter({ status: tab.val });
                             }}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all border ${
+                            className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all border ${
                                 isActive
-                                    ? 'bg-primary text-white border-[#0066cc] shadow-sm'
-                                    : 'bg-white text-foreground/90 border-border bg-card hover:bg-muted hover:text-primary'
+                                    ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                                    : 'bg-card text-foreground border-border hover:bg-muted'
                             }`}
                         >
                             <span>{tab.label}</span>
                             <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                isActive ? 'bg-white/20 text-white' : 'bg-muted/40 text-primary'
+                                isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'
                             }`}>
                                 {tab.count}
                             </span>
@@ -369,7 +369,7 @@ export default function Index({ newHires, filters, stats, departments, workplace
                             newHires.data.map((emp) => (
                                 <div
                                     key={emp.id}
-                                    className="rounded-xl border border-border/60 bg-muted/40 p-4 transition-colors hover:border-border hover:bg-white"
+                                    className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:shadow-xs"
                                 >
                                     <div className="flex items-start gap-3">
                                         <EmployeeAvatar name={emp.full_name} src={emp.profile_photo_url} size="md" />
@@ -435,12 +435,12 @@ export default function Index({ newHires, filters, stats, departments, workplace
                                     key={idx}
                                     href={link.url || '#'}
                                     preserveState
-                                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                                         link.active
-                                            ? 'bg-primary text-white border-[#0066cc] font-bold'
+                                            ? 'bg-primary text-primary-foreground border-primary font-bold shadow-xs'
                                             : link.url
-                                            ? 'bg-white text-foreground/90 border-border bg-card hover:bg-muted'
-                                            : 'bg-white/50 text-muted-foreground/60 border-border/60 cursor-not-allowed'
+                                            ? 'bg-card text-foreground border-border hover:bg-muted'
+                                            : 'bg-muted/40 text-muted-foreground/40 border-border/40 cursor-not-allowed'
                                     }`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />

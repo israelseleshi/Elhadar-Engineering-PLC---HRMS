@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent } from '@/Components/ui/card';
@@ -177,15 +177,15 @@ export default function Index({ candidates, filters, stats }: Props) {
                         </div>
 
                         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                            <div className="inline-flex rounded-xs border border-border p-1 bg-muted/40">
+                            <div className="inline-flex rounded-lg border border-border p-1 bg-muted/40">
                                 <button
                                     onClick={() => {
                                         setStatus('Probation');
                                         handleFilter({ status: 'Probation' });
                                     }}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-xs transition-colors ${
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
                                         status === 'Probation'
-                                            ? 'bg-white text-primary shadow-xs'
+                                            ? 'bg-card text-foreground shadow-xs border border-border'
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
@@ -196,9 +196,9 @@ export default function Index({ candidates, filters, stats }: Props) {
                                         setStatus('Passed');
                                         handleFilter({ status: 'Passed' });
                                     }}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-xs transition-colors ${
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
                                         status === 'Passed'
-                                            ? 'bg-white text-primary shadow-xs'
+                                            ? 'bg-card text-foreground shadow-xs border border-border'
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
@@ -209,9 +209,9 @@ export default function Index({ candidates, filters, stats }: Props) {
                                         setStatus('All');
                                         handleFilter({ status: 'All' });
                                     }}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-xs transition-colors ${
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
                                         status === 'All'
-                                            ? 'bg-white text-primary shadow-xs'
+                                            ? 'bg-card text-foreground shadow-xs border border-border'
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
@@ -329,12 +329,12 @@ export default function Index({ candidates, filters, stats }: Props) {
                                     key={idx}
                                     href={link.url || '#'}
                                     preserveState
-                                    className={`px-3 py-1.5 rounded-xs text-xs font-medium border transition-colors ${
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                                         link.active
-                                            ? 'bg-primary text-white border-[#0066cc] font-bold'
+                                            ? 'bg-primary text-primary-foreground border-primary font-bold shadow-xs'
                                             : link.url
-                                            ? 'bg-white text-foreground/90 border-border bg-card hover:bg-muted'
-                                            : 'bg-white/50 text-muted-foreground/60 border-border/60 cursor-not-allowed'
+                                            ? 'bg-card text-foreground border-border hover:bg-muted'
+                                            : 'bg-muted/40 text-muted-foreground/40 border-border/40 cursor-not-allowed'
                                     }`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />
