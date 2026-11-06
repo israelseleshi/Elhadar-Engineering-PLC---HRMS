@@ -1,7 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
 import {
-    LayoutDashboard, Users, CalendarDays, GraduationCap, UserCheck, LogOut, Search,
+    LayoutDashboard, Users, CalendarDays, GraduationCap, UserCheck, LogOut,
     ShieldCheck, Menu, X, TrendingUp, UserMinus, UserPlus, Sliders, Activity, Compass
 } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
@@ -174,7 +174,6 @@ export default function AuthenticatedLayout({ header, title, subtitle, children 
                                         <Compass className="w-3.5 h-3.5 text-primary" /><span>Tour</span>
                                     </Button>
                                     <Link href={route('employees.create')}><Button size="sm" className="hidden md:inline-flex gap-1.5 text-xs font-medium rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"><UserPlus className="w-3.5 h-3.5" /><span>Onboard Staff</span></Button></Link>
-                                    <Link href={route('employees.index')} className="hidden sm:inline-flex"><Button variant="outline" size="sm" className="gap-2 text-xs font-medium rounded-full border-border"><Search className="w-3.5 h-3.5 text-primary" /><span className="hidden lg:inline">Search</span></Button></Link>
                                 </>
                             ) : (
                                 <div className="flex items-center gap-2 sm:gap-3">

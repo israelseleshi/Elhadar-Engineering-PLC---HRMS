@@ -158,7 +158,7 @@ export default function Create({ departments }: Props) {
             {/* Back to Directory */}
             <div className="mb-4">
                 <Link href={route('employees.index')}>
-                    <Button variant="outline" size="sm" className="gap-2 text-xs font-semibold text-[#0066cc] border-[#d2d2d7] hover:bg-[#f5f5f7]">
+                    <Button variant="outline" size="sm" className="gap-2 text-xs font-semibold text-primary border-border bg-card hover:bg-muted">
                         <ArrowLeft className="w-3.5 h-3.5" /> Back to Staff Directory
                     </Button>
                 </Link>
@@ -176,27 +176,27 @@ export default function Create({ departments }: Props) {
                             onClick={() => setStep(st.num)}
                             className={`p-3 rounded-lg border cursor-pointer transition-all ${
                                 isActive
-                                    ? 'bg-[#f5f5f7] border-[#0066cc] shadow-sm'
+                                    ? 'bg-muted/40 border-[#0066cc] shadow-sm'
                                     : isDone
-                                    ? 'bg-white border-[#d2d2d7] text-[#0066cc]'
-                                    : 'bg-white border-[#d2d2d7] text-[#6e6e73]'
+                                    ? 'bg-white border-border text-primary'
+                                    : 'bg-white border-border text-muted-foreground'
                             }`}
                         >
                             <div className="flex items-center gap-2.5">
                                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
                                     isActive
-                                        ? 'bg-[#0066cc] text-white'
+                                        ? 'bg-primary text-white'
                                         : isDone
-                                        ? 'bg-[#f5f5f7] text-[#0066cc]'
-                                        : 'bg-[#f5f5f7] text-[#6e6e73]'
+                                        ? 'bg-muted/40 text-primary'
+                                        : 'bg-muted/40 text-muted-foreground'
                                 }`}>
-                                    {isDone ? <CheckCircle2 className="w-4 h-4 text-[#0066cc]" /> : st.num}
+                                    {isDone ? <CheckCircle2 className="w-4 h-4 text-primary" /> : st.num}
                                 </div>
                                 <div>
-                                    <span className="text-[10px] font-semibold uppercase tracking-[0.04em] block text-[#6e6e73]">
+                                    <span className="text-[10px] font-semibold uppercase tracking-[0.04em] block text-muted-foreground">
                                         Step {st.num}
                                     </span>
-                                    <span className="text-xs font-bold text-black block truncate">
+                                    <span className="text-xs font-bold text-foreground block truncate">
                                         {st.title}
                                     </span>
                                 </div>
@@ -207,19 +207,19 @@ export default function Create({ departments }: Props) {
             </div>
 
             {/* Multi-Step Form Container */}
-            <Card className="border-[#d2d2d7] bg-white">
+            <Card className="border-border bg-card shadow-xs">
                 <form onSubmit={handleSubmit}>
                     {/* Step 1: Personal & Demographics */}
                     {step === 1 && (
                         <div className="p-6 space-y-4">
-                            <CardHeader className="p-0 pb-4 border-b border-[#e8e8ed]">
+                            <CardHeader className="p-0 pb-4 border-b border-border/60">
                                 <CardTitle className="text-base">Step 1: Personal Profile & Demographics</CardTitle>
                                 <CardDescription>Capture official identification and residential address hierarchy</CardDescription>
                             </CardHeader>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1">
                                         Full Name (Tripartite) <span className="text-[#ff3b30]">*</span>
                                     </label>
                                     <Input
@@ -227,51 +227,51 @@ export default function Create({ departments }: Props) {
                                         value={data.full_name}
                                         onChange={(e) => setData('full_name', e.target.value)}
                                         placeholder="First Father Grandfather"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                     {errors.full_name && <p className="text-xs text-[#ff3b30] mt-1">{errors.full_name}</p>}
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1">
                                         Gender <span className="text-[#ff3b30]">*</span>
                                     </label>
-                                    <Select value={data.gender} onValueChange={(v) => setData('gender', v)}><SelectTrigger className="w-full h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">Male</SelectItem><SelectItem value="Female">Female</SelectItem></SelectContent></Select>
+                                    <Select value={data.gender} onValueChange={(v) => setData('gender', v)}><SelectTrigger className="w-full h-10 rounded-xl border-input bg-background text-foreground text-xs text-foreground/90"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Male">Male</SelectItem><SelectItem value="Female">Female</SelectItem></SelectContent></Select>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1">
                                         Marital Status
                                     </label>
-                                    <Select value={data.marital_status} onValueChange={(v) => setData('marital_status', v)}><SelectTrigger className="w-full h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Single">Single</SelectItem><SelectItem value="Married">Married</SelectItem><SelectItem value="Divorced">Divorced</SelectItem><SelectItem value="Widowed">Widowed</SelectItem></SelectContent></Select>
+                                    <Select value={data.marital_status} onValueChange={(v) => setData('marital_status', v)}><SelectTrigger className="w-full h-10 rounded-xl border-input bg-background text-foreground text-xs text-foreground/90"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Single">Single</SelectItem><SelectItem value="Married">Married</SelectItem><SelectItem value="Divorced">Divorced</SelectItem><SelectItem value="Widowed">Widowed</SelectItem></SelectContent></Select>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1">
                                         Educational Attainment
                                     </label>
                                     <Input
                                         value={data.education_status}
                                         onChange={(e) => setData('education_status', e.target.value)}
                                         placeholder="e.g. BSc in Civil Engineering"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1">
                                         Mobile Phone (+251)
                                     </label>
                                     <Input
                                         value={data.phone}
                                         onChange={(e) => setData('phone', e.target.value)}
                                         placeholder="0911234567"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1">
                                         Official Email
                                     </label>
                                     <Input
@@ -279,14 +279,14 @@ export default function Create({ departments }: Props) {
                                         value={data.email}
                                         onChange={(e) => setData('email', e.target.value)}
                                         placeholder="name@elhadar.com"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-2 border-t border-[#e8e8ed]">
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-2 border-t border-border/60">
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">Region</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">Region</label>
                                     <Select
                                         value={allRegions.find((r) => r.name === data.region)?.id?.toString() ?? undefined}
                                         onValueChange={(val) => {
@@ -295,7 +295,7 @@ export default function Create({ departments }: Props) {
                                         }}
                                         disabled={addressLoading}
                                     >
-                                        <SelectTrigger className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11">
+                                        <SelectTrigger className="bg-background border-input text-foreground text-sm h-11">
                                             <SelectValue placeholder="Region" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -306,7 +306,7 @@ export default function Create({ departments }: Props) {
                                     </Select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">City</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">City</label>
                                     <Select
                                         value={allZones.find((z) => z.name === data.city)?.id?.toString() ?? undefined}
                                         onValueChange={(val) => {
@@ -315,7 +315,7 @@ export default function Create({ departments }: Props) {
                                         }}
                                         disabled={!filteredZones.length || addressLoading}
                                     >
-                                        <SelectTrigger className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11">
+                                        <SelectTrigger className="bg-background border-input text-foreground text-sm h-11">
                                             <SelectValue placeholder="City" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -326,7 +326,7 @@ export default function Create({ departments }: Props) {
                                     </Select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">Sub-City (K/Ketema)</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">Sub-City (K/Ketema)</label>
                                     <Select
                                         value={allWoredas.find((w) => w.name === data.sub_city)?.id?.toString() ?? undefined}
                                         onValueChange={(val) => {
@@ -335,7 +335,7 @@ export default function Create({ departments }: Props) {
                                         }}
                                         disabled={!filteredWoredas.length || addressLoading}
                                     >
-                                        <SelectTrigger className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11">
+                                        <SelectTrigger className="bg-background border-input text-foreground text-sm h-11">
                                             <SelectValue placeholder="Sub-City" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -346,51 +346,51 @@ export default function Create({ departments }: Props) {
                                     </Select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">Woreda</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">Woreda</label>
                                     <Input
                                         value={data.woreda}
                                         onChange={(e) => setData('woreda', e.target.value)}
                                         placeholder="Woreda 03"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">House Number</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">House Number</label>
                                     <Input
                                         value={data.house_no}
                                         onChange={(e) => setData('house_no', e.target.value)}
                                         placeholder="H-401"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2 border-t border-[#e8e8ed]">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2 border-t border-border/60">
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">Emergency Contact Name</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">Emergency Contact Name</label>
                                     <Input
                                         value={data.emergency_contact_name}
                                         onChange={(e) => setData('emergency_contact_name', e.target.value)}
                                         placeholder="Family or next of kin"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">Relationship</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">Relationship</label>
                                     <Input
                                         value={data.emergency_contact_relationship}
                                         onChange={(e) => setData('emergency_contact_relationship', e.target.value)}
                                         placeholder="e.g. Spouse, Brother, Father"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">Emergency Telephone</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">Emergency Telephone</label>
                                     <Input
                                         value={data.emergency_contact_phone}
                                         onChange={(e) => setData('emergency_contact_phone', e.target.value)}
                                         placeholder="0911998877"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                             </div>
@@ -400,14 +400,14 @@ export default function Create({ departments }: Props) {
                     {/* Step 2: Role & Department Assignment */}
                     {step === 2 && (
                         <div className="p-6 space-y-4">
-                            <CardHeader className="p-0 pb-4 border-b border-[#e8e8ed]">
+                            <CardHeader className="p-0 pb-4 border-b border-border/60">
                                 <CardTitle className="text-base">Step 2: Department, Position & Workplace</CardTitle>
                                 <CardDescription>Establish physical filing code, organizational hierarchy, and contract model</CardDescription>
                             </CardHeader>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1">
                                         File Number (Filing Index) <span className="text-[#ff3b30]">*</span>
                                     </label>
                                     <Input
@@ -415,20 +415,20 @@ export default function Create({ departments }: Props) {
                                         value={data.file_no}
                                         onChange={(e) => setData('file_no', e.target.value)}
                                         placeholder="e.g. A-101, B-012"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11 font-bold"
+                                        className="bg-background border-input text-foreground text-sm h-11 font-bold"
                                     />
                                     {errors.file_no && <p className="text-xs text-[#ff3b30] mt-1">{errors.file_no}</p>}
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1">
                                         Department <span className="text-[#ff3b30]">*</span>
                                     </label>
-                                    <Select value={String(data.department_id)} onValueChange={(v) => setData('department_id', v)}><SelectTrigger className="w-full h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue placeholder="Select department" /></SelectTrigger><SelectContent>{departments.map((dept) => (<SelectItem key={dept.id} value={String(dept.id)}>{dept.name}</SelectItem>))}</SelectContent></Select>
+                                    <Select value={String(data.department_id)} onValueChange={(v) => setData('department_id', v)}><SelectTrigger className="w-full h-10 rounded-xl border-input bg-background text-foreground text-xs text-foreground/90"><SelectValue placeholder="Select department" /></SelectTrigger><SelectContent>{departments.map((dept) => (<SelectItem key={dept.id} value={String(dept.id)}>{dept.name}</SelectItem>))}</SelectContent></Select>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1">
                                         Position / Job Title <span className="text-[#ff3b30]">*</span>
                                     </label>
                                     <Input
@@ -436,7 +436,7 @@ export default function Create({ departments }: Props) {
                                         value={data.position}
                                         onChange={(e) => setData('position', e.target.value)}
                                         placeholder="e.g. Project Electrical Engineer"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                     {errors.position && <p className="text-xs text-[#ff3b30] mt-1">{errors.position}</p>}
                                 </div>
@@ -444,34 +444,34 @@ export default function Create({ departments }: Props) {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1">
                                         Work Place <span className="text-[#ff3b30]">*</span>
                                     </label>
-                                    <Select value={data.work_place} onValueChange={(v) => setData('work_place', v)}><SelectTrigger className="w-full h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Project">Project Site</SelectItem><SelectItem value="Head Office">Head Office (H.O)</SelectItem></SelectContent></Select>
+                                    <Select value={data.work_place} onValueChange={(v) => setData('work_place', v)}><SelectTrigger className="w-full h-10 rounded-xl border-input bg-background text-foreground text-xs text-foreground/90"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Project">Project Site</SelectItem><SelectItem value="Head Office">Head Office (H.O)</SelectItem></SelectContent></Select>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1">
                                         Employment Classification <span className="text-[#ff3b30]">*</span>
                                     </label>
-                                    <Select value={data.employment_type} onValueChange={(v) => setData('employment_type', v)}><SelectTrigger className="w-full h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Non-Managerial">Non-Managerial (60 Working Days Probation)</SelectItem><SelectItem value="Managerial">Managerial (90 Calendar Days Probation)</SelectItem></SelectContent></Select>
+                                    <Select value={data.employment_type} onValueChange={(v) => setData('employment_type', v)}><SelectTrigger className="w-full h-10 rounded-xl border-input bg-background text-foreground text-xs text-foreground/90"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Non-Managerial">Non-Managerial (60 Working Days Probation)</SelectItem><SelectItem value="Managerial">Managerial (90 Calendar Days Probation)</SelectItem></SelectContent></Select>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1">
                                         Contract Model <span className="text-[#ff3b30]">*</span>
                                     </label>
-                                    <Select value={data.contract_type} onValueChange={(v) => setData('contract_type', v)}><SelectTrigger className="w-full h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Permanent">Permanent</SelectItem><SelectItem value="Contract">Fixed-Term Contract</SelectItem><SelectItem value="Daily">Daily / Casual</SelectItem></SelectContent></Select>
+                                    <Select value={data.contract_type} onValueChange={(v) => setData('contract_type', v)}><SelectTrigger className="w-full h-10 rounded-xl border-input bg-background text-foreground text-xs text-foreground/90"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Permanent">Permanent</SelectItem><SelectItem value="Contract">Fixed-Term Contract</SelectItem><SelectItem value="Daily">Daily / Casual</SelectItem></SelectContent></Select>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">
+                                    <label className="block text-xs font-bold text-foreground mb-1">
                                         Initial Status <span className="text-[#ff3b30]">*</span>
                                     </label>
                                 <Select value={data.status} onValueChange={(v) => setData('status', v)}>
-                                    <SelectTrigger className="w-full h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue /></SelectTrigger>
+                                    <SelectTrigger className="w-full h-10 rounded-xl border-input bg-background text-foreground text-xs text-foreground/90"><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Probation">Probation (Under Evaluation)</SelectItem>
                                         <SelectItem value="Permanent">Permanent (Confirmed)</SelectItem>
@@ -481,22 +481,22 @@ export default function Create({ departments }: Props) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">Salary Grade</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">Salary Grade</label>
                                     <Input
                                         value={data.grade}
                                         onChange={(e) => setData('grade', e.target.value)}
                                         placeholder="e.g. IV, VII"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">Salary Step</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">Salary Step</label>
                                     <Input
                                         value={data.step}
                                         onChange={(e) => setData('step', e.target.value)}
                                         placeholder="e.g. 1, 2"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                             </div>
@@ -506,18 +506,18 @@ export default function Create({ departments }: Props) {
                     {/* Step 3: Dual Calendar Dates & Milestones */}
                     {step === 3 && (
                         <div className="p-6 space-y-4">
-                            <CardHeader className="p-0 pb-4 border-b border-[#e8e8ed]">
+                            <CardHeader className="p-0 pb-4 border-b border-border/60">
                                 <CardTitle className="text-base">Step 3: Dual Calendar Dates (E.C. &amp; G.C.)</CardTitle>
                                 <CardDescription>Record dates in Ethiopian Calendar with Gregorian synchronization</CardDescription>
                             </CardHeader>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                                <div className="p-4 rounded-xl bg-[#f5f5f7] border border-[#d2d2d7] space-y-3">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-[#0066cc] block">
+                                <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-primary block">
                                         Date of Employment
                                     </span>
                                     <div>
-                                        <label className="block text-xs font-bold text-black mb-1">
+                                        <label className="block text-xs font-bold text-foreground mb-1">
                                             Ethiopian Calendar Date (E.C) <span className="text-[#ff3b30]">*</span>
                                         </label>
                                         <Input
@@ -525,11 +525,11 @@ export default function Create({ departments }: Props) {
                                             value={data.employment_date_ec}
                                             onChange={(e) => setData('employment_date_ec', e.target.value)}
                                             placeholder="dd/mm/yyyy E.C (e.g. 20/02/2018)"
-                                            className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                            className="bg-background border-input text-foreground text-sm h-11"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-black mb-1">
+                                        <label className="block text-xs font-bold text-foreground mb-1">
                                             Gregorian Equivalent (G.C) <span className="text-[#ff3b30]">*</span>
                                         </label>
                                         <Input
@@ -537,35 +537,35 @@ export default function Create({ departments }: Props) {
                                             required
                                             value={data.employment_date}
                                             onChange={(e) => setData('employment_date', e.target.value)}
-                                            className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                            className="bg-background border-input text-foreground text-sm h-11"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="p-4 rounded-xl bg-[#f5f5f7] border border-[#e8e8ed] space-y-3">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-[#6e6e73] block">
+                                <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
                                         Date of Birth (For 60-Year Retirement Engine)
                                     </span>
                                     <div>
-                                        <label className="block text-xs font-bold text-black mb-1">
+                                        <label className="block text-xs font-bold text-foreground mb-1">
                                             Birth Date in Ethiopian Calendar (E.C)
                                         </label>
                                         <Input
                                             value={data.birth_date_ec}
                                             onChange={(e) => setData('birth_date_ec', e.target.value)}
                                             placeholder="dd/mm/yyyy E.C"
-                                            className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                            className="bg-background border-input text-foreground text-sm h-11"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-black mb-1">
+                                        <label className="block text-xs font-bold text-foreground mb-1">
                                             Birth Date in Gregorian (G.C)
                                         </label>
                                         <Input
                                             type="date"
                                             value={data.birth_date}
                                             onChange={(e) => setData('birth_date', e.target.value)}
-                                            className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                            className="bg-background border-input text-foreground text-sm h-11"
                                         />
                                     </div>
                                 </div>
@@ -580,7 +580,7 @@ export default function Create({ departments }: Props) {
                                         type="date"
                                         value={data.contract_end_date}
                                         onChange={(e) => setData('contract_end_date', e.target.value)}
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11 max-w-sm"
+                                        className="bg-background border-input text-foreground text-sm h-11 max-w-sm"
                                     />
                                 </div>
                             )}
@@ -590,13 +590,13 @@ export default function Create({ departments }: Props) {
                     {/* Step 4: Compensation & Banking */}
                     {step === 4 && (
                         <div className="p-6 space-y-4">
-                            <CardHeader className="p-0 pb-4 border-b border-[#e8e8ed]">
+                            <CardHeader className="p-0 pb-4 border-b border-border/60">
                                 <CardTitle className="text-base">Step 4: Statutory Wage, Allowances & Banking</CardTitle>
                                 <CardDescription>Itemized breakdown of basic salary, allowances, pension shares, and CBE disbursement</CardDescription>
                             </CardHeader>
 
-                            <div className="p-4 rounded-xl bg-[#f5f5f7] border border-[#d2d2d7] mb-2">
-                                <label className="block text-xs font-bold text-[#1d1d1f] uppercase tracking-wider mb-1">
+                            <div className="p-4 rounded-xl bg-muted/40 border border-border mb-2">
+                                <label className="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">
                                     Basic Monthly Salary (ETB) <span className="text-[#ff3b30]">*</span>
                                 </label>
                                 <Input
@@ -606,186 +606,186 @@ export default function Create({ departments }: Props) {
                                     value={data.basic_salary}
                                     onChange={(e) => setData('basic_salary', e.target.value)}
                                     placeholder="18500.00"
-                                    className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11 font-bold text-[#0066cc]"
+                                    className="bg-background border-input text-foreground text-sm h-11 font-bold text-primary"
                                 />
-                                <span className="text-[11px] text-[#6e6e73] mt-1 block">
+                                <span className="text-[11px] text-muted-foreground mt-1 block">
                                     Subject to 7% employee pension deduction and 11% employer contribution per Proclamation 1268/2022.
                                 </span>
                             </div>
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 <div>
-                                    <label className="block text-xs font-semibold text-black mb-1">Hardship Allowance</label>
+                                    <label className="block text-xs font-semibold text-foreground mb-1">Hardship Allowance</label>
                                     <Input
                                         type="number"
                                         step="0.01"
                                         value={data.hardship_allowance}
                                         onChange={(e) => setData('hardship_allowance', e.target.value)}
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-black mb-1">Project Site Allowance</label>
+                                    <label className="block text-xs font-semibold text-foreground mb-1">Project Site Allowance</label>
                                     <Input
                                         type="number"
                                         step="0.01"
                                         value={data.project_allowance}
                                         onChange={(e) => setData('project_allowance', e.target.value)}
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-black mb-1">Position / Role Allowance</label>
+                                    <label className="block text-xs font-semibold text-foreground mb-1">Position / Role Allowance</label>
                                     <Input
                                         type="number"
                                         step="0.01"
                                         value={data.position_allowance}
                                         onChange={(e) => setData('position_allowance', e.target.value)}
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-black mb-1">Transport Allowance</label>
+                                    <label className="block text-xs font-semibold text-foreground mb-1">Transport Allowance</label>
                                     <Input
                                         type="number"
                                         step="0.01"
                                         value={data.transport_allowance}
                                         onChange={(e) => setData('transport_allowance', e.target.value)}
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 <div>
-                                    <label className="block text-xs font-semibold text-black mb-1">Housing Allowance</label>
+                                    <label className="block text-xs font-semibold text-foreground mb-1">Housing Allowance</label>
                                     <Input
                                         type="number"
                                         step="0.01"
                                         value={data.house_allowance}
                                         onChange={(e) => setData('house_allowance', e.target.value)}
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-black mb-1">Mobile Allowance</label>
+                                    <label className="block text-xs font-semibold text-foreground mb-1">Mobile Allowance</label>
                                     <Input
                                         type="number"
                                         step="0.01"
                                         value={data.mobile_allowance}
                                         onChange={(e) => setData('mobile_allowance', e.target.value)}
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-black mb-1">Food Allowance</label>
+                                    <label className="block text-xs font-semibold text-foreground mb-1">Food Allowance</label>
                                     <Input
                                         type="number"
                                         step="0.01"
                                         value={data.food_allowance}
                                         onChange={(e) => setData('food_allowance', e.target.value)}
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-black mb-1">Responsibility Allowance</label>
+                                    <label className="block text-xs font-semibold text-foreground mb-1">Responsibility Allowance</label>
                                     <Input
                                         type="number"
                                         step="0.01"
                                         value={data.responsibility_allowance}
                                         onChange={(e) => setData('responsibility_allowance', e.target.value)}
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2 border-t border-[#e8e8ed]">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2 border-t border-border/60">
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">Commercial Bank Name</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">Commercial Bank Name</label>
                                     <Input
                                         value={data.bank_name}
                                         onChange={(e) => setData('bank_name', e.target.value)}
                                         placeholder="Commercial Bank of Ethiopia (CBE)"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">Bank Account Number</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">Bank Account Number</label>
                                     <Input
                                         value={data.bank_account_no}
                                         onChange={(e) => setData('bank_account_no', e.target.value)}
                                         placeholder="1000..."
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11 font-bold"
+                                        className="bg-background border-input text-foreground text-sm h-11 font-bold"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">Tax ID Number (TIN)</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">Tax ID Number (TIN)</label>
                                     <Input
                                         value={data.tin_no}
                                         onChange={(e) => setData('tin_no', e.target.value)}
                                         placeholder="0012345678"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">POESSA Pension No</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">POESSA Pension No</label>
                                     <Input
                                         value={data.poessa_no}
                                         onChange={(e) => setData('poessa_no', e.target.value)}
                                         placeholder="POESSA-..."
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">PSSSA Pension No</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">PSSSA Pension No</label>
                                     <Input
                                         value={data.psssa_no}
                                         onChange={(e) => setData('psssa_no', e.target.value)}
                                         placeholder="PSSSA-..."
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">Assigned Vehicle Plate No</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">Assigned Vehicle Plate No</label>
                                     <Input
                                         value={data.plate_number}
                                         onChange={(e) => setData('plate_number', e.target.value)}
                                         placeholder="e.g. 3-A-12345"
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-black mb-1">Social Security Number</label>
+                                    <label className="block text-xs font-bold text-foreground mb-1">Social Security Number</label>
                                     <Input
                                         value={data.social_security_no}
                                         onChange={(e) => setData('social_security_no', e.target.value)}
                                         placeholder="SS-..."
-                                        className="bg-[#f5f5f7] border-[#d2d2d7] text-sm h-11"
+                                        className="bg-background border-input text-foreground text-sm h-11"
                                     />
                                 </div>
                             </div>
 
-                            <div className="pt-2 border-t border-[#e8e8ed]">
-                                <label className="block text-xs font-bold text-black mb-1">Remarks &amp; Onboarding Notes (Section 8)</label>
+                            <div className="pt-2 border-t border-border/60">
+                                <label className="block text-xs font-bold text-foreground mb-1">Remarks &amp; Onboarding Notes (Section 8)</label>
                                 <Textarea
                                     value={data.remarks}
                                     onChange={(e) => setData('remarks', e.target.value)}
                                     rows={2}
                                     placeholder="Enter any onboarding remarks or statutory notes..."
-                                    className="w-full p-2.5 rounded-xl border border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245] focus-visible:ring-[#0066cc]"
+                                    className="w-full p-2.5 rounded-xl border border-input bg-background text-foreground text-xs text-foreground/90 focus-visible:ring-[#0066cc]"
                                 />
                             </div>
                         </div>
                     )}
 
                     {/* Navigation Buttons Footer */}
-                    <div className="p-6 border-t border-[#e8e8ed] bg-[#f5f5f7] flex justify-between items-center">
+                    <div className="p-6 border-t border-border/60 bg-muted/40 flex justify-between items-center">
                         {step > 1 ? (
                             <Button
                                 type="button"
                                 variant="outline"
                                 onClick={prevStep}
-                                className="text-xs border-[#d2d2d7] rounded-xl gap-1.5"
+                                className="text-xs border-border rounded-xl gap-1.5"
                             >
                                 <ArrowLeft className="w-3.5 h-3.5" /> Previous
                             </Button>
@@ -795,7 +795,7 @@ export default function Create({ departments }: Props) {
                             <Button
                                 type="button"
                                 onClick={nextStep}
-                                className="bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-bold uppercase rounded-xl gap-1.5"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs text-xs font-bold uppercase rounded-xl gap-1.5"
                             >
                                 Next Step <ArrowRight className="w-3.5 h-3.5" />
                             </Button>
@@ -803,7 +803,7 @@ export default function Create({ departments }: Props) {
                             <Button
                                 type="submit"
                                 disabled={processing}
-                                className="bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-bold uppercase rounded-xl gap-1.5"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs text-xs font-bold uppercase rounded-xl gap-1.5"
                             >
                                 {processing ? 'Submitting...' : 'Complete Onboarding & Save Employee'}
                             </Button>

@@ -169,9 +169,9 @@ const ETHIOPIAN_BANKS = [
 ];
 
 const SECTIONS = [
-    { id: 'identity', label: '1. Identity & Personal', icon: User, color: 'text-[#0066cc]' },
+    { id: 'identity', label: '1. Identity & Personal', icon: User, color: 'text-primary' },
     { id: 'employment', label: '2. Job Assignment', icon: Briefcase, color: 'text-[#1e40af]' },
-    { id: 'dates', label: '3. Statutory Dates', icon: Calendar, color: 'text-[#0066cc]' },
+    { id: 'dates', label: '3. Statutory Dates', icon: Calendar, color: 'text-primary' },
     { id: 'academic', label: '4. Education & Licenses', icon: GraduationCap, color: 'text-[#7c3aed]' },
     { id: 'experience', label: '5. Tenure & Performance', icon: Award, color: 'text-[#0284c7]' },
     { id: 'financial', label: '6. Banking & Identifiers', icon: CreditCard, color: 'text-[#8a5a00]' },
@@ -398,16 +398,16 @@ export default function Edit({ employee, departments }: Props) {
             <Head title={`Edit ${employee.full_name} - Elhadar Engineering HRMS`} />
 
             {/* Sticky Command Bar */}
-            <div className="sticky top-0 z-30 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3 bg-white/95 backdrop-blur-md border-b border-[#d2d2d7] shadow-sm transition-all mb-6">
+            <div className="sticky top-0 z-30 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3 bg-white/95 backdrop-blur-md border-b border-border shadow-sm transition-all mb-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                         <Link href={route('employees.show', employee.id)}>
                             <Button 
                                 variant="outline" 
                                 size="sm" 
-                                className="h-9 px-3 gap-1.5 text-xs font-semibold border-[#d2d2d7] hover:bg-[#f5f5f7] hover:text-[#0066cc] rounded-sm"
+                                className="h-9 px-3 gap-1.5 text-xs font-semibold border-border bg-card hover:bg-muted hover:text-primary rounded-sm"
                             >
-                                <ArrowLeft className="w-3.5 h-3.5 text-[#0066cc]" />
+                                <ArrowLeft className="w-3.5 h-3.5 text-primary" />
                                 <span className="hidden sm:inline">Profile</span>
                             </Button>
                         </Link>
@@ -420,14 +420,14 @@ export default function Edit({ employee, departments }: Props) {
                             />
                             <div className="truncate">
                                 <div className="flex items-center gap-2">
-                                    <h2 className="text-sm font-bold text-black truncate leading-tight">
+                                    <h2 className="text-sm font-bold text-foreground truncate leading-tight">
                                         {employee.full_name}
                                     </h2>
-                                    <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded-xl bg-[#f5f5f7] text-[#0066cc] border border-[#d2d2d7]">
+                                    <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded-xl bg-muted/40 text-primary border border-border">
                                         {employee.file_no}
                                     </span>
                                 </div>
-                                <p className="text-[11px] text-[#6e6e73] truncate">
+                                <p className="text-[11px] text-muted-foreground truncate">
                                     {employee.position} Â· {employee.department?.name || 'General Operations'}
                                 </p>
                             </div>
@@ -448,15 +448,15 @@ export default function Edit({ employee, departments }: Props) {
                                     size="sm"
                                     onClick={() => setResetConfirmOpen(true)}
                                     title="Discard unsaved changes"
-                                    className="h-8 px-2 text-xs text-[#6e6e73] hover:text-black gap-1"
+                                    className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
                                 >
                                     <RotateCcw className="w-3 h-3" />
                                     <span className="hidden sm:inline">Reset</span>
                                 </Button>
                             </div>
                         ) : (
-                            <Badge variant="outline" className="text-xs text-[#6e6e73] border-[#e8e8ed] gap-1 py-1 hidden sm:inline-flex">
-                                <Check className="w-3 h-3 text-[#0066cc]" />
+                            <Badge variant="outline" className="text-xs text-muted-foreground border-border/60 gap-1 py-1 hidden sm:inline-flex">
+                                <Check className="w-3 h-3 text-primary" />
                                 <span>All changes saved</span>
                             </Badge>
                         )}
@@ -465,9 +465,9 @@ export default function Edit({ employee, departments }: Props) {
                             <Button 
                                 variant="outline" 
                                 size="sm" 
-                                className="h-9 gap-1.5 text-xs font-semibold border-[#d2d2d7] hover:bg-[#f5f5f7] hover:text-[#0066cc] rounded-sm hidden lg:flex"
+                                className="h-9 gap-1.5 text-xs font-semibold border-border bg-card hover:bg-muted hover:text-primary rounded-sm hidden lg:flex"
                             >
-                                <Eye className="w-3.5 h-3.5 text-[#0066cc]" />
+                                <Eye className="w-3.5 h-3.5 text-primary" />
                                 <span>Preview Card</span>
                             </Button>
                         </Link>
@@ -476,7 +476,7 @@ export default function Edit({ employee, departments }: Props) {
                             type="button"
                             onClick={handleProfileSubmit}
                             disabled={processing}
-                            className="bg-[#0066cc] hover:bg-[#0071e3] text-white font-bold text-xs gap-1.5 rounded-sm px-4 h-9 shadow-sm cursor-pointer"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs font-bold text-xs gap-1.5 rounded-sm px-4 h-9 shadow-sm cursor-pointer"
                         >
                             <Save className="w-4 h-4" />
                             <span>{processing ? 'Saving...' : 'Save Profile'}</span>
@@ -487,7 +487,7 @@ export default function Edit({ employee, departments }: Props) {
 
             {/* Section Stepper / Progressive Disclosure Navigation */}
             <div className="mb-6 overflow-x-auto pb-1 scrollbar-none">
-                <div className="flex items-center gap-2 min-w-max p-1 bg-[#f5f5f7] border border-[#e8e8ed] rounded-sm">
+                <div className="flex items-center gap-2 min-w-max p-1 bg-muted/40 border border-border/60 rounded-sm">
                     {SECTIONS.map((sec) => {
                         const Icon = sec.icon;
                         const isActive = activeSection === sec.id;
@@ -502,11 +502,11 @@ export default function Edit({ employee, departments }: Props) {
                                 }}
                                 className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                                     isActive
-                                        ? 'bg-white text-[#0066cc] shadow-sm border border-[#d2d2d7]'
-                                        : 'text-[#6e6e73] hover:text-black hover:bg-white/60'
+                                        ? 'bg-white text-primary shadow-sm border border-border'
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-white/60'
                                 }`}
                             >
-                                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#0066cc]' : sec.color}`} />
+                                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-primary' : sec.color}`} />
                                 <span>{sec.label}</span>
                             </button>
                         );
@@ -531,30 +531,30 @@ export default function Edit({ employee, departments }: Props) {
 
             <form onSubmit={handleProfileSubmit} className="space-y-8">
                 {/* 1. Identity & Personal Details */}
-                <Card id="identity" className="border-[#d2d2d7] bg-white shadow-sm overflow-hidden scroll-mt-24">
-                    <CardHeader className="border-b border-[#e8e8ed] py-4 px-6 bg-[#f5f5f7]/40 flex flex-row items-center justify-between">
+                <Card id="identity" className="border-border bg-card shadow-xs shadow-sm overflow-hidden scroll-mt-24">
+                    <CardHeader className="border-b border-border/60 py-4 px-6 bg-muted/40/40 flex flex-row items-center justify-between">
                         <div>
-                            <CardTitle className="text-sm font-bold text-black flex items-center gap-2">
-                                <span className="w-7 h-7 rounded-sm bg-[#f5f5f7] text-[#0066cc] flex items-center justify-center font-bold">
+                            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
+                                <span className="w-7 h-7 rounded-sm bg-muted/40 text-primary flex items-center justify-center font-bold">
                                     <User className="w-4 h-4" />
                                 </span>
                                 <span>1. Personal &amp; Identity Credentials</span>
                             </CardTitle>
-                            <CardDescription className="text-xs text-[#6e6e73] mt-0.5">
+                            <CardDescription className="text-xs text-muted-foreground mt-0.5">
                                 Government legal identity, demographics, residential locations, and emergency contacts.
                             </CardDescription>
                         </div>
-                        <Badge variant="outline" className="border-[#d2d2d7] text-xs font-semibold text-[#0066cc]">
+                        <Badge variant="outline" className="border-border text-xs font-semibold text-primary">
                             Required &amp; Core
                         </Badge>
                     </CardHeader>
                     <CardContent className="p-6 lg:p-8">
                         {/* Interactive Photo Avatar Management with Drag & Drop */}
-                        <div className="mb-8 p-5 rounded-sm border border-[#e8e8ed] bg-[#fafafa]">
+                        <div className="mb-8 p-5 rounded-sm border border-border/60 bg-[#fafafa]">
                             <div className="flex flex-col sm:flex-row items-center gap-6">
                                 <div 
                                     className={`relative group shrink-0 rounded-full border-2 transition-all p-1 ${
-                                        isDraggingPhoto ? 'border-[#0066cc] scale-105' : 'border-[#d2d2d7]'
+                                        isDraggingPhoto ? 'border-[#0066cc] scale-105' : 'border-border'
                                     }`}
                                     onDragOver={(e) => { e.preventDefault(); setIsDraggingPhoto(true); }}
                                     onDragLeave={() => setIsDraggingPhoto(false)}
@@ -594,12 +594,12 @@ export default function Edit({ employee, departments }: Props) {
 
                                 <div className="space-y-1.5 text-center sm:text-left flex-1">
                                     <div className="flex items-center justify-center sm:justify-start gap-2">
-                                        <h4 className="text-sm font-bold text-black">Official Profile Portrait</h4>
-                                        <Badge className="bg-[#f5f5f7] text-[#0066cc] border border-[#d2d2d7] text-[10px]">
+                                        <h4 className="text-sm font-bold text-foreground">Official Profile Portrait</h4>
+                                        <Badge className="bg-muted/40 text-primary border border-border text-[10px]">
                                             96px Dossier Spec
                                         </Badge>
                                     </div>
-                                    <p className="text-xs text-[#6e6e73] max-w-md">
+                                    <p className="text-xs text-muted-foreground max-w-md">
                                         Drag and drop or browse to replace avatar photo. High resolution JPEG, PNG, or WEBP supported (Max 2MB).
                                     </p>
                                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 pt-2">
@@ -609,9 +609,9 @@ export default function Edit({ employee, departments }: Props) {
                                             size="sm"
                                             onClick={() => fileInputRef.current?.click()}
                                             disabled={isUploadingPhoto}
-                                            className="text-xs h-9 gap-1.5 border-[#d2d2d7] hover:bg-[#f5f5f7] hover:text-[#0066cc] rounded-sm font-semibold"
+                                            className="text-xs h-9 gap-1.5 border-border bg-card hover:bg-muted hover:text-primary rounded-sm font-semibold"
                                         >
-                                            <UploadCloud className="w-4 h-4 text-[#0066cc]" />
+                                            <UploadCloud className="w-4 h-4 text-primary" />
                                             <span>{isUploadingPhoto ? 'Saving Image...' : 'Browse New Portrait'}</span>
                                         </Button>
                                         {(previewPhotoUrl || employee.profile_photo_url) && (
@@ -644,42 +644,42 @@ export default function Edit({ employee, departments }: Props) {
                         {/* Fields Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-6">
                             <div>
-                                <Label className="text-sm font-semibold text-black">Company File No *</Label>
+                                <Label className="text-sm font-semibold text-foreground">Company File No *</Label>
                                 <Input
                                     value={data.file_no}
                                     onChange={(e) => setData('file_no', e.target.value)}
                                     placeholder="e.g. 001"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm font-mono font-bold"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm font-mono font-bold"
                                 />
                                 {errors.file_no && <p className="text-[11px] text-[#ff3b30] mt-1">{errors.file_no}</p>}
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">National / FAN ID Code</Label>
+                                <Label className="text-sm font-semibold text-foreground">National / FAN ID Code</Label>
                                 <Input
                                     value={data.employee_id_no}
                                     onChange={(e) => setData('employee_id_no', e.target.value)}
                                     placeholder="e.g. ETH-FAN-102938"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm font-mono"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm font-mono"
                                 />
                                 {errors.employee_id_no && <p className="text-[11px] text-[#ff3b30] mt-1">{errors.employee_id_no}</p>}
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Full Legal Name *</Label>
+                                <Label className="text-sm font-semibold text-foreground">Full Legal Name *</Label>
                                 <Input
                                     value={data.full_name}
                                     onChange={(e) => setData('full_name', e.target.value)}
                                     placeholder="First Middle Last"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm font-medium"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm font-medium"
                                 />
                                 {errors.full_name && <p className="text-[11px] text-[#ff3b30] mt-1">{errors.full_name}</p>}
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Gender *</Label>
+                                <Label className="text-sm font-semibold text-foreground">Gender *</Label>
                                 <Select value={data.gender} onValueChange={(val) => setData('gender', val)}>
-                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7]">
+                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-border rounded-sm bg-muted/40">
                                         <SelectValue placeholder="Select gender" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -690,12 +690,12 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Marital Status</Label>
+                                <Label className="text-sm font-semibold text-foreground">Marital Status</Label>
                                 <Select 
                                     value={data.marital_status || '__none__'} 
                                     onValueChange={(val) => setData('marital_status', val === '__none__' ? '' : val)}
                                 >
-                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7]">
+                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-border rounded-sm bg-muted/40">
                                         <SelectValue placeholder="Select status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -709,34 +709,34 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Primary Phone (Ethiopia)</Label>
+                                <Label className="text-sm font-semibold text-foreground">Primary Phone (Ethiopia)</Label>
                                 <div className="relative mt-1.5 flex items-center">
-                                    <span className="absolute left-3 text-xs font-bold text-[#0066cc] select-none">
+                                    <span className="absolute left-3 text-xs font-bold text-primary select-none">
                                         +251
                                     </span>
                                     <Input
                                         value={data.phone}
                                         onChange={(e) => setData('phone', formatEthPhoneInput(e.target.value))}
                                         placeholder="0911 000 000"
-                                        className="h-11 pl-14 text-xs border-[#d2d2d7] rounded-sm font-mono font-medium"
+                                        className="h-11 pl-14 text-xs border-border rounded-sm font-mono font-medium"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Official Email Address</Label>
+                                <Label className="text-sm font-semibold text-foreground">Official Email Address</Label>
                                 <Input
                                     type="email"
                                     value={data.email}
                                     onChange={(e) => setData('email', e.target.value)}
                                     placeholder="employee@elhadar.com"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                                 {errors.email && <p className="text-[11px] text-[#ff3b30] mt-1">{errors.email}</p>}
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Region / State</Label>
+                                <Label className="text-sm font-semibold text-foreground">Region / State</Label>
                                 <Select
                                     value={allRegions.find((r) => r.name === data.region)?.id?.toString() ?? undefined}
                                     onValueChange={(val) => {
@@ -745,7 +745,7 @@ export default function Edit({ employee, departments }: Props) {
                                     }}
                                     disabled={addressLoading}
                                 >
-                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7]">
+                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-border rounded-sm bg-muted/40">
                                         <SelectValue placeholder="Select region" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -757,7 +757,7 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">City</Label>
+                                <Label className="text-sm font-semibold text-foreground">City</Label>
                                 <Select
                                     value={allZones.find((z) => z.name === data.city)?.id?.toString() ?? undefined}
                                     onValueChange={(val) => {
@@ -766,7 +766,7 @@ export default function Edit({ employee, departments }: Props) {
                                     }}
                                     disabled={!filteredZones.length || addressLoading}
                                 >
-                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7]">
+                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-border rounded-sm bg-muted/40">
                                         <SelectValue placeholder="Select city" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -778,7 +778,7 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Sub-City / Zone</Label>
+                                <Label className="text-sm font-semibold text-foreground">Sub-City / Zone</Label>
                                 <Select
                                     value={allWoredas.find((w) => w.name === data.sub_city)?.id?.toString() ?? undefined}
                                     onValueChange={(val) => {
@@ -787,7 +787,7 @@ export default function Edit({ employee, departments }: Props) {
                                     }}
                                     disabled={!filteredWoredas.length || addressLoading}
                                 >
-                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7]">
+                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-border rounded-sm bg-muted/40">
                                         <SelectValue placeholder="Select sub-city" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -799,56 +799,56 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Woreda / Kebele</Label>
+                                <Label className="text-sm font-semibold text-foreground">Woreda / Kebele</Label>
                                 <Input
                                     value={data.woreda}
                                     onChange={(e) => setData('woreda', e.target.value)}
                                     placeholder="e.g. Woreda 03"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">House Number</Label>
+                                <Label className="text-sm font-semibold text-foreground">House Number</Label>
                                 <Input
                                     value={data.house_no}
                                     onChange={(e) => setData('house_no', e.target.value)}
                                     placeholder="e.g. House 142 / New"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Emergency Contact Person</Label>
+                                <Label className="text-sm font-semibold text-foreground">Emergency Contact Person</Label>
                                 <Input
                                     value={data.emergency_contact_name}
                                     onChange={(e) => setData('emergency_contact_name', e.target.value)}
                                     placeholder="Next of kin full name"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Emergency Relationship</Label>
+                                <Label className="text-sm font-semibold text-foreground">Emergency Relationship</Label>
                                 <Input
                                     value={data.emergency_contact_relationship}
                                     onChange={(e) => setData('emergency_contact_relationship', e.target.value)}
                                     placeholder="e.g. Spouse, Brother, Parent"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Emergency Contact Phone</Label>
+                                <Label className="text-sm font-semibold text-foreground">Emergency Contact Phone</Label>
                                 <div className="relative mt-1.5 flex items-center">
-                                    <span className="absolute left-3 text-xs font-bold text-[#0066cc] select-none">
+                                    <span className="absolute left-3 text-xs font-bold text-primary select-none">
                                         +251
                                     </span>
                                     <Input
                                         value={data.emergency_contact_phone}
                                         onChange={(e) => setData('emergency_contact_phone', formatEthPhoneInput(e.target.value))}
                                         placeholder="0911 000 000"
-                                        className="h-11 pl-14 text-xs border-[#d2d2d7] rounded-sm font-mono"
+                                        className="h-11 pl-14 text-xs border-border rounded-sm font-mono"
                                     />
                                 </div>
                             </div>
@@ -857,32 +857,32 @@ export default function Edit({ employee, departments }: Props) {
                 </Card>
 
                 {/* 2. Department & Employment Assignment */}
-                <Card id="employment" className="border-[#d2d2d7] bg-white shadow-sm overflow-hidden scroll-mt-24">
-                    <CardHeader className="border-b border-[#e8e8ed] py-4 px-6 bg-[#f5f5f7]/40 flex flex-row items-center justify-between">
+                <Card id="employment" className="border-border bg-card shadow-xs shadow-sm overflow-hidden scroll-mt-24">
+                    <CardHeader className="border-b border-border/60 py-4 px-6 bg-muted/40/40 flex flex-row items-center justify-between">
                         <div>
-                            <CardTitle className="text-sm font-bold text-black flex items-center gap-2">
+                            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                                 <span className="w-7 h-7 rounded-sm bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
                                     <Briefcase className="w-4 h-4" />
                                 </span>
                                 <span>2. Department &amp; Employment Assignment</span>
                             </CardTitle>
-                            <CardDescription className="text-xs text-[#6e6e73] mt-0.5">
+                            <CardDescription className="text-xs text-muted-foreground mt-0.5">
                                 Operating unit placement, job title, site deployment, and compensation grade/step.
                             </CardDescription>
                         </div>
-                        <Badge variant="outline" className="border-[#d2d2d7] text-xs font-semibold text-blue-700">
+                        <Badge variant="outline" className="border-border text-xs font-semibold text-blue-700">
                             Organization
                         </Badge>
                     </CardHeader>
                     <CardContent className="p-6 lg:p-8">
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-6">
                             <div>
-                                <Label className="text-sm font-semibold text-black">Assigned Department *</Label>
+                                <Label className="text-sm font-semibold text-foreground">Assigned Department *</Label>
                                 <Select 
                                     value={String(data.department_id)} 
                                     onValueChange={(val) => setData('department_id', Number(val))}
                                 >
-                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7]">
+                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-border rounded-sm bg-muted/40">
                                         <SelectValue placeholder="Select department" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -895,24 +895,24 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Job Position / Title *</Label>
+                                <Label className="text-sm font-semibold text-foreground">Job Position / Title *</Label>
                                 <Input
                                     value={data.position}
                                     onChange={(e) => setData('position', e.target.value)}
                                     placeholder="e.g. Project Manager, Resident Engineer"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm font-medium"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm font-medium"
                                 />
                                 {errors.position && <p className="text-[11px] text-[#ff3b30] mt-1">{errors.position}</p>}
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Work Place / Site Station *</Label>
+                                <Label className="text-sm font-semibold text-foreground">Work Place / Site Station *</Label>
                                 <Input
                                     list="workplace-list"
                                     value={data.work_place}
                                     onChange={(e) => setData('work_place', e.target.value)}
                                     placeholder="Head Office or Site Name"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                                 <datalist id="workplace-list">
                                     <option value="Head Office">Addis Ababa Head Office</option>
@@ -925,9 +925,9 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Employment Classification *</Label>
+                                <Label className="text-sm font-semibold text-foreground">Employment Classification *</Label>
                                 <Select value={data.employment_type} onValueChange={(val) => setData('employment_type', val)}>
-                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7]">
+                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-border rounded-sm bg-muted/40">
                                         <SelectValue placeholder="Select classification" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -938,9 +938,9 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Contract Category *</Label>
+                                <Label className="text-sm font-semibold text-foreground">Contract Category *</Label>
                                 <Select value={data.contract_type} onValueChange={(val) => setData('contract_type', val)}>
-                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7]">
+                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-border rounded-sm bg-muted/40">
                                         <SelectValue placeholder="Select contract type" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -952,9 +952,9 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Current Status *</Label>
+                                <Label className="text-sm font-semibold text-foreground">Current Status *</Label>
                                 <Select value={data.status} onValueChange={(val) => setData('status', val)}>
-                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7]">
+                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-border rounded-sm bg-muted/40">
                                         <SelectValue placeholder="Select status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -967,22 +967,22 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Salary Grade Band</Label>
+                                <Label className="text-sm font-semibold text-foreground">Salary Grade Band</Label>
                                 <Input
                                     value={data.grade}
                                     onChange={(e) => setData('grade', e.target.value)}
                                     placeholder="e.g. VIII, XII"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Step Level</Label>
+                                <Label className="text-sm font-semibold text-foreground">Step Level</Label>
                                 <Input
                                     value={data.step}
                                     onChange={(e) => setData('step', e.target.value)}
                                     placeholder="e.g. 1, 2, 3"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
                         </div>
@@ -990,28 +990,28 @@ export default function Edit({ employee, departments }: Props) {
                 </Card>
 
                 {/* 3. Dates & Statutory Milestones */}
-                <Card id="dates" className="border-[#d2d2d7] bg-white shadow-sm overflow-hidden scroll-mt-24">
-                    <CardHeader className="border-b border-[#e8e8ed] py-4 px-6 bg-[#f5f5f7]/40 flex flex-row items-center justify-between">
+                <Card id="dates" className="border-border bg-card shadow-xs shadow-sm overflow-hidden scroll-mt-24">
+                    <CardHeader className="border-b border-border/60 py-4 px-6 bg-muted/40/40 flex flex-row items-center justify-between">
                         <div>
-                            <CardTitle className="text-sm font-bold text-black">
+                            <CardTitle className="text-sm font-bold text-foreground">
                                 3. Statutory Dates &amp; Milestone Calendars
                             </CardTitle>
-                            <CardDescription className="text-xs text-[#6e6e73] mt-0.5">
+                            <CardDescription className="text-xs text-muted-foreground mt-0.5">
                                 Dual Gregorian (G.C.) and Ethiopian (E.C.) date synchronizer with automatic astronomical conversion.
                             </CardDescription>
                         </div>
-                        <Badge className="bg-[#f5f5f7] text-[#0066cc] border border-[#d2d2d7] text-xs font-semibold">
+                        <Badge className="bg-muted/40 text-primary border border-border text-xs font-semibold">
                             Auto-Sync Enabled
                         </Badge>
                     </CardHeader>
                     <CardContent className="p-6 lg:p-8 space-y-6">
                         {/* Employment Date Row */}
-                        <div className="p-4 rounded-sm border border-[#e8e8ed] bg-[#fafafa]">
+                        <div className="p-4 rounded-sm border border-border/60 bg-[#fafafa]">
                             <div className="mb-3">
-                                <span className="text-xs font-bold uppercase tracking-wider text-black">
+                                <span className="text-xs font-bold uppercase tracking-wider text-foreground">
                                     Employment / Onboarding Date
                                 </span>
-                                <p className="text-[11px] text-[#0066cc] font-medium mt-0.5">
+                                <p className="text-[11px] text-primary font-medium mt-0.5">
                                     {formatEthiopianDisplay(data.employment_date_ec || (data.employment_date ? gcToEc(data.employment_date) : ''))
                                         ? `Ethiopian Date: ${formatEthiopianDisplay(data.employment_date_ec || (data.employment_date ? gcToEc(data.employment_date) : ''))} (${data.employment_date_ec || (data.employment_date ? gcToEc(data.employment_date) : '')})`
                                         : 'Select Gregorian date to auto-populate Ethiopian calendar'}
@@ -1019,7 +1019,7 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <Label className="text-xs font-semibold text-[#424245]">Gregorian Date (G.C.) *</Label>
+                                    <Label className="text-xs font-semibold text-foreground/90">Gregorian Date (G.C.) *</Label>
                                     <Input
                                         type="date"
                                         value={data.employment_date}
@@ -1032,12 +1032,12 @@ export default function Edit({ employee, departments }: Props) {
                                                 employment_date_ec: autoEc || (val ? prev.employment_date_ec : ''),
                                             }));
                                         }}
-                                        className="mt-1 h-10 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7]"
+                                        className="mt-1 h-10 text-xs border-border rounded-sm bg-muted/40"
                                     />
                                     {errors.employment_date && <p className="text-[11px] text-[#ff3b30] mt-1">{errors.employment_date}</p>}
                                 </div>
                                 <div>
-                                    <Label className="text-xs font-semibold text-[#424245]">Ethiopian Date (E.C.) *</Label>
+                                    <Label className="text-xs font-semibold text-foreground/90">Ethiopian Date (E.C.) *</Label>
                                     <Input
                                         value={data.employment_date_ec}
                                         onChange={(e) => {
@@ -1050,19 +1050,19 @@ export default function Edit({ employee, departments }: Props) {
                                             }));
                                         }}
                                         placeholder="YYYY-MM-DD (e.g. 2017-01-20)"
-                                        className="mt-1 h-10 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7] font-mono"
+                                        className="mt-1 h-10 text-xs border-border rounded-sm bg-muted/40 font-mono"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* Birth Date Row */}
-                        <div className="p-4 rounded-sm border border-[#e8e8ed] bg-[#fafafa]">
+                        <div className="p-4 rounded-sm border border-border/60 bg-[#fafafa]">
                             <div className="mb-3">
-                                <span className="text-xs font-bold uppercase tracking-wider text-black">
+                                <span className="text-xs font-bold uppercase tracking-wider text-foreground">
                                     Date of Birth
                                 </span>
-                                <p className="text-[11px] text-[#0066cc] font-medium mt-0.5">
+                                <p className="text-[11px] text-primary font-medium mt-0.5">
                                     {formatEthiopianDisplay(data.birth_date_ec || (data.birth_date ? gcToEc(data.birth_date) : ''))
                                         ? `Ethiopian Date: ${formatEthiopianDisplay(data.birth_date_ec || (data.birth_date ? gcToEc(data.birth_date) : ''))} (${data.birth_date_ec || (data.birth_date ? gcToEc(data.birth_date) : '')})`
                                         : 'Select Gregorian birth date to auto-populate Ethiopian calendar'}
@@ -1070,7 +1070,7 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <Label className="text-xs font-semibold text-[#424245]">Gregorian Birth Date (G.C.)</Label>
+                                    <Label className="text-xs font-semibold text-foreground/90">Gregorian Birth Date (G.C.)</Label>
                                     <Input
                                         type="date"
                                         value={data.birth_date}
@@ -1083,11 +1083,11 @@ export default function Edit({ employee, departments }: Props) {
                                                 birth_date_ec: autoEc || (val ? prev.birth_date_ec : ''),
                                             }));
                                         }}
-                                        className="mt-1 h-10 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7]"
+                                        className="mt-1 h-10 text-xs border-border rounded-sm bg-muted/40"
                                     />
                                 </div>
                                 <div>
-                                    <Label className="text-xs font-semibold text-[#424245]">Ethiopian Birth Date (E.C.)</Label>
+                                    <Label className="text-xs font-semibold text-foreground/90">Ethiopian Birth Date (E.C.)</Label>
                                     <Input
                                         value={data.birth_date_ec}
                                         onChange={(e) => {
@@ -1100,7 +1100,7 @@ export default function Edit({ employee, departments }: Props) {
                                             }));
                                         }}
                                         placeholder="YYYY-MM-DD"
-                                        className="mt-1 h-10 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7] font-mono"
+                                        className="mt-1 h-10 text-xs border-border rounded-sm bg-muted/40 font-mono"
                                     />
                                 </div>
                             </div>
@@ -1109,32 +1109,32 @@ export default function Edit({ employee, departments }: Props) {
                         {/* Additional Milestone Dates Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-6 pt-2">
                             <div>
-                                <Label className="text-sm font-semibold text-black">Contract End Date (If Contract)</Label>
+                                <Label className="text-sm font-semibold text-foreground">Contract End Date (If Contract)</Label>
                                 <Input
                                     type="date"
                                     value={data.contract_end_date}
                                     onChange={(e) => setData('contract_end_date', e.target.value)}
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Probation Target End Date</Label>
+                                <Label className="text-sm font-semibold text-foreground">Probation Target End Date</Label>
                                 <Input
                                     type="date"
                                     value={data.probation_end_date}
                                     onChange={(e) => setData('probation_end_date', e.target.value)}
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Probation Milestone Status</Label>
+                                <Label className="text-sm font-semibold text-foreground">Probation Milestone Status</Label>
                                 <Select 
                                     value={data.probation_status || 'Pending'} 
                                     onValueChange={(val) => setData('probation_status', val)}
                                 >
-                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7]">
+                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-border rounded-sm bg-muted/40">
                                         <SelectValue placeholder="Select probation status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1147,22 +1147,22 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Permanent Status Date</Label>
+                                <Label className="text-sm font-semibold text-foreground">Permanent Status Date</Label>
                                 <Input
                                     type="date"
                                     value={data.permanent_status_date}
                                     onChange={(e) => setData('permanent_status_date', e.target.value)}
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Statutory Retirement Date</Label>
+                                <Label className="text-sm font-semibold text-foreground">Statutory Retirement Date</Label>
                                 <Input
                                     type="date"
                                     value={data.retirement_date}
                                     onChange={(e) => setData('retirement_date', e.target.value)}
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
                         </div>
@@ -1170,72 +1170,72 @@ export default function Edit({ employee, departments }: Props) {
                 </Card>
 
                 {/* 4. Academic Background & Professional Accreditation */}
-                <Card id="academic" className="border-[#d2d2d7] bg-white shadow-sm overflow-hidden scroll-mt-24">
-                    <CardHeader className="border-b border-[#e8e8ed] py-4 px-6 bg-[#f5f5f7]/40 flex flex-row items-center justify-between">
+                <Card id="academic" className="border-border bg-card shadow-xs shadow-sm overflow-hidden scroll-mt-24">
+                    <CardHeader className="border-b border-border/60 py-4 px-6 bg-muted/40/40 flex flex-row items-center justify-between">
                         <div>
-                            <CardTitle className="text-sm font-bold text-black flex items-center gap-2">
+                            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                                 <span className="w-7 h-7 rounded-sm bg-purple-50 text-purple-700 flex items-center justify-center font-bold">
                                     <GraduationCap className="w-4 h-4" />
                                 </span>
                                 <span>4. Academic Credentials &amp; Accreditation (Section 4)</span>
                             </CardTitle>
-                            <CardDescription className="text-xs text-[#6e6e73] mt-0.5">
+                            <CardDescription className="text-xs text-muted-foreground mt-0.5">
                                 University degrees, certifying institution, graduation calendar year, and professional practice licenses.
                             </CardDescription>
                         </div>
-                        <Badge variant="outline" className="border-[#d2d2d7] text-xs font-semibold text-purple-700">
+                        <Badge variant="outline" className="border-border text-xs font-semibold text-purple-700">
                             Accreditation
                         </Badge>
                     </CardHeader>
                     <CardContent className="p-6 lg:p-8">
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-6">
                             <div>
-                                <Label className="text-sm font-semibold text-black">Highest Education Status</Label>
+                                <Label className="text-sm font-semibold text-foreground">Highest Education Status</Label>
                                 <Input
                                     value={data.education_status}
                                     onChange={(e) => setData('education_status', e.target.value)}
                                     placeholder="e.g. BSc in Civil Engineering, MSc, Diploma"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Institution Graduated From</Label>
+                                <Label className="text-sm font-semibold text-foreground">Institution Graduated From</Label>
                                 <Input
                                     value={data.institution}
                                     onChange={(e) => setData('institution', e.target.value)}
                                     placeholder="e.g. Addis Ababa University (AAU)"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Graduation Year (E.C.)</Label>
+                                <Label className="text-sm font-semibold text-foreground">Graduation Year (E.C.)</Label>
                                 <Input
                                     value={data.graduation_year_ec}
                                     onChange={(e) => setData('graduation_year_ec', e.target.value)}
                                     placeholder="e.g. 2012 E.C."
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm font-mono"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm font-mono"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Professional License Code</Label>
+                                <Label className="text-sm font-semibold text-foreground">Professional License Code</Label>
                                 <Input
                                     value={data.professional_license}
                                     onChange={(e) => setData('professional_license', e.target.value)}
                                     placeholder="e.g. Practicing Civil Engineer (PE-1049)"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm font-medium"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm font-medium"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Cost Sharing Certificate Status</Label>
+                                <Label className="text-sm font-semibold text-foreground">Cost Sharing Certificate Status</Label>
                                 <Select 
                                     value={data.cost_sharing_status || '__none__'} 
                                     onValueChange={(val) => setData('cost_sharing_status', val === '__none__' ? '' : val)}
                                 >
-                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm bg-[#f5f5f7]">
+                                    <SelectTrigger className="mt-1.5 h-11 text-xs border-border rounded-sm bg-muted/40">
                                         <SelectValue placeholder="Select status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1251,57 +1251,57 @@ export default function Edit({ employee, departments }: Props) {
                 </Card>
 
                 {/* 5. Experience & Performance Records */}
-                <Card id="experience" className="border-[#d2d2d7] bg-white shadow-sm overflow-hidden scroll-mt-24">
-                    <CardHeader className="border-b border-[#e8e8ed] py-4 px-6 bg-[#f5f5f7]/40 flex flex-row items-center justify-between">
+                <Card id="experience" className="border-border bg-card shadow-xs shadow-sm overflow-hidden scroll-mt-24">
+                    <CardHeader className="border-b border-border/60 py-4 px-6 bg-muted/40/40 flex flex-row items-center justify-between">
                         <div>
-                            <CardTitle className="text-sm font-bold text-black flex items-center gap-2">
+                            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                                 <span className="w-7 h-7 rounded-sm bg-sky-50 text-sky-700 flex items-center justify-center font-bold">
                                     <Award className="w-4 h-4" />
                                 </span>
                                 <span>5. Experience &amp; Performance Records (Section 5)</span>
                             </CardTitle>
-                            <CardDescription className="text-xs text-[#6e6e73] mt-0.5">
+                            <CardDescription className="text-xs text-muted-foreground mt-0.5">
                                 External industry experience, longevity calculation overrides, evaluation appraisal scores, and disciplinary records.
                             </CardDescription>
                         </div>
-                        <Badge variant="outline" className="border-[#d2d2d7] text-xs font-semibold text-sky-700">
+                        <Badge variant="outline" className="border-border text-xs font-semibold text-sky-700">
                             Service Records
                         </Badge>
                     </CardHeader>
                     <CardContent className="p-6 lg:p-8">
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-6">
                             <div>
-                                <Label className="text-sm font-semibold text-black">Previous Outside Experience</Label>
+                                <Label className="text-sm font-semibold text-foreground">Previous Outside Experience</Label>
                                 <Input
                                     value={data.previous_experience}
                                     onChange={(e) => setData('previous_experience', e.target.value)}
                                     placeholder="e.g. 4 Years at MIDROC Construction"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Company Service Tenure String</Label>
+                                <Label className="text-sm font-semibold text-foreground">Company Service Tenure String</Label>
                                 <Input
                                     value={data.company_experience}
                                     onChange={(e) => setData('company_experience', e.target.value)}
                                     placeholder="Leave empty for auto-calculated tenure"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Total Career Longevity String</Label>
+                                <Label className="text-sm font-semibold text-foreground">Total Career Longevity String</Label>
                                 <Input
                                     value={data.total_experience}
                                     onChange={(e) => setData('total_experience', e.target.value)}
                                     placeholder="e.g. 6 Years, 4 Months"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Appraisal Round 1 Score (%)</Label>
+                                <Label className="text-sm font-semibold text-foreground">Appraisal Round 1 Score (%)</Label>
                                 <Input
                                     type="number"
                                     step="0.1"
@@ -1310,12 +1310,12 @@ export default function Edit({ employee, departments }: Props) {
                                     value={data.performance_score_round_1}
                                     onChange={(e) => setData('performance_score_round_1', e.target.value)}
                                     placeholder="e.g. 88.5"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm font-semibold"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm font-semibold"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Appraisal Round 2 Score (%)</Label>
+                                <Label className="text-sm font-semibold text-foreground">Appraisal Round 2 Score (%)</Label>
                                 <Input
                                     type="number"
                                     step="0.1"
@@ -1324,17 +1324,17 @@ export default function Edit({ employee, departments }: Props) {
                                     value={data.performance_score_round_2}
                                     onChange={(e) => setData('performance_score_round_2', e.target.value)}
                                     placeholder="e.g. 91.0"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm font-semibold"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm font-semibold"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Disciplinary Standing / Record</Label>
+                                <Label className="text-sm font-semibold text-foreground">Disciplinary Standing / Record</Label>
                                 <Input
                                     value={data.disciplinary_action}
                                     onChange={(e) => setData('disciplinary_action', e.target.value)}
                                     placeholder="Clean Record (None) or Warning Details"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                             </div>
                         </div>
@@ -1342,33 +1342,33 @@ export default function Edit({ employee, departments }: Props) {
                 </Card>
 
                 {/* 6. Banking & Tax Identification */}
-                <Card id="financial" className="border-[#d2d2d7] bg-white shadow-sm overflow-hidden scroll-mt-24">
-                    <CardHeader className="border-b border-[#e8e8ed] py-4 px-6 bg-[#f5f5f7]/40 flex flex-row items-center justify-between">
+                <Card id="financial" className="border-border bg-card shadow-xs shadow-sm overflow-hidden scroll-mt-24">
+                    <CardHeader className="border-b border-border/60 py-4 px-6 bg-muted/40/40 flex flex-row items-center justify-between">
                         <div>
-                            <CardTitle className="text-sm font-bold text-black flex items-center gap-2">
+                            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                                 <span className="w-7 h-7 rounded-sm bg-amber-50 text-amber-700 flex items-center justify-center font-bold">
                                     <CreditCard className="w-4 h-4" />
                                 </span>
                                 <span>6. Banking, Tax &amp; Statutory Identifiers (Section 6)</span>
                             </CardTitle>
-                            <CardDescription className="text-xs text-[#6e6e73] mt-0.5">
+                            <CardDescription className="text-xs text-muted-foreground mt-0.5">
                                 Ethiopian commercial bank institutions, bank accounts, TIN, POESSA/PSSSA pension records, and vehicle plates.
                             </CardDescription>
                         </div>
-                        <Badge variant="outline" className="border-[#d2d2d7] text-xs font-semibold text-amber-700">
+                        <Badge variant="outline" className="border-border text-xs font-semibold text-amber-700">
                             Statutory &amp; Tax
                         </Badge>
                     </CardHeader>
                     <CardContent className="p-6 lg:p-8">
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols- gap-6">
                             <div>
-                                <Label className="text-sm font-semibold text-black">Bank Institution</Label>
+                                <Label className="text-sm font-semibold text-foreground">Bank Institution</Label>
                                 <Input
                                     list="bank-options"
                                     value={data.bank_name}
                                     onChange={(e) => setData('bank_name', e.target.value)}
                                     placeholder="Commercial Bank of Ethiopia (CBE)"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm"
                                 />
                                 <datalist id="bank-options">
                                     {ETHIOPIAN_BANKS.map((b) => (
@@ -1378,62 +1378,62 @@ export default function Edit({ employee, departments }: Props) {
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Bank Account Number</Label>
+                                <Label className="text-sm font-semibold text-foreground">Bank Account Number</Label>
                                 <Input
                                     value={data.bank_account_no}
                                     onChange={(e) => setData('bank_account_no', e.target.value)}
                                     placeholder="1000..."
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm font-mono"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm font-mono"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Tax Identification Number (TIN)</Label>
+                                <Label className="text-sm font-semibold text-foreground">Tax Identification Number (TIN)</Label>
                                 <Input
                                     value={data.tin_no}
                                     onChange={(e) => setData('tin_no', e.target.value)}
                                     placeholder="0012345678"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm font-mono"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm font-mono"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">POESSA Private Pension Code</Label>
+                                <Label className="text-sm font-semibold text-foreground">POESSA Private Pension Code</Label>
                                 <Input
                                     value={data.poessa_no}
                                     onChange={(e) => setData('poessa_no', e.target.value)}
                                     placeholder="e.g. POESSA-10293"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm font-mono"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm font-mono"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">PSSSA Public Pension Code</Label>
+                                <Label className="text-sm font-semibold text-foreground">PSSSA Public Pension Code</Label>
                                 <Input
                                     value={data.psssa_no}
                                     onChange={(e) => setData('psssa_no', e.target.value)}
                                     placeholder="e.g. PSSSA-4928"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm font-mono"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm font-mono"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Assigned Vehicle Plate Number</Label>
+                                <Label className="text-sm font-semibold text-foreground">Assigned Vehicle Plate Number</Label>
                                 <Input
                                     value={data.plate_number}
                                     onChange={(e) => setData('plate_number', e.target.value)}
                                     placeholder="e.g. 3-A-12345"
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm font-mono"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm font-mono"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-sm font-semibold text-black">Social Security Scheme Code</Label>
+                                <Label className="text-sm font-semibold text-foreground">Social Security Scheme Code</Label>
                                 <Input
                                     value={data.social_security_no}
                                     onChange={(e) => setData('social_security_no', e.target.value)}
                                     placeholder="SS-..."
-                                    className="mt-1.5 h-11 text-xs border-[#d2d2d7] rounded-sm font-mono"
+                                    className="mt-1.5 h-11 text-xs border-border rounded-sm font-mono"
                                 />
                             </div>
                         </div>
@@ -1441,42 +1441,42 @@ export default function Edit({ employee, departments }: Props) {
                 </Card>
 
                 {/* 7. Remarks & Official Observations */}
-                <Card id="compensation" className="border-[#d2d2d7] bg-white shadow-sm overflow-hidden scroll-mt-24">
-                    <CardHeader className="border-b border-[#e8e8ed] py-4 px-6 bg-[#f5f5f7]/40">
-                        <CardTitle className="text-sm font-bold text-black flex items-center gap-2">
+                <Card id="compensation" className="border-border bg-card shadow-xs shadow-sm overflow-hidden scroll-mt-24">
+                    <CardHeader className="border-b border-border/60 py-4 px-6 bg-muted/40/40">
+                        <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                             <span className="w-7 h-7 rounded-sm bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
                                 <FileText className="w-4 h-4" />
                             </span>
                             <span>7. Remarks &amp; Personnel Notes (Section 8)</span>
                         </CardTitle>
-                        <CardDescription className="text-xs text-[#6e6e73]">
+                        <CardDescription className="text-xs text-muted-foreground">
                             Official administrative notes, special contractual stipulations, or HR audit notations.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="p-6 lg:p-8">
                         <div>
-                            <Label className="text-sm font-semibold text-black">Official Remarks / Observations</Label>
+                            <Label className="text-sm font-semibold text-foreground">Official Remarks / Observations</Label>
                             <Textarea
                                 value={data.remarks}
                                 onChange={(e) => setData('remarks', e.target.value)}
                                 rows={4}
                                 placeholder="Enter any HR observations, remarks, or special personnel conditions..."
-                                className="mt-2 border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245] focus-visible:ring-[#0066cc] rounded-sm"
+                                className="mt-2 border-input bg-background text-foreground text-xs text-foreground/90 focus-visible:ring-[#0066cc] rounded-sm"
                             />
                         </div>
                     </CardContent>
                 </Card>
 
                 {/* Bottom Action Footer */}
-                <div className="flex items-center justify-between p-4 bg-white border border-[#d2d2d7] rounded-sm shadow-sm">
-                    <div className="text-xs text-[#6e6e73]">
+                <div className="flex items-center justify-between p-4 bg-white border border-border rounded-sm shadow-sm">
+                    <div className="text-xs text-muted-foreground">
                         {isDirty ? (
                             <span className="text-amber-800 font-semibold flex items-center gap-1.5">
                                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                                 Unsaved changes pending commit to database.
                             </span>
                         ) : (
-                            <span className="text-[#0066cc] font-semibold flex items-center gap-1.5">
+                            <span className="text-primary font-semibold flex items-center gap-1.5">
                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                 Profile is up-to-date.
                             </span>
@@ -1487,7 +1487,7 @@ export default function Edit({ employee, departments }: Props) {
                             <Button 
                                 type="button" 
                                 variant="outline" 
-                                className="h-10 text-xs font-semibold border-[#d2d2d7] rounded-sm"
+                                className="h-10 text-xs font-semibold border-border rounded-sm"
                             >
                                 Cancel
                             </Button>
@@ -1495,7 +1495,7 @@ export default function Edit({ employee, departments }: Props) {
                         <Button
                             type="submit"
                             disabled={processing}
-                            className="bg-[#0066cc] hover:bg-[#0071e3] text-white font-bold text-xs gap-2 rounded-sm px-8 h-10 shadow-sm cursor-pointer"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs font-bold text-xs gap-2 rounded-sm px-8 h-10 shadow-sm cursor-pointer"
                         >
                             <Save className="w-4 h-4" />
                             <span>{processing ? 'Saving Changes...' : 'Save & Update Employee Profile'}</span>
@@ -1505,21 +1505,21 @@ export default function Edit({ employee, departments }: Props) {
             </form>
 
             {/* Compensation & Salary Increment Adjuster Section */}
-            <div className="mt-12 pt-8 border-t border-[#d2d2d7]">
+            <div className="mt-12 pt-8 border-t border-border">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                     <div>
-                        <h3 className="text-lg font-bold text-black flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5 text-[#0066cc]" />
+                        <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                            <TrendingUp className="w-5 h-5 text-primary" />
                             Compensation Package &amp; Salary Increment Ledger
                         </h3>
-                        <p className="text-xs text-[#6e6e73] mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                             Active monthly wage, itemized field allowances, statutory pension computations, and increment archives.
                         </p>
                     </div>
 
                     <Button
                         onClick={() => setSalaryModalOpen(true)}
-                        className="bg-[#0066cc] hover:bg-[#0071e3] text-white font-bold text-xs gap-1.5 rounded-sm h-10 px-4 shadow-sm cursor-pointer"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs font-bold text-xs gap-1.5 rounded-sm h-10 px-4 shadow-sm cursor-pointer"
                     >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Record Salary Increment</span>
@@ -1528,33 +1528,33 @@ export default function Edit({ employee, departments }: Props) {
 
                 {/* Current Active Salary Spec Card */}
                 {employee.currentSalary && (
-                    <Card className="border-[#0066cc]/30 bg-[#f5f5f7] mb-6 shadow-sm">
+                    <Card className="border-[#0066cc]/30 bg-muted/40 mb-6 shadow-sm">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <span className="text-xs font-bold uppercase tracking-wider text-[#1d1d1f]">
+                                <span className="text-xs font-bold uppercase tracking-wider text-foreground">
                                     Current Active Milestone (Effective {new Date(employee.currentSalary.effective_date).toLocaleDateString()})
                                 </span>
-                                <Badge className="bg-[#0066cc] text-white text-xs font-bold">
+                                <Badge className="bg-primary text-white text-xs font-bold">
                                     Current Package
                                 </Badge>
                             </div>
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="p-4 bg-white rounded-sm border border-[#d2d2d7]">
-                                    <p className="text-[10px] uppercase font-bold text-[#6e6e73]">Basic Salary</p>
-                                    <p className="text-lg font-bold text-black mt-0.5">{formatCurrency(employee.currentSalary.basic_salary)}</p>
+                                <div className="p-4 bg-white rounded-sm border border-border">
+                                    <p className="text-[10px] uppercase font-bold text-muted-foreground">Basic Salary</p>
+                                    <p className="text-lg font-bold text-foreground mt-0.5">{formatCurrency(employee.currentSalary.basic_salary)}</p>
                                 </div>
-                                <div className="p-4 bg-white rounded-sm border border-[#d2d2d7]">
-                                    <p className="text-[10px] uppercase font-bold text-[#6e6e73]">Total Gross Wage</p>
-                                    <p className="text-lg font-bold text-[#0066cc] mt-0.5">{formatCurrency(employee.currentSalary.total_salary)}</p>
+                                <div className="p-4 bg-white rounded-sm border border-border">
+                                    <p className="text-[10px] uppercase font-bold text-muted-foreground">Total Gross Wage</p>
+                                    <p className="text-lg font-bold text-primary mt-0.5">{formatCurrency(employee.currentSalary.total_salary)}</p>
                                 </div>
-                                <div className="p-4 bg-white rounded-sm border border-[#d2d2d7]">
-                                    <p className="text-[10px] uppercase font-bold text-[#6e6e73]">Pension 7% (Employee)</p>
-                                    <p className="text-lg font-bold text-black mt-0.5">{formatCurrency(employee.currentSalary.pension_employee)}</p>
+                                <div className="p-4 bg-white rounded-sm border border-border">
+                                    <p className="text-[10px] uppercase font-bold text-muted-foreground">Pension 7% (Employee)</p>
+                                    <p className="text-lg font-bold text-foreground mt-0.5">{formatCurrency(employee.currentSalary.pension_employee)}</p>
                                 </div>
-                                <div className="p-4 bg-white rounded-sm border border-[#d2d2d7]">
-                                    <p className="text-[10px] uppercase font-bold text-[#6e6e73]">Pension 11% (Company)</p>
-                                    <p className="text-lg font-bold text-black mt-0.5">{formatCurrency(employee.currentSalary.pension_company)}</p>
+                                <div className="p-4 bg-white rounded-sm border border-border">
+                                    <p className="text-[10px] uppercase font-bold text-muted-foreground">Pension 11% (Company)</p>
+                                    <p className="text-lg font-bold text-foreground mt-0.5">{formatCurrency(employee.currentSalary.pension_company)}</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -1563,9 +1563,9 @@ export default function Edit({ employee, departments }: Props) {
 
                 {/* Historical Salary Milestones */}
                 {employee.salaries && employee.salaries.length > 1 && (
-                    <Card className="border-[#d2d2d7] bg-white shadow-sm">
-                        <CardHeader className="border-b border-[#e8e8ed] py-3.5 px-6">
-                            <CardTitle className="text-xs font-bold uppercase tracking-wider text-[#6e6e73]">
+                    <Card className="border-border bg-card shadow-xs shadow-sm">
+                        <CardHeader className="border-b border-border/60 py-3.5 px-6">
+                            <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                 Historical Salary Increments &amp; Archives
                             </CardTitle>
                         </CardHeader>
@@ -1574,21 +1574,21 @@ export default function Edit({ employee, departments }: Props) {
                                 {employee.salaries.map((sal) => (
                                     <div key={sal.id} className="p-4 flex items-center justify-between text-xs">
                                         <div>
-                                            <span className="font-bold text-black">
+                                            <span className="font-bold text-foreground">
                                                 Effective: {new Date(sal.effective_date).toLocaleDateString()}
                                             </span>
-                                            <span className="ml-3 text-[#6e6e73]">
+                                            <span className="ml-3 text-muted-foreground">
                                                 Basic: {formatCurrency(sal.basic_salary)}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <span className="font-bold text-black">
+                                            <span className="font-bold text-foreground">
                                                 Gross: {formatCurrency(sal.total_salary)}
                                             </span>
                                             {sal.is_current ? (
-                                                <Badge className="bg-[#f5f5f7] text-[#0066cc] text-[10px] border border-[#d2d2d7]">Current</Badge>
+                                                <Badge className="bg-muted/40 text-primary text-[10px] border border-border">Current</Badge>
                                             ) : (
-                                                <Badge variant="outline" className="text-[10px] text-[#6e6e73] border-[#e8e8ed]">Archived</Badge>
+                                                <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/60">Archived</Badge>
                                             )}
                                         </div>
                                     </div>
@@ -1601,13 +1601,13 @@ export default function Edit({ employee, departments }: Props) {
 
             {/* Record Salary Increment Modal (Shadcn Dialog) */}
             <Dialog open={salaryModalOpen} onOpenChange={setSalaryModalOpen}>
-                <DialogContent className="max-w-2xl bg-white border-[#d2d2d7] p-6">
+                <DialogContent className="max-w-2xl bg-card border-border text-card-foreground p-6">
                     <DialogHeader>
-                        <DialogTitle className="text-base font-bold text-black flex items-center gap-2">
-                            <TrendingUp className="w-4 h-4 text-[#0066cc]" />
+                        <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                            <TrendingUp className="w-4 h-4 text-primary" />
                             Record Salary Increment for {employee.full_name}
                         </DialogTitle>
-                        <DialogDescription className="text-xs text-[#6e6e73]">
+                        <DialogDescription className="text-xs text-muted-foreground">
                             Update basic compensation and statutory operational allowances. This creates a timestamped wage record.
                         </DialogDescription>
                     </DialogHeader>
@@ -1615,119 +1615,119 @@ export default function Edit({ employee, departments }: Props) {
                     <form onSubmit={handleSalarySubmit} className="space-y-4 pt-2">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             <div>
-                                <Label className="font-bold text-black">Effective Date *</Label>
+                                <Label className="font-bold text-foreground">Effective Date *</Label>
                                 <Input
                                     type="date"
                                     value={salaryForm.data.effective_date}
                                     onChange={(e) => salaryForm.setData('effective_date', e.target.value)}
-                                    className="mt-1 h-9 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1 h-9 text-xs border-border rounded-sm"
                                     required
                                 />
                             </div>
 
                             <div>
-                                <Label className="font-bold text-black">New Basic Wage (ETB) *</Label>
+                                <Label className="font-bold text-foreground">New Basic Wage (ETB) *</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
                                     value={salaryForm.data.basic_salary}
                                     onChange={(e) => salaryForm.setData('basic_salary', Number(e.target.value))}
-                                    className="mt-1 h-9 text-xs border-[#d2d2d7] rounded-sm font-semibold"
+                                    className="mt-1 h-9 text-xs border-border rounded-sm font-semibold"
                                     required
                                 />
                             </div>
 
                             <div>
-                                <Label className="font-medium text-[#424245]">Responsibility Allowance</Label>
+                                <Label className="font-medium text-foreground/90">Responsibility Allowance</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
                                     value={salaryForm.data.responsibility_allowance}
                                     onChange={(e) => salaryForm.setData('responsibility_allowance', Number(e.target.value))}
-                                    className="mt-1 h-9 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1 h-9 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="font-medium text-[#424245]">Project Site Allowance</Label>
+                                <Label className="font-medium text-foreground/90">Project Site Allowance</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
                                     value={salaryForm.data.project_allowance}
                                     onChange={(e) => salaryForm.setData('project_allowance', Number(e.target.value))}
-                                    className="mt-1 h-9 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1 h-9 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="font-medium text-[#424245]">Hardship Allowance</Label>
+                                <Label className="font-medium text-foreground/90">Hardship Allowance</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
                                     value={salaryForm.data.hardship_allowance}
                                     onChange={(e) => salaryForm.setData('hardship_allowance', Number(e.target.value))}
-                                    className="mt-1 h-9 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1 h-9 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="font-medium text-[#424245]">Transport Allowance</Label>
+                                <Label className="font-medium text-foreground/90">Transport Allowance</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
                                     value={salaryForm.data.transport_allowance}
                                     onChange={(e) => salaryForm.setData('transport_allowance', Number(e.target.value))}
-                                    className="mt-1 h-9 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1 h-9 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="font-medium text-[#424245]">Housing Allowance</Label>
+                                <Label className="font-medium text-foreground/90">Housing Allowance</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
                                     value={salaryForm.data.house_allowance}
                                     onChange={(e) => salaryForm.setData('house_allowance', Number(e.target.value))}
-                                    className="mt-1 h-9 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1 h-9 text-xs border-border rounded-sm"
                                 />
                             </div>
 
                             <div>
-                                <Label className="font-medium text-[#424245]">Mobile / Phone Allowance</Label>
+                                <Label className="font-medium text-foreground/90">Mobile / Phone Allowance</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
                                     value={salaryForm.data.mobile_allowance}
                                     onChange={(e) => salaryForm.setData('mobile_allowance', Number(e.target.value))}
-                                    className="mt-1 h-9 text-xs border-[#d2d2d7] rounded-sm"
+                                    className="mt-1 h-9 text-xs border-border rounded-sm"
                                 />
                             </div>
                         </div>
 
                         {/* Calculated Summary Preview in Modal */}
-                        <div className="mt-4 p-3 bg-[#f5f5f7] border border-[#0066cc]/30 rounded-sm flex items-center justify-between text-xs">
+                        <div className="mt-4 p-3 bg-muted/40 border border-[#0066cc]/30 rounded-sm flex items-center justify-between text-xs">
                             <div>
-                                <p className="font-bold text-[#1d1d1f]">Calculated Gross Salary</p>
-                                <p className="text-[11px] text-[#1d1d1f]/80">Basic + Itemized Allowances</p>
+                                <p className="font-bold text-foreground">Calculated Gross Salary</p>
+                                <p className="text-[11px] text-foreground/80">Basic + Itemized Allowances</p>
                             </div>
-                            <p className="text-base font-bold text-[#0066cc]">
+                            <p className="text-base font-bold text-primary">
                                 {formatCurrency(calculateModalGross())}
                             </p>
                         </div>
 
-                        <DialogFooter className="mt-6 flex justify-end gap-2 pt-3 border-t border-[#e8e8ed]">
+                        <DialogFooter className="mt-6 flex justify-end gap-2 pt-3 border-t border-border/60">
                             <Button
                                 type="button"
                                 variant="outline"
                                 onClick={() => setSalaryModalOpen(false)}
-                                className="text-xs border-[#d2d2d7] rounded-sm"
+                                className="text-xs border-border rounded-sm"
                             >
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={salaryForm.processing}
-                                className="bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-bold rounded-sm px-4"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs text-xs font-bold rounded-sm px-4"
                             >
                                 {salaryForm.processing ? 'Saving...' : 'Apply Salary Increment'}
                             </Button>
@@ -1738,17 +1738,17 @@ export default function Edit({ employee, departments }: Props) {
 
             {/* Discard Unsaved Changes Confirmation Dialog */}
             <AlertDialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
-                <AlertDialogContent className="bg-white border-[#d2d2d7]">
+                <AlertDialogContent className="border-border bg-card shadow-xs">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-base font-bold text-black">
+                        <AlertDialogTitle className="text-base font-bold text-foreground">
                             Discard Unsaved Modifications?
                         </AlertDialogTitle>
-                        <AlertDialogDescription className="text-xs text-[#6e6e73]">
-                            You have <strong className="text-black">{dirtyCount} modified parameter{dirtyCount > 1 ? 's' : ''}</strong> that will be reverted back to their saved state. This action cannot be undone.
+                        <AlertDialogDescription className="text-xs text-muted-foreground">
+                            You have <strong className="text-foreground">{dirtyCount} modified parameter{dirtyCount > 1 ? 's' : ''}</strong> that will be reverted back to their saved state. This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="gap-2 sm:gap-0">
-                        <AlertDialogCancel className="text-xs h-9 border-[#d2d2d7] hover:bg-[#f5f5f7]">
+                        <AlertDialogCancel className="text-xs h-9 border-border bg-card hover:bg-muted">
                             Keep Editing
                         </AlertDialogCancel>
                         <AlertDialogAction
@@ -1766,17 +1766,17 @@ export default function Edit({ employee, departments }: Props) {
 
             {/* Remove Profile Photo Confirmation Dialog */}
             <AlertDialog open={deletePhotoOpen} onOpenChange={setDeletePhotoOpen}>
-                <AlertDialogContent className="bg-white border-[#d2d2d7]">
+                <AlertDialogContent className="border-border bg-card shadow-xs">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-base font-bold text-black">
+                        <AlertDialogTitle className="text-base font-bold text-foreground">
                             Remove Profile Photo?
                         </AlertDialogTitle>
-                        <AlertDialogDescription className="text-xs text-[#6e6e73]">
-                            Are you sure you want to delete the profile photo for <strong className="text-black">{employee.full_name}</strong>?
+                        <AlertDialogDescription className="text-xs text-muted-foreground">
+                            Are you sure you want to delete the profile photo for <strong className="text-foreground">{employee.full_name}</strong>?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="gap-2 sm:gap-0">
-                        <AlertDialogCancel className="text-xs h-9 border-[#d2d2d7] hover:bg-[#f5f5f7]">
+                        <AlertDialogCancel className="text-xs h-9 border-border bg-card hover:bg-muted">
                             Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction

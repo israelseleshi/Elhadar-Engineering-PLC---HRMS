@@ -189,12 +189,12 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
             <Head title="Separations & Severance - Elhadar Engineering HRMS" />
 
             {/* Filter and Action Bar */}
-            <Card className="border-[#d2d2d7] bg-white mb-6">
+            <Card className="border-border bg-card shadow-xs mb-6">
                 <CardContent className="p-4">
                     <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
                         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto flex-1">
                             <div className="relative w-full sm:w-80">
-                                <Search className="w-4 h-4 absolute left-3 top-3 text-[#6e6e73]" />
+                                <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
                                 <Input
                                     placeholder="Search by name, file no..."
                                     value={search}
@@ -202,11 +202,11 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') handleFilter({ search });
                                     }}
-                                    className="pl-9 bg-[#f5f5f7] border-[#d2d2d7] text-xs h-11"
+                                    className="pl-9 bg-background border-input text-foreground text-xs h-11"
                                 />
                             </div>
 
-                            <Select value={separationType || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setSeparationType(next); handleFilter({ separation_type: next }); }}><SelectTrigger className="h-11 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue placeholder="All Separation Types" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Separation Types</SelectItem>
+                            <Select value={separationType || '__all__'} onValueChange={(v) => { const next=v==='__all__'?'':v; setSeparationType(next); handleFilter({ separation_type: next }); }}><SelectTrigger className="h-11 rounded-xl border-input bg-background text-foreground text-xs text-foreground/90"><SelectValue placeholder="All Separation Types" /></SelectTrigger><SelectContent><SelectItem value="__all__">All Separation Types</SelectItem>
                                 <SelectItem value="Resignation">Resignation</SelectItem>
                                 <SelectItem value="Termination_Without_Cause">Termination Without Cause</SelectItem>
                                 <SelectItem value="Termination_With_Cause">Termination With Cause</SelectItem>
@@ -221,7 +221,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                             <ViewToggle value={viewMode} onChange={setViewMode} />
                             <Button 
                                 onClick={() => setShowModal(true)}
-                                className="bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-medium rounded-full h-10 px-4 gap-2 shrink-0"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs text-xs font-medium rounded-full h-10 px-4 gap-2 shrink-0"
                             >
                                 <Calculator className="w-4 h-4" />
                                 Record Exit &amp; Estimate Severance
@@ -232,7 +232,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
             </Card>
 
             {/* Separations Table */}
-            <Card className="border-[#d2d2d7] bg-white overflow-hidden shadow-sm">
+            <Card className="border-border bg-card shadow-xs overflow-hidden shadow-sm">
                 {viewMode === 'table' ? (
                 <Table>
                     <TableHeader>
@@ -251,21 +251,21 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                     <TableBody>
                         {separations.data.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center py-12 text-[#6e6e73]">
+                                <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
                                     No employee separation records found matching your query.
                                 </TableCell>
                             </TableRow>
                         ) : (
                             separations.data.map((item) => (
-                                <TableRow key={item.id} className="hover:bg-[#f5f5f7]/50">
-                                    <TableCell className="font-bold text-[#0066cc] text-xs">
+                                <TableRow key={item.id} className="hover:bg-muted/40/50">
+                                    <TableCell className="font-bold text-primary text-xs">
                                         {item.employee.file_no}
                                     </TableCell>
                                     <TableCell>
-                                        <div className="font-bold text-black text-sm">{item.employee.full_name}</div>
-                                        <div className="text-xs text-[#6e6e73] truncate max-w-xs">{item.reason || 'No exit notes'}</div>
+                                        <div className="font-bold text-foreground text-sm">{item.employee.full_name}</div>
+                                        <div className="text-xs text-muted-foreground truncate max-w-xs">{item.reason || 'No exit notes'}</div>
                                     </TableCell>
-                                    <TableCell className="text-xs text-[#424245]">
+                                    <TableCell className="text-xs text-foreground/90">
                                         {item.employee.department?.name || 'Operations'}
                                     </TableCell>
                                     <TableCell>
@@ -278,13 +278,13 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                             {formatType(item.separation_type)}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="text-xs font-semibold text-black">
+                                    <TableCell className="text-xs font-semibold text-foreground">
                                         {item.effective_date}
                                     </TableCell>
-                                    <TableCell className="text-center text-xs font-bold text-black">
+                                    <TableCell className="text-center text-xs font-bold text-foreground">
                                         {item.completed_years_service} Yrs
                                     </TableCell>
-                                    <TableCell className="text-right font-bold text-black text-sm">
+                                    <TableCell className="text-right font-bold text-foreground text-sm">
                                         {item.severance_amount > 0 ? formatCurrency(item.severance_amount) : '0.00 ETB'}
                                     </TableCell>
                                     <TableCell className="text-center">
@@ -298,7 +298,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                                 <Button
                                                     onClick={() => handleMarkPaid(item.id)}
                                                     size="sm"
-                                                    className="bg-[#0066cc] hover:bg-[#0071e3] text-white font-medium text-xs h-9 px-3 rounded-full"
+                                                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs font-medium text-xs h-9 px-3 rounded-full"
                                                 >
                                                     Disburse
                                                 </Button>
@@ -307,7 +307,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                                 <Button 
                                                     variant="outline" 
                                                     size="sm"
-                                                    className="border-[#d2d2d7] hover:bg-[#f5f5f7] text-[#0066cc] font-medium text-xs h-9 px-3 rounded-full"
+                                                    className="border-border bg-card hover:bg-muted text-primary font-medium text-xs h-9 px-3 rounded-full"
                                                 >
                                                     <Eye className="w-3.5 h-3.5 mr-1" />
                                                     Profile
@@ -323,19 +323,19 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                 ) : (
                     <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
                         {separations.data.length === 0 ? (
-                            <div className="col-span-full py-12 text-center text-xs text-[#6e6e73]">
+                            <div className="col-span-full py-12 text-center text-xs text-muted-foreground">
                                 No employee separation records found matching your query.
                             </div>
                         ) : (
                             separations.data.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="rounded-xl border border-[#e8e8ed] bg-[#f5f5f7] p-4 transition-colors hover:border-[#d2d2d7] hover:bg-white"
+                                    className="rounded-xl border border-border/60 bg-muted/40 p-4 transition-colors hover:border-border hover:bg-white"
                                 >
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
-                                            <p className="truncate text-sm font-bold text-black">{item.employee.full_name}</p>
-                                            <p className="text-[11px] font-semibold text-[#0066cc]">
+                                            <p className="truncate text-sm font-bold text-foreground">{item.employee.full_name}</p>
+                                            <p className="text-[11px] font-semibold text-primary">
                                                 {item.employee.file_no} Â· {item.employee.department?.name || 'Operations'}
                                             </p>
                                         </div>
@@ -344,28 +344,28 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                         </Badge>
                                     </div>
 
-                                    <div className="mt-3 grid grid-cols-3 gap-2 border-t border-[#e8e8ed] pt-3 text-center">
+                                    <div className="mt-3 grid grid-cols-3 gap-2 border-t border-border/60 pt-3 text-center">
                                         <div>
-                                            <p className="text-[10px] font-bold uppercase tracking-wide text-[#6e6e73]">Service</p>
-                                            <p className="text-sm font-bold text-black">{item.completed_years_service} Yrs</p>
+                                            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Service</p>
+                                            <p className="text-sm font-bold text-foreground">{item.completed_years_service} Yrs</p>
                                         </div>
-                                        <div className="border-x border-[#e8e8ed]">
-                                            <p className="text-[10px] font-bold uppercase tracking-wide text-[#6e6e73]">Effective</p>
-                                            <p className="text-[11px] font-bold text-[#424245]">{item.effective_date}</p>
+                                        <div className="border-x border-border/60">
+                                            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Effective</p>
+                                            <p className="text-[11px] font-bold text-foreground/90">{item.effective_date}</p>
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-bold uppercase tracking-wide text-[#6e6e73]">Payout</p>
-                                            <p className="text-[11px] font-bold text-black">
+                                            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Payout</p>
+                                            <p className="text-[11px] font-bold text-foreground">
                                                 {item.severance_amount > 0 ? formatCurrency(item.severance_amount) : '0.00'}
                                             </p>
                                         </div>
                                     </div>
 
                                     {item.reason && (
-                                        <p className="mt-2 line-clamp-2 text-[11px] text-[#6e6e73]">{item.reason}</p>
+                                        <p className="mt-2 line-clamp-2 text-[11px] text-muted-foreground">{item.reason}</p>
                                     )}
 
-                                    <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#e8e8ed] pt-3">
+                                    <div className="mt-3 flex items-center justify-between gap-2 border-t border-border/60 pt-3">
                                         <Badge variant={item.severance_paid ? 'secondary' : 'outline'}>
                                             {item.severance_paid ? 'Disbursed' : 'Unpaid / Accrued'}
                                         </Badge>
@@ -376,7 +376,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                             <Button
                                                 onClick={() => handleMarkPaid(item.id)}
                                                 size="sm"
-                                                className="flex-1 bg-[#0066cc] hover:bg-[#0071e3] text-white font-medium text-xs h-9 rounded-full"
+                                                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs font-medium text-xs h-9 rounded-full"
                                             >
                                                 Disburse
                                             </Button>
@@ -385,7 +385,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="w-full border-[#d2d2d7] hover:bg-[#f5f5f7] text-[#0066cc] font-medium text-xs h-9 gap-1.5 rounded-full"
+                                                className="w-full border-border bg-card hover:bg-muted text-primary font-medium text-xs h-9 gap-1.5 rounded-full"
                                             >
                                                 <Eye className="w-3.5 h-3.5" />
                                                 Profile
@@ -400,7 +400,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
 
                 {/* Pagination */}
                 {separations.last_page > 1 && (
-                    <div className="p-4 border-t border-[#e8e8ed] bg-[#f5f5f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#6e6e73]">
+                    <div className="p-4 border-t border-border/60 bg-muted/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-muted-foreground">
                         <div>
                             Showing <strong>{separations.from || 0}</strong> to <strong>{separations.to || 0}</strong> of <strong>{separations.total}</strong> records
                         </div>
@@ -412,10 +412,10 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                     preserveState
                                     className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                                         link.active
-                                            ? 'bg-[#0066cc] text-white border-[#0066cc] font-bold'
+                                            ? 'bg-primary text-white border-[#0066cc] font-bold'
                                             : link.url
-                                            ? 'bg-white text-[#424245] border-[#d2d2d7] hover:bg-[#f5f5f7]'
-                                            : 'bg-white/50 text-[#b1b3b5] border-[#e8e8ed] cursor-not-allowed'
+                                            ? 'bg-white text-foreground/90 border-border bg-card hover:bg-muted'
+                                            : 'bg-white/50 text-muted-foreground/60 border-border/60 cursor-not-allowed'
                                     }`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />
@@ -427,31 +427,31 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
 
             {/* Separation & Live Severance Calculator Modal (Shadcn Dialog) */}
             <Dialog open={showModal} onOpenChange={setShowModal}>
-                <DialogContent className="max-w-xl bg-white border-[#d2d2d7] p-6 max-h-[90vh] overflow-y-auto rounded-2xl">
+                <DialogContent className="max-w-xl bg-card border-border text-card-foreground p-6 max-h-[90vh] overflow-y-auto rounded-2xl">
                     <DialogHeader>
-                        <DialogTitle className="text-base font-bold text-black flex items-center gap-2">
-                            <Calculator className="w-4 h-4 text-[#0066cc]" />
+                        <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                            <Calculator className="w-4 h-4 text-primary" />
                             Record Employee Separation
                         </DialogTitle>
-                        <DialogDescription className="text-xs text-[#6e6e73]">
+                        <DialogDescription className="text-xs text-muted-foreground">
                             Calculates statutory severance per Ethiopian Labour Proclamation 1156/2019.
                         </DialogDescription>
                     </DialogHeader>
 
                     <form onSubmit={handleSubmit} className="space-y-4 pt-2">
                         <div>
-                            <label className="block text-xs font-bold text-black mb-1">
+                            <label className="block text-xs font-bold text-foreground mb-1">
                                 Exiting Employee <span className="text-[#ff3b30]">*</span>
                             </label>
-                            <Select value={String(data.employee_id)} onValueChange={(v) => setData('employee_id', v)}><SelectTrigger className="w-full h-11 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue placeholder="Select employee" /></SelectTrigger><SelectContent>{activeEmployees.map((emp) => (<SelectItem key={emp.id} value={String(emp.id)}>{emp.file_no} â€” {emp.full_name}</SelectItem>))}</SelectContent></Select>
+                            <Select value={String(data.employee_id)} onValueChange={(v) => setData('employee_id', v)}><SelectTrigger className="w-full h-11 rounded-xl border-input bg-background text-foreground text-xs text-foreground/90"><SelectValue placeholder="Select employee" /></SelectTrigger><SelectContent>{activeEmployees.map((emp) => (<SelectItem key={emp.id} value={String(emp.id)}>{emp.file_no} â€” {emp.full_name}</SelectItem>))}</SelectContent></Select>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-xs font-bold text-black mb-1">
+                                <label className="block text-xs font-bold text-foreground mb-1">
                                     Separation Type <span className="text-[#ff3b30]">*</span>
                                 </label>
-                                <Select value={data.separation_type} onValueChange={(v) => setData('separation_type', v)}><SelectTrigger className="w-full h-11 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-xs text-[#424245]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Termination_Without_Cause">Termination Without Cause</SelectItem>
+                                <Select value={data.separation_type} onValueChange={(v) => setData('separation_type', v)}><SelectTrigger className="w-full h-11 rounded-xl border-input bg-background text-foreground text-xs text-foreground/90"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Termination_Without_Cause">Termination Without Cause</SelectItem>
                                     <SelectItem value="Layoff">Workforce Layoff / Reduction</SelectItem>
                                     <SelectItem value="Retirement">Statutory Retirement (Age 60)</SelectItem>
                                     <SelectItem value="Resignation">Resignation</SelectItem>
@@ -461,7 +461,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                 </SelectContent></Select>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-black mb-1">
+                                <label className="block text-xs font-bold text-foreground mb-1">
                                     Effective Date <span className="text-[#ff3b30]">*</span>
                                 </label>
                                 <Input
@@ -469,13 +469,13 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                     required
                                     value={data.effective_date}
                                     onChange={(e) => setData('effective_date', e.target.value)}
-                                    className="bg-[#f5f5f7] border-[#d2d2d7] text-xs h-11"
+                                    className="bg-background border-input text-foreground text-xs h-11"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-black mb-1">
+                            <label className="block text-xs font-bold text-foreground mb-1">
                                 Exit Reason &amp; Reference Notes
                             </label>
                             <Textarea
@@ -483,39 +483,39 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                 onChange={(e) => setData('reason', e.target.value)}
                                 rows={2}
                                 placeholder="Enter reference memo, board resolution or exit interview notes..."
-                                className="w-full rounded-xl border border-[#d2d2d7] bg-[#f5f5f7] p-2.5 text-xs text-[#424245] focus-visible:ring-[#0066cc]"
+                                className="w-full rounded-xl border border-input bg-background text-foreground p-2.5 text-xs text-foreground/90 focus-visible:ring-[#0066cc]"
                             />
                         </div>
 
                         {/* Live Statutory Severance Pay Estimation Card */}
                         {previewCalc && (
-                            <div className="p-4 rounded-xl bg-[#f5f5f7] border border-[#d2d2d7] space-y-2 text-xs">
-                                <div className="flex justify-between items-center font-bold text-[#1d1d1f] border-b border-[#d2d2d7]/60 pb-1.5">
+                            <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-2 text-xs">
+                                <div className="flex justify-between items-center font-bold text-foreground border-b border-border/60 pb-1.5">
                                     <span className="flex items-center gap-1.5">
                                         <Calculator className="w-3.5 h-3.5" />
                                         Statutory Severance Pay Estimate (Arts. 39â€“41)
                                     </span>
                                     <span>{previewCalc.years_service} Years Service</span>
                                 </div>
-                                <div className="flex justify-between text-[#424245]">
+                                <div className="flex justify-between text-foreground/90">
                                     <span>Monthly Basic Wage:</span>
-                                    <span className="font-semibold text-black">{formatCurrency(previewCalc.basic_salary)}</span>
+                                    <span className="font-semibold text-foreground">{formatCurrency(previewCalc.basic_salary)}</span>
                                 </div>
-                                <div className="flex justify-between text-[#424245]">
+                                <div className="flex justify-between text-foreground/90">
                                     <span>Year 1 Entitlement (1 Month):</span>
                                     <span>{formatCurrency(previewCalc.first_year_amount)}</span>
                                 </div>
-                                <div className="flex justify-between text-[#424245]">
+                                <div className="flex justify-between text-foreground/90">
                                     <span>Subsequent Years (1/3 Month/Yr):</span>
                                     <span>{formatCurrency(previewCalc.subsequent_amount)}</span>
                                 </div>
-                                <div className="flex justify-between text-[#424245]">
+                                <div className="flex justify-between text-foreground/90">
                                     <span>Legal Maximum Cap (12 Months):</span>
                                     <span>{formatCurrency(previewCalc.statutory_cap)}</span>
                                 </div>
-                                <div className="flex justify-between items-center pt-2 border-t border-[#d2d2d7] font-bold">
-                                    <span className="text-[#1d1d1f] uppercase">Estimated Severance Payout:</span>
-                                    <span className="text-[#0066cc] text-base">
+                                <div className="flex justify-between items-center pt-2 border-t border-border font-bold">
+                                    <span className="text-foreground uppercase">Estimated Severance Payout:</span>
+                                    <span className="text-primary text-base">
                                         {formatCurrency(previewCalc.final_payout)}
                                     </span>
                                 </div>
@@ -527,26 +527,26 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                 id="severance_paid"
                                 checked={data.severance_paid}
                                 onCheckedChange={(checked) => setData('severance_paid', checked === true)}
-                                className="rounded-xl border-[#d2d2d7] data-[state=checked]:bg-[#0066cc] data-[state=checked]:text-white"
+                                className="rounded-xl border-border data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                             />
-                            <label htmlFor="severance_paid" className="text-xs text-black font-medium">
+                            <label htmlFor="severance_paid" className="text-xs text-foreground font-medium">
                                 Severance payment has already been disbursed
                             </label>
                         </div>
 
-                        <DialogFooter className="flex justify-end gap-2 pt-2 border-t border-[#e8e8ed]">
+                        <DialogFooter className="flex justify-end gap-2 pt-2 border-t border-border/60">
                             <Button
                                 type="button"
                                 variant="outline"
                                 onClick={() => setShowModal(false)}
-                                className="text-xs border-[#d2d2d7] rounded-full"
+                                className="text-xs border-border rounded-full"
                             >
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={processing}
-                                className="bg-[#0066cc] hover:bg-[#0071e3] text-white text-xs font-medium rounded-full"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs text-xs font-medium rounded-full"
                             >
                                 {processing ? 'Processing...' : 'Confirm Separation'}
                             </Button>
@@ -557,28 +557,28 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
 
             {/* Severance Payout Disbursement Confirmation Dialog */}
             <AlertDialog open={Boolean(payoutToMarkPaid)} onOpenChange={(open) => !open && setPayoutToMarkPaid(null)}>
-                <AlertDialogContent className="bg-white border-[#d2d2d7]">
+                <AlertDialogContent className="border-border bg-card shadow-xs">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-base font-bold text-black flex items-center gap-2">
-                            <Calculator className="w-5 h-5 text-[#0066cc]" />
+                        <AlertDialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                            <Calculator className="w-5 h-5 text-primary" />
                             Disburse Severance Payout?
                         </AlertDialogTitle>
-                        <AlertDialogDescription className="text-xs text-[#6e6e73] space-y-2">
+                        <AlertDialogDescription className="text-xs text-muted-foreground space-y-2">
                             <p>
                                 Are you sure you want to mark this severance payout as disbursed?
                             </p>
-                            <p className="bg-[#f5f5f7] border border-[#d2d2d7] p-2.5 rounded-sm text-[#0066cc] font-medium text-[11px]">
+                            <p className="bg-muted/40 border border-border p-2.5 rounded-sm text-primary font-medium text-[11px]">
                                 This closes out the financial severance liability and marks the payment timestamp in the audit log.
                             </p>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="gap-2 sm:gap-0">
-                        <AlertDialogCancel className="text-xs h-9 border-[#d2d2d7] hover:bg-[#f5f5f7] rounded-full">
+                        <AlertDialogCancel className="text-xs h-9 border-border bg-card hover:bg-muted rounded-full">
                             Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={confirmMarkPaid}
-                            className="text-xs h-9 bg-[#0066cc] hover:bg-[#0071e3] text-white font-medium rounded-full"
+                            className="text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs font-medium rounded-full"
                         >
                             Confirm Disbursement
                         </AlertDialogAction>

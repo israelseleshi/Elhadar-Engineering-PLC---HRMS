@@ -110,49 +110,49 @@ export default function Index({ candidates, filters, stats }: Props) {
 
             {/* Quick Metrics Bar */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <Card className="border-[#d2d2d7] bg-white">
+                <Card className="border-border bg-card shadow-xs">
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#6e6e73]">
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                                 Active Probation
                             </p>
-                            <p className="text-2xl font-bold text-black mt-0.5">
+                            <p className="text-2xl font-bold text-foreground mt-0.5">
                                 {stats.total_under_probation}
                             </p>
                         </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#f5f5f7] text-[#0066cc] flex items-center justify-center font-bold">
+                        <div className="w-10 h-10 rounded-xs bg-muted/40 text-primary flex items-center justify-center font-bold">
                             <Clock className="w-5 h-5" />
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border-[#d2d2d7] bg-white">
+                <Card className="border-border bg-card shadow-xs">
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#6e6e73]">
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                                 Urgent Reviews (&lt;15 Days)
                             </p>
                             <p className="text-2xl font-bold text-[#de2828] mt-0.5">
                                 {stats.urgent_reviews}
                             </p>
                         </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#fee2e2] text-[#de2828] flex items-center justify-center font-bold">
+                        <div className="w-10 h-10 rounded-xs bg-destructive/10 text-destructive border border-destructive/25 flex items-center justify-center font-bold">
                             <AlertTriangle className="w-5 h-5" />
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border-[#d2d2d7] bg-white">
+                <Card className="border-border bg-card shadow-xs">
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#6e6e73]">
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                                 Confirmed Permanent
                             </p>
-                            <p className="text-2xl font-bold text-[#0066cc] mt-0.5">
+                            <p className="text-2xl font-bold text-primary mt-0.5">
                                 {stats.confirmed_permanent}
                             </p>
                         </div>
-                        <div className="w-10 h-10 rounded-xs bg-[#f5f5f7] text-[#0066cc] flex items-center justify-center font-bold">
+                        <div className="w-10 h-10 rounded-xs bg-muted/40 text-primary flex items-center justify-center font-bold">
                             <CheckCircle2 className="w-5 h-5" />
                         </div>
                     </CardContent>
@@ -160,11 +160,11 @@ export default function Index({ candidates, filters, stats }: Props) {
             </div>
 
             {/* Filter and Search Bar */}
-            <Card className="border-[#d2d2d7] bg-white mb-6">
+            <Card className="border-border bg-card shadow-xs mb-6">
                 <CardContent className="p-4">
                     <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
                         <div className="relative w-full sm:w-80">
-                            <Search className="w-4 h-4 absolute left-3 top-3 text-[#6e6e73]" />
+                            <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
                             <Input
                                 placeholder="Search by name, file no..."
                                 value={search}
@@ -172,12 +172,12 @@ export default function Index({ candidates, filters, stats }: Props) {
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') handleFilter({ search });
                                 }}
-                                className="pl-9 bg-[#f5f5f7] border-[#d2d2d7] text-xs h-10"
+                                className="pl-9 bg-background border-input text-foreground text-xs h-10"
                             />
                         </div>
 
                         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                            <div className="inline-flex rounded-xs border border-[#d2d2d7] p-1 bg-[#f5f5f7]">
+                            <div className="inline-flex rounded-xs border border-border p-1 bg-muted/40">
                                 <button
                                     onClick={() => {
                                         setStatus('Probation');
@@ -185,8 +185,8 @@ export default function Index({ candidates, filters, stats }: Props) {
                                     }}
                                     className={`px-3 py-1.5 text-xs font-bold rounded-xs transition-colors ${
                                         status === 'Probation'
-                                            ? 'bg-white text-[#0066cc] shadow-xs'
-                                            : 'text-[#6e6e73] hover:text-black'
+                                            ? 'bg-white text-primary shadow-xs'
+                                            : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
                                     Under Review
@@ -198,8 +198,8 @@ export default function Index({ candidates, filters, stats }: Props) {
                                     }}
                                     className={`px-3 py-1.5 text-xs font-bold rounded-xs transition-colors ${
                                         status === 'Passed'
-                                            ? 'bg-white text-[#0066cc] shadow-xs'
-                                            : 'text-[#6e6e73] hover:text-black'
+                                            ? 'bg-white text-primary shadow-xs'
+                                            : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
                                     Confirmed Permanent
@@ -211,8 +211,8 @@ export default function Index({ candidates, filters, stats }: Props) {
                                     }}
                                     className={`px-3 py-1.5 text-xs font-bold rounded-xs transition-colors ${
                                         status === 'All'
-                                            ? 'bg-white text-[#0066cc] shadow-xs'
-                                            : 'text-[#6e6e73] hover:text-black'
+                                            ? 'bg-white text-primary shadow-xs'
+                                            : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
                                     All Records
@@ -224,7 +224,7 @@ export default function Index({ candidates, filters, stats }: Props) {
             </Card>
 
             {/* Candidate Table */}
-            <Card className="border-[#d2d2d7] bg-white overflow-hidden shadow-sm">
+            <Card className="border-border bg-card shadow-xs overflow-hidden shadow-sm">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -241,40 +241,40 @@ export default function Index({ candidates, filters, stats }: Props) {
                     <TableBody>
                         {candidates.data.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={8} className="text-center py-12 text-[#6e6e73]">
+                                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                                     No personnel records found for the selected probation filter.
                                 </TableCell>
                             </TableRow>
                         ) : (
                             candidates.data.map((candidate) => (
-                                <TableRow key={candidate.id} className="hover:bg-[#f5f5f7]/50">
-                                    <TableCell className="font-bold text-[#0066cc] text-xs">
+                                <TableRow key={candidate.id} className="hover:bg-muted/40/50">
+                                    <TableCell className="font-bold text-primary text-xs">
                                         {candidate.file_no}
                                     </TableCell>
                                     <TableCell>
-                                        <div className="font-bold text-black text-sm">{candidate.full_name}</div>
-                                        <div className="text-xs text-[#6e6e73]">{candidate.position}</div>
+                                        <div className="font-bold text-foreground text-sm">{candidate.full_name}</div>
+                                        <div className="text-xs text-muted-foreground">{candidate.position}</div>
                                     </TableCell>
-                                    <TableCell className="text-xs text-[#424245]">
+                                    <TableCell className="text-xs text-foreground/90">
                                         {candidate.department?.name || 'General Operations'}
                                     </TableCell>
-                                    <TableCell className="text-xs text-[#6e6e73]">
+                                    <TableCell className="text-xs text-muted-foreground">
                                         {candidate.employment_date_ec}
                                     </TableCell>
-                                    <TableCell className="text-xs font-medium text-black">
+                                    <TableCell className="text-xs font-medium text-foreground">
                                         {candidate.probation_end_date || '60 days from start'}
                                     </TableCell>
                                     <TableCell className="text-center">
                                         {candidate.status === 'Probation' ? (
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded-xs text-xs font-bold ${
-                                                candidate.is_overdue ? 'bg-[#fee2e2] text-[#de2828]' :
-                                                candidate.is_urgent ? 'bg-[#fef9c3] text-[#854d0e]' :
-                                                'bg-[#f5f5f7] text-[#0066cc]'
+                                                candidate.is_overdue ? 'bg-destructive/10 text-destructive border border-destructive/25' :
+                                                candidate.is_urgent ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25' :
+                                                'bg-muted/40 text-primary'
                                             }`}>
                                                 {candidate.is_overdue ? 'Overdue' : `${candidate.days_remaining} Days`}
                                             </span>
                                         ) : (
-                                            <span className="text-xs text-[#6e6e73]">â€”</span>
+                                            <span className="text-xs text-muted-foreground">â€”</span>
                                         )}
                                     </TableCell>
                                     <TableCell>
@@ -293,7 +293,7 @@ export default function Index({ candidates, filters, stats }: Props) {
                                                 <Button
                                                     onClick={() => handleConfirm(candidate)}
                                                     size="sm"
-                                                    className="bg-[#0066cc] hover:bg-[#0071e3] text-white font-bold text-xs h-8 px-2.5 rounded-xs"
+                                                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs font-bold text-xs h-8 px-2.5 rounded-xs"
                                                 >
                                                     <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                                                     Confirm
@@ -303,7 +303,7 @@ export default function Index({ candidates, filters, stats }: Props) {
                                                 <Button 
                                                     variant="outline" 
                                                     size="sm"
-                                                    className="border-[#d2d2d7] hover:bg-[#f5f5f7] text-[#0066cc] font-semibold text-xs h-8 px-2.5 rounded-xs"
+                                                    className="border-border bg-card hover:bg-muted text-primary font-semibold text-xs h-8 px-2.5 rounded-xs"
                                                 >
                                                     <Eye className="w-3.5 h-3.5 mr-1" />
                                                     Profile
@@ -319,7 +319,7 @@ export default function Index({ candidates, filters, stats }: Props) {
 
                 {/* Pagination */}
                 {candidates.last_page > 1 && (
-                    <div className="p-4 border-t border-[#e8e8ed] bg-[#f5f5f7] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-[#6e6e73]">
+                    <div className="p-4 border-t border-border/60 bg-muted/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-muted-foreground">
                         <div>
                             Showing <strong>{candidates.from || 0}</strong> to <strong>{candidates.to || 0}</strong> of <strong>{candidates.total}</strong> candidates
                         </div>
@@ -331,10 +331,10 @@ export default function Index({ candidates, filters, stats }: Props) {
                                     preserveState
                                     className={`px-3 py-1.5 rounded-xs text-xs font-medium border transition-colors ${
                                         link.active
-                                            ? 'bg-[#0066cc] text-white border-[#0066cc] font-bold'
+                                            ? 'bg-primary text-white border-[#0066cc] font-bold'
                                             : link.url
-                                            ? 'bg-white text-[#424245] border-[#d2d2d7] hover:bg-[#f5f5f7]'
-                                            : 'bg-white/50 text-[#b1b3b5] border-[#e8e8ed] cursor-not-allowed'
+                                            ? 'bg-white text-foreground/90 border-border bg-card hover:bg-muted'
+                                            : 'bg-white/50 text-muted-foreground/60 border-border/60 cursor-not-allowed'
                                     }`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />
@@ -346,28 +346,28 @@ export default function Index({ candidates, filters, stats }: Props) {
 
             {/* Statutory Permanent Confirmation Dialog */}
             <AlertDialog open={Boolean(candidateToConfirm)} onOpenChange={(open) => !open && setCandidateToConfirm(null)}>
-                <AlertDialogContent className="bg-white border-[#d2d2d7]">
+                <AlertDialogContent className="border-border bg-card shadow-xs">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-base font-bold text-black flex items-center gap-2">
-                            <CheckCircle2 className="w-5 h-5 text-[#0066cc]" />
+                        <AlertDialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                            <CheckCircle2 className="w-5 h-5 text-primary" />
                             Confirm Permanent Appointment
                         </AlertDialogTitle>
-                        <AlertDialogDescription className="text-xs text-[#6e6e73] space-y-2">
+                        <AlertDialogDescription className="text-xs text-muted-foreground space-y-2">
                             <p>
-                                Are you sure you want to officially confirm <strong className="text-black">{candidateToConfirm?.full_name} ({candidateToConfirm?.file_no})</strong> as a Permanent Employee?
+                                Are you sure you want to officially confirm <strong className="text-foreground">{candidateToConfirm?.full_name} ({candidateToConfirm?.file_no})</strong> as a Permanent Employee?
                             </p>
-                            <p className="bg-[#f5f5f7] border border-[#d2d2d7] p-2.5 rounded-sm text-[#0066cc] font-medium text-[11px]">
+                            <p className="bg-muted/40 border border-border p-2.5 rounded-sm text-primary font-medium text-[11px]">
                                 Legal Reference: Ethiopian Labour Proclamation 1156/2019. This converts the probationary tenure to permanent status and seals statutory pension & seniority entitlements.
                             </p>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="gap-2 sm:gap-0">
-                        <AlertDialogCancel className="text-xs h-9 border-[#d2d2d7] hover:bg-[#f5f5f7]">
+                        <AlertDialogCancel className="text-xs h-9 border-border bg-card hover:bg-muted">
                             Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={executePermanentConfirm}
-                            className="text-xs h-9 bg-[#0066cc] hover:bg-[#0071e3] text-white font-bold"
+                            className="text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs font-bold"
                         >
                             Approve Permanent Appointment
                         </AlertDialogAction>
