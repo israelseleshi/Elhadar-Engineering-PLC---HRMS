@@ -153,6 +153,11 @@ jobs:
               PHP="php"
             fi
 
+            # Ensure storage directories exist with correct permissions
+            mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions storage/logs bootstrap/cache
+            chmod -R 775 storage bootstrap/cache
+            rm -f bootstrap/cache/*.php
+
             # Run migrations on production database
             \$PHP artisan migrate --force
 
@@ -161,11 +166,6 @@ jobs:
 
             # Ingest annual leave ledger
             \$PHP artisan hrms:import-annual-leave --no-interaction || true
-
-            # Clear stale caches
-            \$PHP artisan config:clear
-            \$PHP artisan cache:clear
-            \$PHP artisan view:clear
 
             # Ensure storage symlink exists
             [ -L public/storage ] || \$PHP artisan storage:link || true
@@ -184,7 +184,7 @@ jobs:
             pkill -u $DEPLOY_USER lsphp || true
 
             # Verify application status
-            php artisan about
+            \$PHP artisan about
           EOF
 
       - name: Purge Cloudflare Cache
