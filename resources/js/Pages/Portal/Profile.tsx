@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import InteractiveTour, { TourStep } from '@/Components/InteractiveTour';
 import EmployeeAvatar from '@/Components/EmployeeAvatar';
 import { formatEthPhone } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
@@ -63,7 +64,8 @@ import {
     Paperclip,
     UserCheck,
     XCircle,
-    Info
+    Info,
+    Compass
 } from 'lucide-react';
 import { gcToEc } from '@/lib/ethiopianDate';
 
@@ -220,6 +222,98 @@ interface Props {
     colleagues?: Colleague[];
 }
 
+type PortalWorkspace = 'career' | 'payroll' | 'statutory' | 'corrections';
+
+type PortalTourStep = TourStep & { workspace?: PortalWorkspace };
+
+const portalTourSteps: PortalTourStep[] = [
+    {
+        target: '[data-tour="portal-actions"]',
+        title: 'Your daily self-service actions',
+        content: 'Start here. Request statutory leave or raise a records correction at any time — both forms route directly to HR for review.',
+        placement: 'bottom',
+    },
+    {
+        target: '[data-tour="portal-identity"]',
+        title: 'Verified personnel identity',
+        content: 'Your official portrait, tripartite full name, copyable File No, employment status, department, position and workplace — the source of truth HR audits against.',
+        placement: 'right',
+    },
+    {
+        target: '[data-tour="portal-identifiers"]',
+        title: 'Direct identifiers, one click away',
+        content: 'Tap any field to copy your phone, CBE account, TIN or POESSA pension number without retyping it into paperwork.',
+        placement: 'right',
+    },
+    {
+        target: '[data-tour="portal-emergency"]',
+        title: 'Emergency next-of-kin',
+        content: 'Confirm HR holds the right contact name, relationship and phone number for you. Any correction goes through the audited discrepancy workflow.',
+        placement: 'right',
+    },
+    {
+        target: '[data-tour="portal-discrepancy-card"]',
+        title: 'Spot something inaccurate?',
+        content: 'Open an official correction request for any identity, education, employment or financial field. HR reviews every request and records the outcome.',
+        placement: 'right',
+    },
+    {
+        target: '[data-tour="portal-tabs"]',
+        title: 'Four unified workspaces',
+        content: 'Career & Assignment, Compensation & Payroll, Tenure & Leave, and Correction History. The tour walks through each workspace next.',
+        placement: 'bottom',
+    },
+    {
+        target: '[data-tour="portal-career"]',
+        title: 'Career & assignment',
+        content: 'Employment classification, grade and step, contract terms, workplace, assigned vehicle, education credentials, professional licensing and appraisal history.',
+        placement: 'bottom',
+        workspace: 'career',
+    },
+    {
+        target: '[data-tour="portal-payroll-kpis"]',
+        title: 'Take-home pay at a glance',
+        content: 'Gross monthly earnings, statutory deductions — income tax plus the 7% pension contribution — and the net amount disbursed to your bank account.',
+        placement: 'bottom',
+        workspace: 'payroll',
+    },
+    {
+        target: '[data-tour="portal-payroll-deductions"]',
+        title: 'Every allowance and deduction itemized',
+        content: 'Trace how your gross is built — basic, responsibility, project, housing, transport, hardship, food, mobile, fuel and perdiem — then review the legal tax and pension obligations in full.',
+        placement: 'top',
+        workspace: 'payroll',
+    },
+    {
+        target: '[data-tour="portal-leave-entitlement"]',
+        title: 'Statutory annual leave',
+        content: 'Your entitlement under Ethiopian Labour Proclamation 1156/2019: 16 working days in year one, plus one day for every two additional years of verified service.',
+        placement: 'bottom',
+        workspace: 'statutory',
+    },
+    {
+        target: '[data-tour="portal-leave-ledger"]',
+        title: 'Leave applications & balance impact',
+        content: 'Track pending, approved and historic requests, the designated handover colleague, supporting documents, and exactly how many days each approval deducts.',
+        placement: 'top',
+        workspace: 'statutory',
+    },
+    {
+        target: '[data-tour="portal-retirement"]',
+        title: 'Retirement forecast',
+        content: 'Your date of birth in the Ethiopian calendar, calculated age, statutory retirement target and remaining years of service.',
+        placement: 'top',
+        workspace: 'statutory',
+    },
+    {
+        target: '[data-tour="portal-corrections"]',
+        title: 'Correction history',
+        content: 'A permanent audit trail of every discrepancy you have reported, with the HR review status and reviewer notes attached to each entry.',
+        placement: 'top',
+        workspace: 'corrections',
+    },
+];
+
 export default function Profile({
     employee,
     tenure,
@@ -238,6 +332,30 @@ export default function Profile({
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
     const [remarksExpanded, setRemarksExpanded] = useState(Boolean(employee?.remarks));
     const [copiedKey, setCopiedKey] = useState<string | null>(null);
+    const [activeWorkspace, setActiveWorkspace] = useState<PortalWorkspace>('career');
+    const [isTourOpen, setIsTourOpen] = useState(false);
+
+    useEffect(() => {
+        const handleOpenTour = () => setIsTourOpen(true);
+        window.addEventListener('open-portal-tour', handleOpenTour);
+
+        let autoOpenTimer: number | undefined;
+        if (typeof window !== 'undefined' && window.location.search.includes('tour=true')) {
+            autoOpenTimer = window.setTimeout(() => setIsTourOpen(true), 350);
+        }
+
+        return () => {
+            window.removeEventListener('open-portal-tour', handleOpenTour);
+            if (autoOpenTimer) window.clearTimeout(autoOpenTimer);
+        };
+    }, []);
+
+    const handleTourStepChange = useCallback((stepIndex: number) => {
+        const step = portalTourSteps[stepIndex];
+        if (step?.workspace) {
+            setActiveWorkspace(step.workspace);
+        }
+    }, []);
 
     const { data, setData, post, processing, reset, errors } = useForm({
         field_name: 'Full Name',
@@ -468,7 +586,17 @@ export default function Profile({
                     </p>
                 </div>
 
-                <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0">
+                <div data-tour="portal-actions" className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto shrink-0">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setIsTourOpen(true)}
+                        title="Start the guided self-service tour"
+                        className="h-9 px-3 text-xs font-semibold gap-1.5 text-primary hover:bg-primary/10 rounded-full transition-all cursor-pointer"
+                    >
+                        <Compass className="w-4 h-4" />
+                        <span>Tour</span>
+                    </Button>
                     <Button
                         type="button"
                         onClick={() => setShowLeaveModal(true)}
@@ -496,7 +624,7 @@ export default function Profile({
                    ========================================================================= */}
                 <div className="lg:col-span-4 space-y-5">
                     {/* Primary Identity Card */}
-                    <Card className="border-border bg-card shadow-xs rounded-xl p-6 relative overflow-hidden">
+                    <Card data-tour="portal-identity" className="border-border bg-card shadow-xs rounded-xl p-6 relative overflow-hidden">
                         <div className="flex flex-col items-center text-center">
                             {/* Avatar with Photo Upload / Delete Overlay */}
                             <div className="relative group mb-4">
@@ -599,7 +727,7 @@ export default function Profile({
                     </Card>
 
                     {/* Quick-Copy Direct Identifiers Card */}
-                    <Card className="border-border bg-card shadow-xs rounded-xl p-5 space-y-4 text-sm">
+                    <Card data-tour="portal-identifiers" className="border-border bg-card shadow-xs rounded-xl p-5 space-y-4 text-sm">
                         <div className="flex items-center justify-between pb-2.5 border-b border-border/70">
                             <span className="text-xs sm:text-sm font-bold text-foreground uppercase tracking-wider">
                                 Direct Identifiers
@@ -702,7 +830,7 @@ export default function Profile({
                     </Card>
 
                     {/* Emergency Next-of-Kin Contact */}
-                    <Card className="border-border bg-card shadow-xs rounded-xl p-5 space-y-3.5 text-sm">
+                    <Card data-tour="portal-emergency" className="border-border bg-card shadow-xs rounded-xl p-5 space-y-3.5 text-sm">
                         <div className="flex items-center gap-2 pb-2.5 border-b border-border/70">
                             <HeartHandshake className="w-4.5 h-4.5 text-primary" />
                             <span className="text-xs sm:text-sm font-bold text-foreground uppercase tracking-wider">
@@ -727,7 +855,7 @@ export default function Profile({
                     </Card>
 
                     {/* Discrepancy Action Card */}
-                    <Card className="border-primary/20 bg-primary/5 shadow-xs rounded-xl p-5 space-y-3 text-sm">
+                    <Card data-tour="portal-discrepancy-card" className="border-primary/20 bg-primary/5 shadow-xs rounded-xl p-5 space-y-3 text-sm">
                         <div className="flex items-center gap-2.5 text-primary">
                             <AlertCircle className="w-5 h-5" />
                             <h4 className="font-bold text-sm">Notice Inaccurate Records?</h4>
@@ -752,23 +880,23 @@ export default function Profile({
                     RIGHT COLUMN (lg:col-span-8): Unified Workspaces & Correction History
                    ========================================================================= */}
                 <div className="lg:col-span-8 space-y-6">
-                    <Tabs defaultValue="career" className="w-full">
-                        {/* 4 Unified Tabs (Table / Grid Segmented Navigation) */}
-                        <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 p-1.5 bg-muted/60 dark:bg-muted/30 border border-border/80 rounded-xl mb-6 gap-1.5 h-auto">
-                            <TabsTrigger value="career" className="text-xs sm:text-sm font-medium py-2.5 px-2 rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:shadow-xs transition-all">
-                                <Briefcase className="w-4 h-4 mr-1.5 text-muted-foreground shrink-0" />
+                    <Tabs defaultValue="career" value={activeWorkspace} onValueChange={(value) => setActiveWorkspace(value as PortalWorkspace)} className="w-full">
+                        {/* 4 Unified Tabs (Flat Table / Grid Navigation) */}
+                        <TabsList data-tour="portal-tabs" className="grid w-full grid-cols-2 sm:grid-cols-4 p-0 gap-0 mb-6 h-auto overflow-hidden rounded-lg border border-border bg-card divide-y divide-border sm:divide-y-0 sm:divide-x">
+                            <TabsTrigger value="career" className="group relative flex w-full items-center justify-center gap-2 rounded-none border-0 border-b-2 border-transparent bg-transparent px-3 py-3.5 text-xs sm:text-sm font-medium text-muted-foreground shadow-none transition-colors data-[state=inactive]:hover:bg-muted/30 data-[state=inactive]:hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold">
+                                <Briefcase className="w-4 h-4 shrink-0 text-muted-foreground transition-colors group-data-[state=active]:text-primary-foreground" />
                                 <span className="truncate">Career &amp; Assignment</span>
                             </TabsTrigger>
-                            <TabsTrigger value="payroll" className="text-xs sm:text-sm font-medium py-2.5 px-2 rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:shadow-xs transition-all">
-                                <CreditCard className="w-4 h-4 mr-1.5 text-muted-foreground shrink-0" />
+                            <TabsTrigger value="payroll" className="group relative flex w-full items-center justify-center gap-2 rounded-none border-0 border-b-2 border-transparent bg-transparent px-3 py-3.5 text-xs sm:text-sm font-medium text-muted-foreground shadow-none transition-colors data-[state=inactive]:hover:bg-muted/30 data-[state=inactive]:hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold">
+                                <CreditCard className="w-4 h-4 shrink-0 text-muted-foreground transition-colors group-data-[state=active]:text-primary-foreground" />
                                 <span className="truncate">Compensation &amp; Payroll</span>
                             </TabsTrigger>
-                            <TabsTrigger value="statutory" className="text-xs sm:text-sm font-medium py-2.5 px-2 rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:shadow-xs transition-all">
-                                <Award className="w-4 h-4 mr-1.5 text-muted-foreground shrink-0" />
+                            <TabsTrigger value="statutory" className="group relative flex w-full items-center justify-center gap-2 rounded-none border-0 border-b-2 border-transparent bg-transparent px-3 py-3.5 text-xs sm:text-sm font-medium text-muted-foreground shadow-none transition-colors data-[state=inactive]:hover:bg-muted/30 data-[state=inactive]:hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold">
+                                <Award className="w-4 h-4 shrink-0 text-muted-foreground transition-colors group-data-[state=active]:text-primary-foreground" />
                                 <span className="truncate">Tenure &amp; Leave</span>
                             </TabsTrigger>
-                            <TabsTrigger value="corrections" className="text-xs sm:text-sm font-medium py-2.5 px-2 rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:shadow-xs transition-all">
-                                <History className="w-4 h-4 mr-1.5 text-muted-foreground shrink-0" />
+                            <TabsTrigger value="corrections" className="group relative flex w-full items-center justify-center gap-2 rounded-none border-0 border-b-2 border-transparent bg-transparent px-3 py-3.5 text-xs sm:text-sm font-medium text-muted-foreground shadow-none transition-colors data-[state=inactive]:hover:bg-muted/30 data-[state=inactive]:hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold">
+                                <History className="w-4 h-4 shrink-0 text-muted-foreground transition-colors group-data-[state=active]:text-primary-foreground" />
                                 <span className="truncate">Correction History</span>
                                 {discrepancyReports.length > 0 && (
                                     <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-primary text-primary-foreground">
@@ -783,7 +911,7 @@ export default function Profile({
                            ------------------------------------------------------------- */}
                         <TabsContent value="career" className="space-y-6 focus-visible:outline-none">
                             {/* Contract & Position Specs */}
-                            <Card className="border-border bg-card shadow-xs rounded-xl overflow-hidden">
+                            <Card data-tour="portal-career" className="border-border bg-card shadow-xs rounded-xl overflow-hidden">
                                 <CardHeader className="py-4 px-6 border-b border-border/70">
                                     <CardTitle className="text-base sm:text-lg font-bold text-foreground">
                                         Contractual Assignment &amp; Hierarchy
@@ -958,7 +1086,7 @@ export default function Profile({
                            ------------------------------------------------------------- */}
                         <TabsContent value="payroll" className="space-y-6 focus-visible:outline-none">
                             {/* Executive Wage KPI Header */}
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div data-tour="portal-payroll-kpis" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className="p-5 rounded-xl bg-card border border-border shadow-xs">
                                     <span className="text-xs sm:text-sm font-semibold text-muted-foreground block">
                                         Total Monthly Gross
@@ -1116,7 +1244,7 @@ export default function Profile({
                             </Card>
 
                             {/* Statutory Deductions & Employer Contributions Card - Data Table */}
-                            <Card className="border-border bg-card shadow-xs rounded-xl overflow-hidden">
+                            <Card data-tour="portal-payroll-deductions" className="border-border bg-card shadow-xs rounded-xl overflow-hidden">
                                 <CardHeader className="py-4 px-6 border-b border-border/70">
                                     <CardTitle className="text-base sm:text-lg font-bold text-foreground">
                                         Statutory Tax &amp; Pension Obligations
@@ -1176,7 +1304,7 @@ export default function Profile({
                            ------------------------------------------------------------- */}
                         <TabsContent value="statutory" className="space-y-6 focus-visible:outline-none">
                             {/* Annual Leave Statutory Card - Table */}
-                            <Card className="border-border bg-card shadow-xs rounded-xl overflow-hidden">
+                            <Card data-tour="portal-leave-entitlement" className="border-border bg-card shadow-xs rounded-xl overflow-hidden">
                                 <CardHeader className="py-4 px-6 border-b border-border/70 flex flex-row items-center justify-between">
                                     <div>
                                         <CardTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2.5">
@@ -1242,7 +1370,7 @@ export default function Profile({
                             )}
 
                             {/* Official Leave Applications & Ledger Card */}
-                            <Card className="border-border bg-card shadow-xs rounded-xl overflow-hidden">
+                            <Card data-tour="portal-leave-ledger" className="border-border bg-card shadow-xs rounded-xl overflow-hidden">
                                 <CardHeader className="py-4 px-6 border-b border-border/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                     <div>
                                         <CardTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
@@ -1410,7 +1538,7 @@ export default function Profile({
                             </Card>
 
                             {/* Statutory Retirement Status - Table */}
-                            <Card className="border-border bg-card shadow-xs rounded-xl overflow-hidden">
+                            <Card data-tour="portal-retirement" className="border-border bg-card shadow-xs rounded-xl overflow-hidden">
                                 <CardHeader className="py-4 px-6 border-b border-border/70">
                                     <CardTitle className="text-base sm:text-lg font-bold text-foreground">
                                         Statutory Retirement Forecast
@@ -1497,7 +1625,7 @@ export default function Profile({
                             TAB 4: CORRECTION REQUESTS HISTORY
                            ------------------------------------------------------------- */}
                         <TabsContent value="corrections" className="space-y-6 focus-visible:outline-none">
-                            <Card className="border-border bg-card shadow-xs rounded-xl overflow-hidden">
+                            <Card data-tour="portal-corrections" className="border-border bg-card shadow-xs rounded-xl overflow-hidden">
                                 <CardHeader className="py-4 px-6 border-b border-border/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                     <div>
                                         <CardTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
@@ -2002,6 +2130,15 @@ export default function Profile({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Premium guided self-service tour */}
+            <InteractiveTour
+                steps={portalTourSteps}
+                isOpen={isTourOpen}
+                onClose={() => setIsTourOpen(false)}
+                onStepChange={handleTourStepChange}
+                tourTitle="Employee self-service tour"
+            />
         </AuthenticatedLayout>
     );
 }

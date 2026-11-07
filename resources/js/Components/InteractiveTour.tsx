@@ -22,6 +22,8 @@ interface InteractiveTourProps {
     isOpen: boolean;
     onClose: () => void;
     tourTitle?: string;
+    /** Lets the host page reveal content (e.g. switch tabs) before the step is measured. */
+    onStepChange?: (stepIndex: number) => void;
 }
 
 interface TargetRect {
@@ -38,6 +40,7 @@ export default function InteractiveTour({
     isOpen,
     onClose,
     tourTitle = 'Page tour',
+    onStepChange,
 }: InteractiveTourProps) {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [targetRect, setTargetRect] = useState<TargetRect | null>(null);
@@ -57,6 +60,13 @@ export default function InteractiveTour({
             setCurrentStepIndex(0);
         }
     }, [isOpen]);
+
+    // Notify the host page so it can reveal the content for this step
+    useEffect(() => {
+        if (isOpen) {
+            onStepChange?.(currentStepIndex);
+        }
+    }, [isOpen, currentStepIndex, onStepChange]);
 
     // Calculate position for current step's target
     const updateTargetPosition = useCallback(() => {
@@ -128,23 +138,45 @@ export default function InteractiveTour({
     useEffect(() => {
         if (!isOpen || !step) return;
 
-        const el = document.querySelector(step.target);
-        if (el) {
+        let cancelled = false;
+        let found = false;
+        const timers: number[] = [];
+
+        const scrollToTarget = (): void => {
+            if (cancelled) return;
+
+            const el = document.querySelector(step.target);
+            if (!el) {
+                // Content can mount a frame or two later (e.g. a tour-driven tab switch).
+                timers.push(window.setTimeout(scrollToTarget, 80));
+                return;
+            }
+
+            found = true;
             el.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center',
                 inline: 'nearest',
             });
             // Update immediately and after smooth scroll completes
-            const timer1 = setTimeout(updateTargetPosition, 100);
-            const timer2 = setTimeout(updateTargetPosition, 400);
-            return () => {
-                clearTimeout(timer1);
-                clearTimeout(timer2);
-            };
-        } else {
-            setIsTargetVisible(false);
-        }
+            timers.push(window.setTimeout(updateTargetPosition, 100));
+            timers.push(window.setTimeout(updateTargetPosition, 400));
+        };
+
+        scrollToTarget();
+
+        const stopRetrying = window.setTimeout(() => {
+            if (!found) {
+                cancelled = true;
+                setIsTargetVisible(false);
+            }
+        }, 1500);
+
+        return () => {
+            cancelled = true;
+            window.clearTimeout(stopRetrying);
+            timers.forEach((timer) => window.clearTimeout(timer));
+        };
     }, [currentStepIndex, isOpen, step, updateTargetPosition]);
 
     // Listen to resize and scroll
