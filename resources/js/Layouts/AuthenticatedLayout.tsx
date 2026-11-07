@@ -62,101 +62,72 @@ export default function AuthenticatedLayout({ header, title, subtitle, children 
 
     return (
         <div className="min-h-screen bg-background text-foreground font-sans flex flex-col">
-            <div className="bg-background text-foreground px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs flex flex-wrap justify-between items-center gap-x-3 gap-y-1 border-b border-border/50">
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <span className="inline-flex items-center gap-1.5 font-medium text-foreground truncate">
-                        <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-primary" /> <span className="truncate">El-Hadar Engineering PLC</span>
-                    </span>
-                    <span className="hidden md:inline text-muted-foreground">|</span>
-                    <span className="hidden md:inline text-muted-foreground">Employee Records, Leave &amp; Payroll</span>
-                </div>
-                <span className="text-muted-foreground hidden sm:inline">Active Fiscal Period: 2017/2018 E.C.</span>
-            </div>
-
             <div className="flex flex-1">
-                {!isEmployee && (
-                    <aside className={`hidden lg:flex flex-col bg-background/95 backdrop-blur border-r border-border shrink-0 transition-all duration-300 ease-in-out select-none ${sidebarCollapsed ? 'w-20' : 'w-64'}`}>
-                        <div className={`border-b border-border flex items-center transition-all duration-300 ${sidebarCollapsed ? 'p-3.5 justify-center' : 'p-4 justify-between'}`}>
-                            <Link href={route('dashboard')} className="flex items-center gap-2.5 group overflow-hidden">
-                                <ApplicationLogo className="w-8 h-8 shrink-0" />
-                                {!sidebarCollapsed && (
-                                    <div className="whitespace-nowrap">
-                                        <h1 className="text-sm font-semibold text-foreground tracking-tight leading-tight">El-Hadar Engineering PLC</h1>
-                                        <p className="text-[11px] font-medium text-primary">HR &amp; Payroll System</p>
-                                    </div>
-                                )}
-                            </Link>
-                        </div>
-
-                        <nav className="flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden">
-                            {!sidebarCollapsed && <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground whitespace-nowrap">Core Operations</div>}
-                            {navItems.map((item) => {
-                                const active = isCurrent(item.routeName);
-                                const Icon = item.icon;
-                                return (
-                                    <Link key={item.name} href={item.href} title={sidebarCollapsed ? item.name : undefined}
-                                        className={`flex items-center text-[13px] font-medium transition-all ${sidebarCollapsed
-                                            ? `justify-center w-11 h-10 mx-auto rounded-xl ${active ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`
-                                            : `gap-3 px-3 py-2.5 rounded-xl ${active ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}`}>
-                                        <Icon className={`w-[18px] h-[18px] shrink-0 ${active ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
-                                        {!sidebarCollapsed && <span className="truncate whitespace-nowrap">{item.name}</span>}
-                                    </Link>
-                                );
-                            })}
-                        </nav>
-
-                        <div className={`border-t border-border transition-all duration-300 ${sidebarCollapsed ? 'p-3 flex flex-col items-center gap-3' : 'p-4'}`}>
-                            {sidebarCollapsed ? (
-                                <>
-                                    <div className="w-9 h-9 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-semibold uppercase shrink-0" title={`${user.name} (${displayPhone})`}>{user.name.charAt(0)}</div>
-                                    <Link href={route('logout')} method="post" as="button" title="Sign Out" className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-background rounded-xl border border-border transition-colors"><LogOut className="w-4 h-4" /></Link>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="flex items-center gap-2.5 mb-3 overflow-hidden">
-                                        <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-semibold uppercase shrink-0">{user.name.charAt(0)}</div>
-                                        <div className="overflow-hidden">
-                                            <p className="text-sm font-semibold text-foreground truncate leading-none">{user.name}</p>
-                                            <p className="text-xs text-muted-foreground truncate mt-0.5">{displayPhone}</p>
-                                        </div>
-                                    </div>
-                                    <Link href={route('logout')} method="post" as="button" className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-background rounded-xl border border-border transition-colors">
-                                        <LogOut className="w-3.5 h-3.5" /> Sign Out
-                                    </Link>
-                                </>
+                <aside className={`hidden lg:flex flex-col bg-background/95 backdrop-blur border-r border-border shrink-0 transition-all duration-300 ease-in-out select-none ${sidebarCollapsed ? 'w-20' : 'w-64'}`}>
+                    <div className={`border-b border-border flex items-center transition-all duration-300 ${sidebarCollapsed ? 'p-3.5 justify-center' : 'p-4 justify-between'}`}>
+                        <Link href={isEmployee ? route('portal.profile') : route('dashboard')} className="flex items-center gap-2.5 group overflow-hidden">
+                            <ApplicationLogo className="w-8 h-8 shrink-0" />
+                            {!sidebarCollapsed && (
+                                <div className="whitespace-nowrap">
+                                    <h1 className="text-sm font-semibold text-foreground tracking-tight leading-tight">El-Hadar Engineering PLC</h1>
+                                    <p className="text-[11px] font-medium text-primary">{isEmployee ? 'Employee Self-Service' : 'HR & Payroll System'}</p>
+                                </div>
                             )}
-                        </div>
-                    </aside>
-                )}
+                        </Link>
+                    </div>
+
+                    <nav className="flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden">
+                        {!sidebarCollapsed && <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-muted-foreground whitespace-nowrap">{isEmployee ? 'Self-Service Portal' : 'Core Operations'}</div>}
+                        {navItems.map((item) => {
+                            const active = isCurrent(item.routeName);
+                            const Icon = item.icon;
+                            return (
+                                <Link key={item.name} href={item.href} title={sidebarCollapsed ? item.name : undefined}
+                                    className={`flex items-center text-[13px] font-medium transition-all ${sidebarCollapsed
+                                        ? `justify-center w-11 h-10 mx-auto rounded-xl ${active ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`
+                                        : `gap-3 px-3 py-2.5 rounded-xl ${active ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}`}>
+                                    <Icon className={`w-[18px] h-[18px] shrink-0 ${active ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
+                                    {!sidebarCollapsed && <span className="truncate whitespace-nowrap">{item.name}</span>}
+                                </Link>
+                            );
+                        })}
+                    </nav>
+
+                    <div className={`border-t border-border transition-all duration-300 ${sidebarCollapsed ? 'p-3 flex flex-col items-center gap-3' : 'p-4'}`}>
+                        {sidebarCollapsed ? (
+                            <>
+                                <div className="w-9 h-9 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-semibold uppercase shrink-0" title={`${user.name} (${displayPhone})`}>{user.name.charAt(0)}</div>
+                                <Link href={route('logout')} method="post" as="button" title="Sign Out" className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-background rounded-xl border border-border transition-colors"><LogOut className="w-4 h-4" /></Link>
+                            </>
+                        ) : (
+                            <>
+                                <div className="flex items-center gap-2.5 mb-3 overflow-hidden">
+                                    <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-semibold uppercase shrink-0">{user.name.charAt(0)}</div>
+                                    <div className="overflow-hidden">
+                                        <p className="text-sm font-semibold text-foreground truncate leading-none">{user.name}</p>
+                                        <p className="text-xs text-muted-foreground truncate mt-0.5">{displayPhone}</p>
+                                    </div>
+                                </div>
+                                <Link href={route('logout')} method="post" as="button" className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-background rounded-xl border border-border transition-colors">
+                                    <LogOut className="w-3.5 h-3.5" /> Sign Out
+                                </Link>
+                            </>
+                        )}
+                    </div>
+                </aside>
 
                 <div className="flex-1 flex flex-col min-w-0">
-                    <header className="min-h-14 bg-background/80 backdrop-blur-xl border-b border-border/50 flex items-center justify-between gap-3 px-3 sm:px-4 lg:px-8 py-2 shrink-0 sticky top-0 z-20">
-                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                            {!isEmployee ? (
-                                <button onClick={toggleSidebar} className="p-2 -ml-1 sm:-ml-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer shrink-0" aria-label="Toggle navigation menu" title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
-                                    <Menu className="w-5 h-5" />
-                                </button>
-                            ) : null}
-                            <Link href={isEmployee ? route('portal.profile') : route('dashboard')} className={`${!isEmployee && !sidebarCollapsed ? 'lg:hidden' : ''} flex items-center gap-2 transition-opacity duration-300 shrink-0`}>
-                                <ApplicationLogo className="w-8 h-8 shrink-0" />
-                                <div className="min-w-0 hidden sm:block">
-                                    <span className="font-semibold text-foreground text-sm block leading-none truncate">El-Hadar</span>
-                                    <span className="text-[10px] font-medium text-primary block mt-0.5 truncate">HRMS</span>
-                                </div>
-                            </Link>
+                    <header className="h-16 bg-background/80 backdrop-blur-xl border-b border-border/50 flex items-center justify-between gap-3 px-3 sm:px-4 lg:px-8 shrink-0 sticky top-0 z-20">
+                        <div className="flex items-center gap-3 sm:gap-4 min-w-0 h-full">
+                            <button onClick={toggleSidebar} className="p-2 -ml-1 sm:-ml-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer shrink-0" aria-label="Toggle navigation menu" title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+                                <Menu className="w-5 h-5" />
+                            </button>
 
-                            {/* Page Title & Subtitle Integrated in Header */}
+                            {/* Page Title - Prominent text taking full height */}
                             {title && (
-                                <div className="min-w-0 flex flex-col justify-center border-l border-border/60 pl-2.5 sm:pl-3 ml-0.5 sm:ml-1">
-                                    <h1 className="text-sm sm:text-base font-bold text-foreground tracking-tight leading-tight truncate">
-                                        {title}
-                                    </h1>
-                                    {subtitle && (
-                                        <p className="text-[11px] text-muted-foreground truncate hidden md:block max-w-md lg:max-w-xl">
-                                            {subtitle}
-                                        </p>
-                                    )}
-                                </div>
+                                <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight truncate leading-none flex items-center h-full">
+                                    {title}
+                                </h1>
                             )}
                         </div>
 
@@ -166,9 +137,11 @@ export default function AuthenticatedLayout({ header, title, subtitle, children 
                                 <>
                                     <Button size="sm" variant="outline" onClick={() => {
                                         if (typeof window !== 'undefined') {
-                                            if (window.location.pathname.includes('/employees') && !window.location.pathname.includes('/create')) window.dispatchEvent(new CustomEvent('open-staff-directory-tour'));
-                                            else if (window.location.pathname.includes('/leave')) window.dispatchEvent(new CustomEvent('open-leave-ledger-tour'));
-                                            else if (window.location.pathname.includes('/dashboard') || window.location.pathname === '/') window.dispatchEvent(new CustomEvent('open-dashboard-tour'));
+                                            const path = window.location.pathname;
+                                            if (path.match(/\/employees\/\d+/)) window.dispatchEvent(new CustomEvent('open-employee-detail-tour'));
+                                            else if (path.includes('/employees') && !path.includes('/create')) window.dispatchEvent(new CustomEvent('open-staff-directory-tour'));
+                                            else if (path.includes('/leave')) window.dispatchEvent(new CustomEvent('open-leave-ledger-tour'));
+                                            else if (path.includes('/dashboard') || path === '/') window.dispatchEvent(new CustomEvent('open-dashboard-tour'));
                                             else setTourOpen(true);
                                         }
                                     }} className="hidden md:inline-flex gap-1.5 text-xs font-medium rounded-full border-border">

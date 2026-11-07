@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -94,3 +94,11 @@
 .custom-scrollbar::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.45); background-clip: content-box; }
 ::selection { background: hsl(var(--primary) / 0.22); }
+::view-transition-old(root), ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+[data-magicui-theme-vt="active"]::view-transition-new(root) {
+    clip-path: var(--magicui-theme-vt-clip-from, none);
+}

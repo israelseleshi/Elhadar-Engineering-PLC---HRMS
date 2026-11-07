@@ -161,6 +161,11 @@ class Employee extends Model
         return $this->hasMany(DataCorrectionReport::class);
     }
 
+    public function leaveRequests(): HasMany
+    {
+        return $this->hasMany(LeaveRequest::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {

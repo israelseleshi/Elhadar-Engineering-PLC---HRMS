@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDiscrepancyRequest;
+use App\Models\AuditLog;
 use App\Models\DataCorrectionReport;
 use App\Models\Employee;
+use App\Models\LeaveRequest;
 use App\Services\AnnualLeaveCalculationService;
 use App\Services\RetirementCalculationService;
 use App\Services\TenureCalculationService;
@@ -44,6 +46,7 @@ class PortalController extends Controller
                 'separation',
                 'promotions',
                 'dataCorrectionReports' => fn ($q) => $q->orderByDesc('created_at'),
+                'leaveRequests' => fn ($q) => $q->with(['handoverEmployee:id,full_name,file_no,position', 'reviewer:id,name'])->orderByDesc('created_at'),
             ]);
 
             $tenure = $this->tenureService->calculateTenure($employee);
@@ -80,12 +83,20 @@ class PortalController extends Controller
             $retirementInfo = null;
         }
 
+        $colleagues = Employee::active()
+            ->when($employee, fn ($q) => $q->where('id', '!=', $employee->id))
+            ->orderBy('full_name')
+            ->select('id', 'full_name', 'file_no', 'position')
+            ->get();
+
         return Inertia::render('Portal/Profile', [
             'employee' => $employee,
             'tenure' => $tenure,
             'annualLeaveEntitlement' => $annualLeaveEntitlement,
             'retirementInfo' => $retirementInfo,
             'discrepancyReports' => $employee ? $employee->dataCorrectionReports : [],
+            'leaveRequests' => $employee ? $employee->leaveRequests : [],
+            'colleagues' => $colleagues,
         ]);
     }
 
@@ -110,6 +121,105 @@ class PortalController extends Controller
         ]);
 
         return back()->with('success', 'Discrepancy report successfully submitted to HR.');
+    }
+
+    /**
+     * Submit an employee leave request.
+     */
+    public function requestLeave(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $employee = $user->employee;
+        if (! $employee && in_array($user->role, ['HRAdmin', 'SysAdmin'], true)) {
+            $employee = Employee::first();
+        }
+        abort_unless($employee, 403, 'Your account is not linked to an employee profile.');
+
+        $validated = $request->validate([
+            'leave_type' => ['required', 'string', 'in:Annual,Sick,Mourning,Marriage,Paternity,Maternity,Compassionate,Unpaid'],
+            'start_date' => ['required', 'date'],
+            'start_date_ec' => ['required', 'string', 'max:30'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'end_date_ec' => ['required', 'string', 'max:30'],
+            'requested_days' => ['required', 'numeric', 'min:0.5', 'max:120'],
+            'reason' => ['required', 'string', 'max:1000'],
+            'handover_employee_id' => ['nullable', 'exists:employees,id'],
+            'contact_phone' => ['nullable', 'string', 'max:50'],
+            'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120'],
+        ]);
+
+        $attachmentPath = null;
+        if ($request->hasFile('attachment')) {
+            $attachmentPath = $request->file('attachment')->store('leave_attachments', 'public');
+        }
+
+        $leaveRequest = LeaveRequest::create([
+            'employee_id' => $employee->id,
+            'user_id' => $user->id,
+            'leave_type' => $validated['leave_type'],
+            'start_date' => $validated['start_date'],
+            'start_date_ec' => $validated['start_date_ec'],
+            'end_date' => $validated['end_date'],
+            'end_date_ec' => $validated['end_date_ec'],
+            'requested_days' => $validated['requested_days'],
+            'reason' => $validated['reason'],
+            'handover_employee_id' => $validated['handover_employee_id'] ?? null,
+            'contact_phone' => $validated['contact_phone'] ?? null,
+            'attachment_path' => $attachmentPath,
+            'status' => 'Pending',
+            'is_deducted' => true,
+            'days_deducted' => 0.0,
+        ]);
+
+        AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'LEAVE_REQUEST_SUBMITTED',
+            'auditable_type' => LeaveRequest::class,
+            'auditable_id' => $leaveRequest->id,
+            'new_values' => $leaveRequest->toArray(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        return back()->with('success', "Leave request for {$validated['requested_days']} days submitted for HR review.");
+    }
+
+    /**
+     * Cancel a pending employee leave request.
+     */
+    public function cancelLeaveRequest(Request $request, LeaveRequest $leaveRequest): RedirectResponse
+    {
+        $user = $request->user();
+        $employee = $user->employee;
+        if (! $employee && in_array($user->role, ['HRAdmin', 'SysAdmin'], true)) {
+            $employee = $leaveRequest->employee;
+        }
+
+        abort_unless(
+            $leaveRequest->employee_id === $employee?->id ||
+            $leaveRequest->user_id === $user->id ||
+            in_array($user->role, ['HRAdmin', 'SysAdmin'], true),
+            403,
+            'Unauthorized to cancel this leave request.'
+        );
+
+        abort_unless($leaveRequest->status === 'Pending', 422, 'Only pending leave requests can be cancelled.');
+
+        $leaveRequest->update([
+            'status' => 'Cancelled',
+        ]);
+
+        AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'LEAVE_REQUEST_CANCELLED',
+            'auditable_type' => LeaveRequest::class,
+            'auditable_id' => $leaveRequest->id,
+            'new_values' => ['status' => 'Cancelled'],
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        return back()->with('info', 'Leave request cancelled.');
     }
 
     /**

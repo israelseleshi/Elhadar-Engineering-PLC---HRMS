@@ -2,10 +2,14 @@ import { useState, useEffect } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import InteractiveTour, { TourStep } from '@/Components/InteractiveTour';
-import { Card, CardContent } from '@/Components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import { Textarea } from '@/Components/ui/textarea';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { toast } from 'sonner';
 import {
     Dialog,
     DialogContent,
@@ -27,7 +31,17 @@ import {
     Search, 
     Eye, 
     MinusCircle, 
-    Compass
+    Compass,
+    CalendarCheck,
+    CheckCircle2,
+    XCircle,
+    AlertCircle,
+    Clock,
+    History,
+    Paperclip,
+    ShieldCheck,
+    Check,
+    Calendar
 } from 'lucide-react';
 
 const leaveTourSteps: TourStep[] = [
@@ -69,6 +83,47 @@ interface StaffLeave {
     display_remaining: number;
 }
 
+interface LeaveRequest {
+    id: number;
+    employee_id: number;
+    user_id: number;
+    leave_type: string;
+    start_date: string;
+    start_date_ec: string;
+    end_date: string;
+    end_date_ec: string;
+    requested_days: number;
+    reason: string;
+    handover_employee_id?: number | null;
+    contact_phone?: string | null;
+    attachment_path?: string | null;
+    status: 'Pending' | 'Approved' | 'Rejected' | 'Cancelled';
+    is_deducted: boolean;
+    days_deducted: number;
+    reviewed_by?: number | null;
+    reviewed_at?: string | null;
+    reviewer_notes?: string | null;
+    created_at: string;
+    employee?: {
+        id: number;
+        full_name: string;
+        file_no: string;
+        position?: string;
+        department?: { name: string };
+        current_leave_balance?: { remaining_days: number };
+    };
+    handover_employee?: {
+        id: number;
+        full_name: string;
+        file_no: string;
+        position?: string;
+    } | null;
+    reviewer?: {
+        id: number;
+        name: string;
+    } | null;
+}
+
 interface Props {
     employees: {
         data: StaffLeave[];
@@ -88,11 +143,23 @@ interface Props {
         staff_tracked_count: number;
     };
     currentYear: number;
+    pendingRequests?: LeaveRequest[];
+    recentRequests?: LeaveRequest[];
+    pendingCount?: number;
 }
 
-export default function Index({ employees, filters, stats, currentYear }: Props) {
+export default function Index({
+    employees,
+    filters,
+    stats,
+    currentYear,
+    pendingRequests = [],
+    recentRequests = [],
+    pendingCount = 0,
+}: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [selectedStaff, setSelectedStaff] = useState<StaffLeave | null>(null);
+    const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
     const [viewMode, setViewMode] = useViewMode('leave');
     const [isTourOpen, setIsTourOpen] = useState(false);
 
@@ -113,6 +180,49 @@ export default function Index({ employees, filters, stats, currentYear }: Props)
         days_deducted: '1',
         reason: 'Annual Leave Deduction',
     });
+
+    const {
+        data: reviewData,
+        setData: setReviewData,
+        post: postReview,
+        processing: reviewProcessing,
+        reset: resetReview,
+        errors: reviewErrors,
+    } = useForm<{
+        decision: 'approve' | 'reject';
+        deduct_balance: boolean;
+        days_to_deduct: string;
+        reviewer_notes: string;
+    }>({
+        decision: 'approve',
+        deduct_balance: true,
+        days_to_deduct: '1',
+        reviewer_notes: '',
+    });
+
+    const openReviewModal = (req: LeaveRequest) => {
+        setSelectedRequest(req);
+        setReviewData({
+            decision: 'approve',
+            deduct_balance: true,
+            days_to_deduct: String(req.requested_days),
+            reviewer_notes: '',
+        });
+    };
+
+    const handleReviewSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedRequest) return;
+
+        postReview(route('leave.requests.review', selectedRequest.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setSelectedRequest(null);
+                resetReview();
+                toast.success('Leave review decision submitted successfully.');
+            },
+        });
+    };
 
     const handleFilter = (updates: Record<string, string>) => {
         router.get(
@@ -163,8 +273,39 @@ export default function Index({ employees, filters, stats, currentYear }: Props)
         >
             <Head title="Leave Ledger - Elhadar Engineering HRMS" />
 
-            {/* Filter and Search Bar */}
-            <Card data-tour="leave-search" className="border-border bg-card mb-6">
+            {/* Primary Ledger Navigation Tabs */}
+            <Tabs defaultValue={pendingCount > 0 ? 'queue' : 'balances'} className="w-full">
+                <TabsList className="w-full sm:w-auto grid grid-cols-3 p-1.5 bg-muted/60 dark:bg-muted/30 border border-border/80 rounded-xl mb-6 gap-1.5 h-auto">
+                    <TabsTrigger
+                        value="balances"
+                        className="text-xs sm:text-sm font-medium py-2.5 px-4 rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:shadow-xs transition-all"
+                    >
+                        <span>Staff Balances</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="queue"
+                        className="text-xs sm:text-sm font-medium py-2.5 px-4 rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:shadow-xs transition-all flex items-center justify-center gap-2"
+                    >
+                        <span>Pending Requests</span>
+                        {pendingCount > 0 && (
+                            <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-destructive text-destructive-foreground font-bold animate-pulse">
+                                {pendingCount}
+                            </span>
+                        )}
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="history"
+                        className="text-xs sm:text-sm font-medium py-2.5 px-4 rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:shadow-xs transition-all flex items-center justify-center gap-1.5"
+                    >
+                        <History className="w-3.5 h-3.5 text-muted-foreground" />
+                        <span>Decisions History</span>
+                    </TabsTrigger>
+                </TabsList>
+
+                {/* TAB 1: STAFF LEAVE BALANCES LEDGER */}
+                <TabsContent value="balances" className="space-y-6 focus-visible:outline-none">
+                    {/* Filter and Search Bar */}
+                    <Card data-tour="leave-search" className="border-border bg-card">
                 <CardContent className="p-4">
                     <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
                         <div className="relative w-full sm:w-80">
@@ -387,6 +528,454 @@ export default function Index({ employees, filters, stats, currentYear }: Props)
                     </div>
                 )}
             </Card>
+        </TabsContent>
+
+        {/* TAB 2: PENDING LEAVE REQUESTS QUEUE */}
+        <TabsContent value="queue" className="space-y-6 focus-visible:outline-none">
+            <Card className="border-border bg-card shadow-xs overflow-hidden">
+                <CardHeader className="py-4 px-6 border-b border-border/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                        <CardTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+                            <CalendarCheck className="w-5 h-5 text-primary" />
+                            <span>Pending Leave Requests Queue</span>
+                        </CardTitle>
+                        <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                            Review staff leave applications, evaluate remaining balance, and approve with deduction or as excused leave
+                        </CardDescription>
+                    </div>
+                    <Badge variant="outline" className="text-xs font-mono self-start sm:self-auto">
+                        {pendingRequests.length} Waiting Review
+                    </Badge>
+                </CardHeader>
+
+                <CardContent className="p-0">
+                    {pendingRequests.length === 0 ? (
+                        <div className="py-16 flex flex-col items-center justify-center text-center px-4">
+                            <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 mb-3">
+                                <CheckCircle2 className="w-6 h-6" />
+                            </div>
+                            <h4 className="text-sm font-semibold text-foreground">All Caught Up!</h4>
+                            <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+                                There are no pending employee leave requests waiting for administrative review.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader className="bg-muted/40">
+                                    <TableRow>
+                                        <TableHead>Staff Member</TableHead>
+                                        <TableHead>Leave Type</TableHead>
+                                        <TableHead>Duration &amp; Dates</TableHead>
+                                        <TableHead>Handover &amp; Contact</TableHead>
+                                        <TableHead className="text-center">Current Balance</TableHead>
+                                        <TableHead>Reason</TableHead>
+                                        <TableHead className="text-right">Action</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody className="divide-y divide-border/60">
+                                    {pendingRequests.map((req) => (
+                                        <TableRow key={req.id} className="hover:bg-muted/30">
+                                            <TableCell>
+                                                <div className="font-bold text-foreground text-sm">
+                                                    {req.employee?.full_name || 'Staff Member'}
+                                                </div>
+                                                <div className="text-xs font-semibold text-primary">
+                                                    {req.employee?.file_no}
+                                                </div>
+                                                <div className="text-[11px] text-muted-foreground">
+                                                    {req.employee?.department?.name || 'Operations'} · {req.employee?.position}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className="text-xs font-semibold bg-primary/5 text-primary border-primary/20">
+                                                    {req.leave_type} Leave
+                                                </Badge>
+                                                {req.attachment_path && (
+                                                    <div className="mt-1">
+                                                        <a
+                                                            href={`/storage/${req.attachment_path}`}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-medium"
+                                                        >
+                                                            <Paperclip className="w-3 h-3" />
+                                                            <span>Attachment</span>
+                                                        </a>
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="font-mono font-bold text-foreground text-xs">
+                                                    {req.requested_days} Working Day{req.requested_days > 1 ? 's' : ''}
+                                                </div>
+                                                <div className="text-xs font-mono text-muted-foreground">
+                                                    {req.start_date_ec} – {req.end_date_ec}
+                                                </div>
+                                                <div className="text-[10px] text-muted-foreground">
+                                                    ({req.start_date} to {req.end_date})
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="text-xs font-medium text-foreground">
+                                                    {req.handover_employee?.full_name || 'None'}
+                                                </div>
+                                                <div className="text-[11px] font-mono text-muted-foreground">
+                                                    {req.contact_phone || '—'}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold font-mono bg-muted text-primary">
+                                                    {req.employee?.current_leave_balance?.remaining_days ?? 16} Days
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="max-w-xs">
+                                                <p className="text-xs text-foreground/90 line-clamp-2" title={req.reason}>
+                                                    {req.reason}
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground mt-1">
+                                                    Applied: {new Date(req.created_at).toLocaleDateString()}
+                                                </p>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() => openReviewModal(req)}
+                                                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-8 px-3 rounded-lg shadow-xs"
+                                                >
+                                                    Review &amp; Decide
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </TabsContent>
+
+        {/* TAB 3: DECISIONS AUDIT HISTORY */}
+        <TabsContent value="history" className="space-y-6 focus-visible:outline-none">
+            <Card className="border-border bg-card shadow-xs overflow-hidden">
+                <CardHeader className="py-4 px-6 border-b border-border/70">
+                    <CardTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+                        <History className="w-5 h-5 text-primary" />
+                        <span>Recent Leave Decisions History</span>
+                    </CardTitle>
+                    <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                        Audit trail of approved, rejected, and cancelled leave applications
+                    </CardDescription>
+                </CardHeader>
+
+                <CardContent className="p-0">
+                    {recentRequests.length === 0 ? (
+                        <div className="py-16 text-center text-xs text-muted-foreground">
+                            No historic leave decisions recorded yet.
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader className="bg-muted/40">
+                                    <TableRow>
+                                        <TableHead>Staff Member</TableHead>
+                                        <TableHead>Type &amp; Period</TableHead>
+                                        <TableHead>Balance Impact</TableHead>
+                                        <TableHead>Decision</TableHead>
+                                        <TableHead>Reviewed By</TableHead>
+                                        <TableHead>Notes</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody className="divide-y divide-border/60">
+                                    {recentRequests.map((req) => (
+                                                <TableRow key={req.id} className="hover:bg-muted/30">
+                                                    <TableCell>
+                                                        <div className="font-bold text-foreground text-sm">
+                                                            {req.employee?.full_name || 'Staff Member'}
+                                                        </div>
+                                                        <div className="text-xs font-semibold text-primary">
+                                                            {req.employee?.file_no}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="text-xs font-semibold text-foreground">
+                                                            {req.leave_type} ({req.requested_days} Days)
+                                                        </div>
+                                                        <div className="text-[11px] font-mono text-muted-foreground">
+                                                            {req.start_date_ec} to {req.end_date_ec}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {req.status === 'Approved' ? (
+                                                            req.is_deducted ? (
+                                                                <Badge variant="outline" className="text-xs font-mono bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20">
+                                                                    -{req.days_deducted} days
+                                                                </Badge>
+                                                            ) : (
+                                                                <Badge variant="outline" className="text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
+                                                                    Excused (0 Deduction)
+                                                                </Badge>
+                                                            )
+                                                        ) : (
+                                                            <span className="text-xs text-muted-foreground">—</span>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Badge
+                                                            variant={
+                                                                req.status === 'Approved'
+                                                                    ? 'secondary'
+                                                                    : req.status === 'Rejected'
+                                                                    ? 'destructive'
+                                                                    : 'outline'
+                                                            }
+                                                            className={`text-xs px-2.5 py-0.5 font-semibold ${
+                                                                req.status === 'Approved'
+                                                                    ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20'
+                                                                    : req.status === 'Rejected'
+                                                                    ? 'bg-destructive/10 text-destructive border-destructive/25'
+                                                                    : ''
+                                                            }`}
+                                                        >
+                                                            {req.status}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="text-xs font-medium text-foreground">
+                                                            {req.reviewer?.name || 'HR Administrator'}
+                                                        </div>
+                                                        <div className="text-[10px] text-muted-foreground font-mono">
+                                                            {req.reviewed_at ? new Date(req.reviewed_at).toLocaleDateString() : '—'}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="max-w-xs">
+                                                        <p className="text-xs text-muted-foreground truncate" title={req.reviewer_notes || req.reason}>
+                                                            {req.reviewer_notes || req.reason || '—'}
+                                                        </p>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                            </Table>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </TabsContent>
+    </Tabs>
+
+    {/* HR Review Decision Modal (Shadcn UI Dialog) */}
+    <Dialog open={Boolean(selectedRequest)} onOpenChange={(open) => !open && setSelectedRequest(null)}>
+        <DialogContent className="max-w-lg bg-card border-border text-card-foreground p-6 max-h-[90vh] overflow-y-auto rounded-2xl shadow-lg">
+            <DialogHeader>
+                <DialogTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-primary" />
+                    <span>Review Employee Leave Application</span>
+                </DialogTitle>
+                <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                    Determine statutory eligibility, choose deduction treatment, or record rejection reason.
+                </DialogDescription>
+            </DialogHeader>
+
+            {selectedRequest && (
+                <form onSubmit={handleReviewSubmit} className="space-y-4 pt-3">
+                    {/* Staff Dossier Summary Banner */}
+                    <div className="p-3.5 bg-muted/40 border border-border/80 rounded-xl space-y-2">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <p className="font-bold text-foreground text-sm">{selectedRequest.employee?.full_name}</p>
+                                <p className="text-xs font-semibold text-primary">{selectedRequest.employee?.file_no} · {selectedRequest.employee?.position}</p>
+                                <p className="text-[11px] text-muted-foreground">{selectedRequest.employee?.department?.name || 'General Operations'}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase">Current Balance</p>
+                                <p className="text-sm font-extrabold text-primary font-mono">
+                                    {selectedRequest.employee?.current_leave_balance?.remaining_days ?? 16} Working Days
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-border/60 grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                                <span className="text-muted-foreground">Type: </span>
+                                <strong className="text-foreground">{selectedRequest.leave_type} Leave</strong>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Duration: </span>
+                                <strong className="text-foreground">{selectedRequest.requested_days} Days</strong>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Dates (E.C.): </span>
+                                <span className="font-mono text-foreground font-medium">{selectedRequest.start_date_ec} – {selectedRequest.end_date_ec}</span>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Dates (G.C.): </span>
+                                <span className="font-mono text-muted-foreground">{selectedRequest.start_date} to {selectedRequest.end_date}</span>
+                            </div>
+                            {selectedRequest.handover_employee && (
+                                <div className="col-span-2">
+                                    <span className="text-muted-foreground">Handover: </span>
+                                    <span className="text-foreground font-medium">{selectedRequest.handover_employee.full_name} ({selectedRequest.handover_employee.position})</span>
+                                </div>
+                            )}
+                            {selectedRequest.contact_phone && (
+                                <div className="col-span-2">
+                                    <span className="text-muted-foreground">Contact Phone: </span>
+                                    <span className="text-foreground font-mono">{selectedRequest.contact_phone}</span>
+                                </div>
+                            )}
+                            <div className="col-span-2 pt-1">
+                                <span className="text-muted-foreground">Reason: </span>
+                                <span className="text-foreground">{selectedRequest.reason}</span>
+                            </div>
+                            {selectedRequest.attachment_path && (
+                                <div className="col-span-2 pt-1">
+                                    <a
+                                        href={`/storage/${selectedRequest.attachment_path}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-semibold"
+                                    >
+                                        <Paperclip className="w-3.5 h-3.5" />
+                                        <span>View Attached Supporting Document</span>
+                                    </a>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Decision Choice */}
+                    <div>
+                        <label className="block text-xs font-bold text-foreground mb-2">
+                            Administrative Decision <span className="text-destructive">*</span>
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setReviewData('decision', 'approve')}
+                                className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                                    reviewData.decision === 'approve'
+                                        ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-400 shadow-xs'
+                                        : 'border-border bg-card text-muted-foreground hover:bg-muted'
+                                }`}
+                            >
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                                <span>Approve Request</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setReviewData('decision', 'reject')}
+                                className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                                    reviewData.decision === 'reject'
+                                        ? 'bg-destructive/15 border-destructive/40 text-destructive shadow-xs'
+                                        : 'border-border bg-card text-muted-foreground hover:bg-muted'
+                                }`}
+                            >
+                                <XCircle className="w-4 h-4 text-destructive" />
+                                <span>Reject Request</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* When Approved: Deduction Option */}
+                    {reviewData.decision === 'approve' && (
+                        <div className="space-y-3 p-3.5 rounded-xl border border-border/80 bg-muted/20">
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="deduct_balance"
+                                    checked={reviewData.deduct_balance}
+                                    onCheckedChange={(checked) => setReviewData('deduct_balance', Boolean(checked))}
+                                />
+                                <label
+                                    htmlFor="deduct_balance"
+                                    className="text-xs font-bold text-foreground cursor-pointer select-none"
+                                >
+                                    Deduct from Annual Leave Balance
+                                </label>
+                            </div>
+
+                            {reviewData.deduct_balance ? (
+                                <div>
+                                    <label className="block text-xs font-semibold text-foreground mb-1">
+                                        Days to Deduct from Annual Balance
+                                    </label>
+                                    <Input
+                                        type="number"
+                                        step="0.5"
+                                        min="0.5"
+                                        max="60"
+                                        value={reviewData.days_to_deduct}
+                                        onChange={(e) => setReviewData('days_to_deduct', e.target.value)}
+                                        className="bg-background border-border text-foreground text-xs h-9 rounded-xl font-mono"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-xs text-blue-700 dark:text-blue-300">
+                                    <strong className="block font-semibold mb-0.5">Approved as Excused / Special Leave</strong>
+                                    Zero days will be deducted from the employee&apos;s annual leave balance (Compassionate, statutory special leave, or extreme circumstance).
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-xs font-semibold text-foreground mb-1">
+                                    Reviewer Notes (Optional)
+                                </label>
+                                <Input
+                                    value={reviewData.reviewer_notes}
+                                    onChange={(e) => setReviewData('reviewer_notes', e.target.value)}
+                                    placeholder="e.g. Approved per medical note / Art. 81"
+                                    className="bg-background border-border text-foreground text-xs h-9 rounded-xl"
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* When Rejected: Mandatory Reason */}
+                    {reviewData.decision === 'reject' && (
+                        <div className="space-y-2 p-3.5 rounded-xl border border-destructive/20 bg-destructive/5">
+                            <label className="block text-xs font-bold text-destructive">
+                                Rejection Reason <span className="text-destructive">*</span>
+                            </label>
+                            <Textarea
+                                required
+                                rows={3}
+                                value={reviewData.reviewer_notes}
+                                onChange={(e) => setReviewData('reviewer_notes', e.target.value)}
+                                placeholder="Explain to the employee why this leave request cannot be approved at this time..."
+                                className="w-full rounded-xl border border-destructive/30 bg-background text-foreground p-3 text-xs leading-relaxed focus-visible:ring-1 focus-visible:ring-destructive"
+                            />
+                            {reviewErrors.reviewer_notes && (
+                                <p className="text-xs text-destructive font-medium">{reviewErrors.reviewer_notes}</p>
+                            )}
+                        </div>
+                    )}
+
+                    <DialogFooter className="flex justify-end gap-2 pt-3 border-t border-border/70">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setSelectedRequest(null)}
+                            className="text-xs border-border rounded-xl h-9"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={reviewProcessing}
+                            className={`text-xs font-semibold rounded-xl h-9 shadow-xs text-white ${
+                                reviewData.decision === 'approve'
+                                    ? 'bg-emerald-600 hover:bg-emerald-700'
+                                    : 'bg-destructive hover:bg-destructive/90'
+                            }`}
+                        >
+                            {reviewProcessing ? 'Saving Decision...' : reviewData.decision === 'approve' ? 'Confirm Approval' : 'Confirm Rejection'}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            )}
+        </DialogContent>
+    </Dialog>
 
             {/* Deduct Leave Modal (Shadcn Dialog) */}
             <Dialog open={Boolean(selectedStaff)} onOpenChange={(open) => !open && setSelectedStaff(null)}>

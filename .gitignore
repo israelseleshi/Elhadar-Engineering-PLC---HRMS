@@ -97,3 +97,11 @@ mapping_summary.txt
 *.bak
 *.orig
 *~
+
+# Local AI assistant tools & binary skills
+.agents/
+.codex/
+.github/agents/
+.github/hooks/
+.github/skills/
+

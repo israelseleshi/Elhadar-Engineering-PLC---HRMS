@@ -36,6 +36,8 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
     // Employee Self-Service (ESS) - Accessible to all staff
     Route::get('/portal/profile', [PortalController::class, 'profile'])->name('portal.profile');
     Route::post('/portal/discrepancies', [PortalController::class, 'reportDiscrepancy'])->name('portal.discrepancy.store');
+    Route::post('/portal/leave-requests', [PortalController::class, 'requestLeave'])->name('portal.leave.store');
+    Route::patch('/portal/leave-requests/{leaveRequest}/cancel', [PortalController::class, 'cancelLeaveRequest'])->name('portal.leave.cancel');
     // Staff Photo Management (HR/Admin or Self)
     Route::post('/employees/{employee}/photo', [EmployeePhotoController::class, 'store'])->name('employees.photo.store');
     Route::delete('/employees/{employee}/photo', [EmployeePhotoController::class, 'destroy'])->name('employees.photo.destroy');
@@ -93,6 +95,7 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
         Route::get('/contracts', [ContractController::class, 'index'])->name('contracts.index');
         Route::get('/training', [TrainingController::class, 'index'])->name('training.index');
         Route::get('/leave', [LeaveBalanceController::class, 'index'])->name('leave.index');
+        Route::post('/leave/requests/{leaveRequest}/review', [LeaveBalanceController::class, 'reviewRequest'])->name('leave.requests.review');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
