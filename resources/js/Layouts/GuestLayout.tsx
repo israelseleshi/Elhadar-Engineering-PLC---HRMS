@@ -1,48 +1,16 @@
-import { PropsWithChildren, useState, useEffect } from 'react';
+import { PropsWithChildren } from 'react';
 import { Link } from '@inertiajs/react';
 import { ShieldCheck } from 'lucide-react';
 import { ThemeToggle } from '@/Components/ThemeToggle';
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { BackgroundCubesGrid } from '@/Components/ui/background-cubes-grid';
-import { useTheme } from 'next-themes';
 
-export interface GuestLayoutProps extends PropsWithChildren {
-    showCubesBackground?: boolean;
-}
+export interface GuestLayoutProps extends PropsWithChildren {}
 
 export default function Guest({
     children,
-    showCubesBackground = false,
 }: GuestLayoutProps) {
-    const { resolvedTheme } = useTheme();
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    const isDark = mounted ? resolvedTheme === 'dark' : false;
-
     return (
         <div className="relative min-h-screen bg-[#f5f5f7] dark:bg-[#0c0c0f] flex flex-col justify-between text-[#1d1d1f] dark:text-foreground selection:bg-[#0066cc] selection:text-white overflow-hidden transition-colors duration-300">
-            {/* 3D Perspective Background Cubes Grid */}
-            {showCubesBackground && (
-                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-                    <BackgroundCubesGrid
-                        key={isDark ? 'dark' : 'light'}
-                        variant="perspective"
-                        gridSize={44}
-                        gap={0.08}
-                        baseColor={isDark ? '#1c1c22' : '#e5e5eb'}
-                        waveColor={isDark ? '#2997ff' : '#0066cc'}
-                        backgroundColor={isDark ? '#0c0c0f' : '#f5f5f7'}
-                        glow={isDark ? 0.95 : 0.85}
-                        amplitude={0.5}
-                        tilt={0.65}
-                        idleRipples={true}
-                    />
-                </div>
-            )}
 
             {/* Top Bar with Enterprise Badge and Theme Toggler */}
             <div className="relative z-20 bg-[#1d1d1f]/95 dark:bg-[#121215]/95 backdrop-blur-md text-white py-2 px-3 sm:px-8 text-[11px] sm:text-xs font-medium flex items-center justify-between gap-2 border-b border-black/20">

@@ -86,7 +86,7 @@ export default function Login({
     };
 
     return (
-        <GuestLayout showCubesBackground={true}>
+        <GuestLayout>
             <Head title="Sign In - Elhadar Engineering HRMS" />
 
             <div className="mb-6">

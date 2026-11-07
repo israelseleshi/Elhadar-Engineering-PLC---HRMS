@@ -2,6 +2,7 @@
 .env
 .env.backup
 .env.production
+*.sql
 .env.key
 vendor/
 node_modules/

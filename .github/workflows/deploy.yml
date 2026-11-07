@@ -68,7 +68,7 @@ jobs:
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
       DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
       DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/home/charisme/elhadar_hrms' }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/home/elhadarcom/hrms.elhadar.com' }}
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
     steps:
@@ -129,7 +129,12 @@ jobs:
             --exclude='.env*' \
             --exclude='storage' \
             --exclude='node_modules' \
+            --exclude='resources/js' \
+            --exclude='resources/css' \
             --exclude='tests' \
+            --exclude='docs' \
+            --exclude='scripts' \
+            --exclude='*.md' \
             -e "ssh -p $DEPLOY_PORT" \
             ./ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH
 
@@ -139,27 +144,36 @@ jobs:
             set -e
             cd $DEPLOY_PATH
 
+            # Detect PHP 8.4 binary on CloudLinux / cPanel
+            if [ -x /opt/alt/php84/usr/bin/php ]; then
+              PHP="/opt/alt/php84/usr/bin/php"
+            elif [ -x /usr/local/bin/ea-php84 ]; then
+              PHP="/usr/local/bin/ea-php84"
+            else
+              PHP="php"
+            fi
+
             # Run migrations on production database
-            php artisan migrate --force
+            \$PHP artisan migrate --force
 
             # Ingest terminated personnel dataset
-            php artisan hrms:import-terminated-employees --no-interaction || true
+            \$PHP artisan hrms:import-terminated-employees --no-interaction || true
 
             # Ingest annual leave ledger
-            php artisan hrms:import-annual-leave --no-interaction || true
+            \$PHP artisan hrms:import-annual-leave --no-interaction || true
 
             # Clear stale caches
-            php artisan config:clear
-            php artisan cache:clear
-            php artisan view:clear
+            \$PHP artisan config:clear
+            \$PHP artisan cache:clear
+            \$PHP artisan view:clear
 
             # Ensure storage symlink exists
-            [ -L public/storage ] || php artisan storage:link || true
+            [ -L public/storage ] || \$PHP artisan storage:link || true
 
             # Cache config, routes, and views for production performance
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
+            \$PHP artisan config:cache
+            \$PHP artisan route:cache
+            \$PHP artisan view:cache
 
             # Ensure correct web server permissions on new Vite assets
             chmod -R 755 public/build
@@ -187,7 +201,7 @@ jobs:
 
       - name: Post-deploy health check
         run: |
-          TARGET_URL="https://www.charismahand.com/"
+          TARGET_URL="https://hrms.elhadar.com/"
           echo "Checking health at $TARGET_URL ..."
           for i in {1..10}; do
             HTTP_CODE=$(curl -m 10 -k -o /dev/null -s -w "%{http_code}" -L "$TARGET_URL" || true)
@@ -199,4 +213,4 @@ jobs:
             sleep 6
           done
           echo "⚠️ External health check returned HTTP $HTTP_CODE. Verifying via SSH..."
-          ssh -T -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST "cd $DEPLOY_PATH && php artisan route:list --path=login"
+          ssh -T -p $DEPLOY_PORT $DEPLOY_USER@$DEPLOY_HOST "cd $DEPLOY_PATH && (/opt/alt/php84/usr/bin/php artisan route:list --path=login || php artisan route:list --path=login)"
