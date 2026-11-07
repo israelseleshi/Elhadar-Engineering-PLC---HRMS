@@ -2,7 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
 import {
     LayoutDashboard, Users, CalendarDays, GraduationCap, UserCheck, LogOut,
-    Menu, X, TrendingUp, UserMinus, UserPlus, Sliders, Activity, Compass
+    Menu, X, TrendingUp, UserMinus, UserPlus, Sliders, Activity, Compass, Megaphone
 } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
 import { ThemeToggle } from '@/Components/ThemeToggle';
@@ -44,9 +44,13 @@ export default function AuthenticatedLayout({ header, title, subtitle, children 
 
     const isEmployee = user.role === 'Employee';
     const navItems = isEmployee
-        ? [{ name: 'My Self-Service', href: route('portal.profile'), routeName: 'portal.*', icon: UserCheck }]
+        ? [
+            { name: 'Announcements', href: route('announcements.index'), routeName: 'announcements.*', icon: Megaphone },
+            { name: 'My Self-Service', href: route('portal.profile'), routeName: 'portal.*', icon: UserCheck },
+        ]
         : [
             { name: 'Dashboard', href: route('dashboard'), routeName: 'dashboard', icon: LayoutDashboard },
+            { name: 'Announcements', href: route('announcements.index'), routeName: 'announcements.*', icon: Megaphone },
             { name: 'Staff Directory', href: route('employees.index'), routeName: 'employees.*', icon: Users },
             { name: 'Leave Ledger', href: route('leave.index'), routeName: 'leave.*', icon: CalendarDays },
             { name: 'Training Registry', href: route('training.index'), routeName: 'training.*', icon: GraduationCap },
@@ -141,6 +145,7 @@ export default function AuthenticatedLayout({ header, title, subtitle, children 
                                             if (path.match(/\/employees\/\d+/)) window.dispatchEvent(new CustomEvent('open-employee-detail-tour'));
                                             else if (path.includes('/employees') && !path.includes('/create')) window.dispatchEvent(new CustomEvent('open-staff-directory-tour'));
                                             else if (path.includes('/leave')) window.dispatchEvent(new CustomEvent('open-leave-ledger-tour'));
+                                            else if (path.includes('/portal')) window.dispatchEvent(new CustomEvent('open-portal-tour'));
                                             else if (path.includes('/dashboard') || path === '/') window.dispatchEvent(new CustomEvent('open-dashboard-tour'));
                                             else setTourOpen(true);
                                         }

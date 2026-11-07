@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\DashboardController;
@@ -42,6 +43,9 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::post('/employees/{employee}/photo', [EmployeePhotoController::class, 'store'])->name('employees.photo.store');
     Route::delete('/employees/{employee}/photo', [EmployeePhotoController::class, 'destroy'])->name('employees.photo.destroy');
 
+    // Announcements - Viewable by all staff, managed by HR Admin & SysAdmin
+    Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+
     // Administrative Governance - Strictly HRAdmin and SysAdmin
     Route::middleware('role:HRAdmin,SysAdmin')->group(function () {
         Route::patch('/portal/discrepancies/{report}', [PortalController::class, 'reviewDiscrepancy'])->name('portal.discrepancy.review');
@@ -78,6 +82,13 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
         // System Settings & Statutory Parameter Registry
         Route::get('/settings', [SystemSettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [SystemSettingController::class, 'update'])->name('settings.update');
+
+        // Announcements - HR Admin & SysAdmin management
+        Route::get('/announcements/create', [AnnouncementController::class, 'create'])->name('announcements.create');
+        Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+        Route::get('/announcements/{announcement}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
+        Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
+        Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
 
         // Immutable Security Audit Log & Changes Inspector
         Route::get('/audit', [AuditLogController::class, 'index'])->name('audit.index');

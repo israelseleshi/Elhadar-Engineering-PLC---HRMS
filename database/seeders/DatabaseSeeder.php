@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Announcement;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -57,5 +58,8 @@ class DatabaseSeeder extends Seeder
         if ($firstEmployee) {
             $firstEmployee->update(['user_id' => $employeeUser->id]);
         }
+
+        // 4. Sample announcements
+        Announcement::factory()->count(5)->create();
     }
 }
