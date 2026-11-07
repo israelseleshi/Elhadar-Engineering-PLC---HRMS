@@ -6,7 +6,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
 import { ThemeToggle } from '@/Components/ThemeToggle';
-import SystemTour from '@/Components/SystemTour';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { formatEthPhone } from '@/lib/utils';
 import { Toaster } from '@/Components/ui/sonner';
@@ -24,7 +23,6 @@ export default function AuthenticatedLayout({ header, title, subtitle, children 
         if (typeof window !== 'undefined') return localStorage.getItem('hrms_sidebar_collapsed') === 'true';
         return false;
     });
-    const [tourOpen, setTourOpen] = useState(false);
 
     useEffect(() => {
         if (flash?.success) toast.success(flash.success);
@@ -147,7 +145,7 @@ export default function AuthenticatedLayout({ header, title, subtitle, children 
                                             else if (path.includes('/leave')) window.dispatchEvent(new CustomEvent('open-leave-ledger-tour'));
                                             else if (path.includes('/portal')) window.dispatchEvent(new CustomEvent('open-portal-tour'));
                                             else if (path.includes('/dashboard') || path === '/') window.dispatchEvent(new CustomEvent('open-dashboard-tour'));
-                                            else setTourOpen(true);
+                                            else toast.info('A guided tour is not available for this page yet.');
                                         }
                                     }} className="hidden md:inline-flex gap-1.5 text-xs font-medium rounded-full border-border">
                                         <Compass className="w-3.5 h-3.5 text-primary" /><span>Tour</span>
@@ -210,7 +208,6 @@ export default function AuthenticatedLayout({ header, title, subtitle, children 
                 </div>
             </div>
 
-            <SystemTour open={tourOpen} onClose={() => setTourOpen(false)} />
             <Toaster richColors position="top-right" closeButton />
         </div>
     );
