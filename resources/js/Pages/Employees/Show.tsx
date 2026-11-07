@@ -584,18 +584,18 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                    ========================================================================= */}
                 <div className="lg:col-span-8 space-y-6">
                     <Tabs defaultValue="career" className="w-full">
-                        {/* 3 Unified Tabs (Table / Grid Segmented Navigation) */}
-                        <TabsList data-tour="dossier-tabs" className="w-full grid grid-cols-1 sm:grid-cols-3 p-1.5 bg-muted/60 dark:bg-muted/30 border border-border/80 rounded-xl mb-6 gap-1.5 h-auto">
-                            <TabsTrigger value="career" className="text-xs sm:text-sm font-medium py-2.5 px-3 rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:shadow-xs transition-all">
-                                <Briefcase className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
+                        {/* 3 Unified Tabs (Flat Table / Grid Navigation) */}
+                        <TabsList data-tour="dossier-tabs" className="grid w-full grid-cols-1 sm:grid-cols-3 p-0 gap-0 mb-6 h-auto overflow-hidden rounded-lg border border-border bg-card divide-y divide-border sm:divide-y-0 sm:divide-x">
+                            <TabsTrigger value="career" className="group relative flex w-full items-center justify-center gap-2 rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-3.5 text-xs sm:text-sm font-medium text-muted-foreground shadow-none transition-colors data-[state=inactive]:hover:bg-muted/30 data-[state=inactive]:hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold">
+                                <Briefcase className="w-4 h-4 shrink-0 text-muted-foreground transition-colors group-data-[state=active]:text-primary-foreground" />
                                 <span>Career &amp; Assignment</span>
                             </TabsTrigger>
-                            <TabsTrigger value="payroll" className="text-xs sm:text-sm font-medium py-2.5 px-3 rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:shadow-xs transition-all">
-                                <CreditCard className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
+                            <TabsTrigger value="payroll" className="group relative flex w-full items-center justify-center gap-2 rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-3.5 text-xs sm:text-sm font-medium text-muted-foreground shadow-none transition-colors data-[state=inactive]:hover:bg-muted/30 data-[state=inactive]:hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold">
+                                <CreditCard className="w-4 h-4 shrink-0 text-muted-foreground transition-colors group-data-[state=active]:text-primary-foreground" />
                                 <span>Compensation &amp; Payroll</span>
                             </TabsTrigger>
-                            <TabsTrigger value="statutory" className="text-xs sm:text-sm font-medium py-2.5 px-3 rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:shadow-xs transition-all">
-                                <Award className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
+                            <TabsTrigger value="statutory" className="group relative flex w-full items-center justify-center gap-2 rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-3.5 text-xs sm:text-sm font-medium text-muted-foreground shadow-none transition-colors data-[state=inactive]:hover:bg-muted/30 data-[state=inactive]:hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold">
+                                <Award className="w-4 h-4 shrink-0 text-muted-foreground transition-colors group-data-[state=active]:text-primary-foreground" />
                                 <span>Tenure, Leave &amp; Statutory</span>
                             </TabsTrigger>
                         </TabsList>

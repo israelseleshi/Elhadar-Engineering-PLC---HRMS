@@ -275,16 +275,16 @@ export default function Index({
 
             {/* Primary Ledger Navigation Tabs */}
             <Tabs defaultValue={pendingCount > 0 ? 'queue' : 'balances'} className="w-full">
-                <TabsList className="w-full sm:w-auto grid grid-cols-3 p-1.5 bg-muted/60 dark:bg-muted/30 border border-border/80 rounded-xl mb-6 gap-1.5 h-auto">
+                <TabsList className="grid w-full sm:w-auto grid-cols-3 p-0 gap-0 mb-6 h-auto overflow-hidden rounded-lg border border-border bg-card divide-x divide-border">
                     <TabsTrigger
                         value="balances"
-                        className="text-xs sm:text-sm font-medium py-2.5 px-4 rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:shadow-xs transition-all"
+                        className="group relative flex w-full items-center justify-center gap-2 rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-3.5 text-xs sm:text-sm font-medium text-muted-foreground shadow-none transition-colors data-[state=inactive]:hover:bg-muted/30 data-[state=inactive]:hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold"
                     >
                         <span>Staff Balances</span>
                     </TabsTrigger>
                     <TabsTrigger
                         value="queue"
-                        className="text-xs sm:text-sm font-medium py-2.5 px-4 rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:shadow-xs transition-all flex items-center justify-center gap-2"
+                        className="group relative flex w-full items-center justify-center gap-2 rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-3.5 text-xs sm:text-sm font-medium text-muted-foreground shadow-none transition-colors data-[state=inactive]:hover:bg-muted/30 data-[state=inactive]:hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold"
                     >
                         <span>Pending Requests</span>
                         {pendingCount > 0 && (
@@ -295,9 +295,9 @@ export default function Index({
                     </TabsTrigger>
                     <TabsTrigger
                         value="history"
-                        className="text-xs sm:text-sm font-medium py-2.5 px-4 rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:shadow-xs transition-all flex items-center justify-center gap-1.5"
+                        className="group relative flex w-full items-center justify-center gap-1.5 rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-3.5 text-xs sm:text-sm font-medium text-muted-foreground shadow-none transition-colors data-[state=inactive]:hover:bg-muted/30 data-[state=inactive]:hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold"
                     >
-                        <History className="w-3.5 h-3.5 text-muted-foreground" />
+                        <History className="w-3.5 h-3.5 text-muted-foreground transition-colors group-data-[state=active]:text-primary-foreground" />
                         <span>Decisions History</span>
                     </TabsTrigger>
                 </TabsList>

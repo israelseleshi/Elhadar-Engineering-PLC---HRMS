@@ -19,6 +19,10 @@ export interface DatePickerProps {
   className?: string
   fromYear?: number
   toYear?: number
+  /** Earliest selectable date (YYYY-MM-DD). */
+  minDate?: string
+  id?: string
+  ariaInvalid?: boolean
 }
 
 export function DatePicker({
@@ -29,6 +33,9 @@ export function DatePicker({
   className,
   fromYear = 1950,
   toYear = new Date().getFullYear() + 15,
+  minDate,
+  id,
+  ariaInvalid,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -38,6 +45,13 @@ export function DatePicker({
     if (!y || !m || !d || isNaN(y) || isNaN(m) || isNaN(d)) return undefined
     return new Date(y, m - 1, d)
   }, [value])
+
+  const minDateValue = React.useMemo(() => {
+    if (!minDate || !minDate.includes("-")) return undefined
+    const [y, m, d] = minDate.split("T")[0].split("-").map(Number)
+    if (!y || !m || !d || isNaN(y) || isNaN(m) || isNaN(d)) return undefined
+    return new Date(y, m - 1, d)
+  }, [minDate])
 
   const handleSelect = (date: Date | undefined) => {
     if (!date) {
@@ -56,8 +70,10 @@ export function DatePicker({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          id={id}
           variant="outline"
           disabled={disabled}
+          aria-invalid={ariaInvalid || undefined}
           className={cn(
             "w-full h-11 justify-start text-left font-normal text-sm rounded-xl bg-background border-border text-foreground hover:bg-muted/40 focus-visible:ring-1 focus-visible:ring-[#0066cc]",
             !value && "text-muted-foreground",
@@ -81,6 +97,7 @@ export function DatePicker({
           startMonth={new Date(fromYear, 0)}
           endMonth={new Date(toYear, 11)}
           captionLayout="dropdown"
+          disabled={minDateValue ? { before: minDateValue } : undefined}
           autoFocus
         />
       </PopoverContent>

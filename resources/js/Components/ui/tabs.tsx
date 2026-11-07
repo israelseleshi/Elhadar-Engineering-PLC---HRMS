@@ -34,6 +34,7 @@ function Tabs({ defaultValue, value, onValueChange, className, children, ...prop
 function TabsList({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
+      role="tablist"
       className={cn(
         "inline-flex h-11 items-center justify-start border-b border-border w-full gap-8 bg-transparent p-0 text-muted-foreground",
         className
@@ -57,6 +58,9 @@ function TabsTrigger({ value, className, children, ...props }: TabsTriggerProps)
   return (
     <button
       type="button"
+      role="tab"
+      aria-selected={isActive}
+      data-state={isActive ? "active" : "inactive"}
       onClick={() => ctx.setActiveTab(value)}
       className={cn(
         "inline-flex items-center justify-center whitespace-nowrap rounded-t-sm pb-3 text-sm font-semibold ring-offset-background transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 border-b-2 -mb-px",
