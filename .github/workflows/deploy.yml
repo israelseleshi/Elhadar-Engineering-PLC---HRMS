@@ -135,6 +135,21 @@ jobs:
             --exclude='docs' \
             --exclude='scripts' \
             --exclude='*.md' \
+            --exclude='package*.json' \
+            --exclude='tsconfig*.json' \
+            --exclude='vite.config.*' \
+            --exclude='tailwind.config.*' \
+            --exclude='postcss.config.*' \
+            --exclude='phpunit.xml' \
+            --exclude='components.json' \
+            --exclude='boost.json' \
+            --exclude='opencode.json' \
+            --exclude='.agents' \
+            --exclude='.mcp.json' \
+            --exclude='.npmrc' \
+            --exclude='.editorconfig' \
+            --exclude='.gitattributes' \
+            --exclude='setup_server.sh' \
             -e "ssh -p $DEPLOY_PORT" \
             ./ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH
 
