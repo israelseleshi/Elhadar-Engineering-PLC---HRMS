@@ -7,7 +7,6 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import { formatEthPhone } from '@/lib/utils';
 import { Toaster } from '@/Components/ui/sonner';
 import { toast } from 'sonner';
-import DarkThemeSelector from '@/Components/DarkThemeSelector';
 import { PageProps } from '@/types';
 
 interface Props { title?: string; subtitle?: string; }
@@ -290,8 +289,6 @@ export default function PortalLayout({ title, subtitle, children }: PropsWithChi
                     <footer className="bg-card/50 border-t border-border py-4 px-4 sm:px-6 lg:px-8 text-xs text-muted-foreground flex flex-col sm:flex-row justify-between items-center gap-2 text-center sm:text-left"><div className="min-w-0">&copy; {new Date().getFullYear()} El-Hadar Engineering PLC. All rights reserved.</div><span className="font-medium text-muted-foreground">Employee Self-Service (ESS) Portal</span></footer>
                 </div>
             </div>
-            {/* Floating Dark Theme Tone Selector */}
-            <DarkThemeSelector />
 
             <Toaster position="top-right" offset={16} />
         </div>

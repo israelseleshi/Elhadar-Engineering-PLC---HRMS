@@ -17,12 +17,9 @@ if (typeof window !== 'undefined') {
         document.documentElement.classList.remove('dark');
         document.documentElement.classList.add('light');
     }
-    if (!localStorage.getItem('hrms_dark_tone_force_titanium_v2') || localStorage.getItem('hrms_dark_tone') === 'material') {
-        localStorage.setItem('hrms_dark_tone', 'titanium');
-        localStorage.setItem('hrms_dark_tone_force_titanium_v2', 'true');
-    }
-    const savedTone = localStorage.getItem('hrms_dark_tone') || 'titanium';
-    document.documentElement.setAttribute('data-dark-tone', savedTone);
+    // Deep Titanium is locked in as the preferred dark theme tone
+    localStorage.setItem('hrms_dark_tone', 'titanium');
+    document.documentElement.setAttribute('data-dark-tone', 'titanium');
 }
 
 createInertiaApp({

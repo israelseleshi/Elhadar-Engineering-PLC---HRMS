@@ -22,7 +22,6 @@ import WebPushBanner from '@/Components/WebPushBanner';
 import { PageProps } from '@/types';
 import { getNavItems, NAV_CATEGORIES, NavCategoryConfig, NavItemConfig } from '@/Components/Navigation/navConfig';
 import SystemSettingsSidebar from '@/Components/Navigation/SystemSettingsSidebar';
-import DarkThemeSelector from '@/Components/DarkThemeSelector';
 
 interface Props {
     header?: ReactNode;
@@ -399,9 +398,6 @@ export default function AuthenticatedLayout({
                     </footer>
                 </div>
             </div>
-
-            {/* Floating Dark Theme Color Tone Selector (Bottom Right) */}
-            <DarkThemeSelector />
 
             {/* Toaster: closeButton removed, deletion styled with full opacity solid red + white text */}
             <Toaster position="top-right" offset={16} />
