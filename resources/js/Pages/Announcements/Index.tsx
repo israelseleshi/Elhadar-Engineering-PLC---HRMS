@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
@@ -12,74 +12,54 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/Components/ui/alert-dialog';
-import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/Components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import {
-    Empty,
-    EmptyContent,
-    EmptyDescription,
-    EmptyHeader,
-    EmptyMedia,
-    EmptyTitle,
-} from '@/Components/ui/empty';
 import { Input } from '@/Components/ui/input';
-import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-} from '@/Components/ui/pagination';
-import { Separator } from '@/Components/ui/separator';
 import { toast } from 'sonner';
+import AnnouncementReaderModal, { AnnouncementItem } from '@/Components/AnnouncementReaderModal';
+import AnnouncementAnalyticsDrawer from '@/Components/AnnouncementAnalyticsDrawer';
 import {
-    CalendarClock,
-    ChevronLeft,
-    ChevronRight,
+    Activity,
+    AlertTriangle,
+    Bell,
+    CheckCircle2,
+    Clock,
+    FileText,
     Megaphone,
     MoreHorizontal,
     Pencil,
     Pin,
     Plus,
     Search,
+    Shield,
     Trash2,
     X,
+    Users,
+    Download,
+    Eye,
 } from 'lucide-react';
 
-interface Announcement {
-    id: number;
-    title: string;
-    content: string;
-    is_pinned: boolean;
+interface AnnouncementRecord extends AnnouncementItem {
     is_active: boolean;
-    published_at: string | null;
-    expires_at: string | null;
-    created_at: string;
-    creator: {
-        id: number;
-        name: string;
-        role: string;
-    } | null;
+    reads_count?: number;
+    acknowledgments_count?: number;
+    reactions_count?: number;
+    is_read_by_user?: boolean;
+    is_acknowledged_by_user?: boolean;
+    current_user_reaction?: string | null;
 }
 
 interface Props {
     announcements: {
-        data: Announcement[];
+        data: AnnouncementRecord[];
         current_page: number;
         last_page: number;
         per_page: number;
@@ -90,576 +70,375 @@ interface Props {
     };
     filters: {
         search?: string;
+        category?: string;
+        priority?: string;
+        status?: string;
     };
+    categories: string[];
+    priorities: string[];
+    departments: { id: number; name: string }[];
 }
 
-const isHRAdmin = (user: { role?: string } | null | undefined) =>
-    Boolean(user && (user.role === 'HRAdmin' || user.role === 'SysAdmin'));
-
-const formatDate = (value: string | null): string => {
-    if (!value) {
-        return '—';
-    }
-
-    return new Date(value).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-};
-
-const isExpired = (expiresAt: string | null): boolean => {
-    if (!expiresAt) {
-        return false;
-    }
-
-    return new Date(expiresAt) <= new Date();
-};
-
-const initialsFor = (name: string | null | undefined): string => {
-    const source = (name ?? 'System').trim();
-    const parts = source.split(/\s+/).filter(Boolean);
-
-    if (parts.length === 0) {
-        return 'S';
-    }
-
-    return parts
-        .slice(0, 2)
-        .map((part) => part.charAt(0))
-        .join('')
-        .toUpperCase();
-};
-
-interface AnnouncementCardProps {
-    announcement: Announcement;
-    canManage: boolean;
-    pinned?: boolean;
-    onDelete: (announcement: Announcement) => void;
-}
-
-function AnnouncementCard({
-    announcement,
-    canManage,
-    pinned = false,
-    onDelete,
-}: AnnouncementCardProps) {
-    const creatorName = announcement.creator?.name ?? 'System';
-    const expired = isExpired(announcement.expires_at);
-
-    return (
-        <Card
-            className={`flex h-full flex-col shadow-none transition-colors ${
-                pinned
-                    ? 'border-primary/20 bg-primary/[0.035] hover:border-primary/35'
-                    : 'border-border bg-card hover:border-primary/30'
-            }`}
-        >
-            <CardHeader className="space-y-3 p-5 pb-4">
-                <div className="flex items-start justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                        {pinned ? (
-                            <Badge variant="mint" className="gap-1">
-                                <Pin className="h-3 w-3" />
-                                Pinned
-                            </Badge>
-                        ) : (
-                            <Badge variant="secondary">Published</Badge>
-                        )}
-                        {expired && <Badge variant="destructive">Expired</Badge>}
-                        {!announcement.is_active && (
-                            <Badge variant="outline">Inactive</Badge>
-                        )}
-                    </div>
-
-                    {canManage && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="-mr-1.5 -mt-1 h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
-                                    aria-label={`Manage ${announcement.title}`}
-                                >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-44">
-                                <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
-                                    Manage announcement
-                                </DropdownMenuLabel>
-                                <DropdownMenuItem asChild>
-                                    <Link
-                                        href={route(
-                                            'announcements.edit',
-                                            announcement.id
-                                        )}
-                                        className="cursor-pointer text-xs"
-                                    >
-                                        <Pencil className="mr-2 h-3.5 w-3.5" />
-                                        Edit announcement
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    onClick={() => onDelete(announcement)}
-                                    className="cursor-pointer text-xs text-destructive focus:text-destructive"
-                                >
-                                    <Trash2 className="mr-2 h-3.5 w-3.5" />
-                                    Delete announcement
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
-                </div>
-
-                <div className="space-y-1.5">
-                    <CardTitle className="text-base font-semibold leading-snug tracking-tight text-foreground">
-                        {canManage ? (
-                            <Link
-                                href={route(
-                                    'announcements.edit',
-                                    announcement.id
-                                )}
-                                className="transition-colors hover:text-primary"
-                            >
-                                {announcement.title}
-                            </Link>
-                        ) : (
-                            announcement.title
-                        )}
-                    </CardTitle>
-                    <CardDescription className="line-clamp-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
-                        {announcement.content}
-                    </CardDescription>
-                </div>
-            </CardHeader>
-
-            <CardContent className="mt-auto p-5 pt-0">
-                <Separator className="mb-4 bg-border/70" />
-                <div className="flex items-center justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-2.5">
-                        <Avatar className="h-7 w-7">
-                            <AvatarFallback className="bg-muted text-[10px] font-semibold text-muted-foreground">
-                                {initialsFor(creatorName)}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                            <p className="truncate text-xs font-medium text-foreground">
-                                {creatorName}
-                            </p>
-                            <p className="text-[11px] text-muted-foreground">
-                                Published {formatDate(announcement.published_at)}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground">
-                        <CalendarClock className="h-3.5 w-3.5" />
-                        <span>
-                            {announcement.expires_at
-                                ? `${expired ? 'Expired' : 'Expires'} ${formatDate(
-                                      announcement.expires_at
-                                  )}`
-                                : 'No expiry'}
-                        </span>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
-
-export default function AnnouncementsIndex({ announcements, filters }: Props) {
+export default function AnnouncementsIndex({
+    announcements,
+    filters,
+    categories,
+    priorities,
+}: Props) {
     const { auth } = usePage<PageProps>().props;
-    const user = auth.user;
-    const canManage = isHRAdmin(user);
+    const isHR = Boolean(auth.user && (auth.user.role === 'HRAdmin' || auth.user.role === 'SysAdmin'));
 
-    const [search, setSearch] = useState(filters.search ?? '');
-    const [pendingDelete, setPendingDelete] = useState<Announcement | null>(
-        null
-    );
-    const [isDeleting, setIsDeleting] = useState(false);
+    const [search, setSearch] = useState(filters.search || '');
+    const [selectedCategory, setSelectedCategory] = useState(filters.category || 'all');
+    const [selectedPriority, setSelectedPriority] = useState(filters.priority || 'all');
 
-    const pinned = useMemo(
-        () => announcements.data.filter((announcement) => announcement.is_pinned),
-        [announcements.data]
-    );
+    // Modals
+    const [readerAnnouncement, setReaderAnnouncement] = useState<AnnouncementItem | null>(null);
+    const [isReaderOpen, setIsReaderOpen] = useState(false);
+    const [analyticsId, setAnalyticsId] = useState<number | null>(null);
+    const [analyticsTitle, setAnalyticsTitle] = useState<string>('');
+    const [deleteTarget, setDeleteTarget] = useState<AnnouncementRecord | null>(null);
 
-    const regular = useMemo(
-        () =>
-            announcements.data.filter((announcement) => !announcement.is_pinned),
-        [announcements.data]
-    );
-
-    const hasResults = announcements.data.length > 0;
-    const hasQuery = search.trim().length > 0;
-
-    const submitSearch = (event: React.FormEvent) => {
-        event.preventDefault();
+    const applyFilters = (newCategory?: string, newPriority?: string) => {
+        const cat = newCategory !== undefined ? newCategory : selectedCategory;
+        const pri = newPriority !== undefined ? newPriority : selectedPriority;
 
         router.get(
             route('announcements.index'),
-            hasQuery ? { search: search.trim() } : {},
             {
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-            }
+                search: search || undefined,
+                category: cat !== 'all' ? cat : undefined,
+                priority: pri !== 'all' ? pri : undefined,
+            },
+            { preserveState: true, replace: true }
         );
     };
 
-    const clearSearch = () => {
-        setSearch('');
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        applyFilters();
+    };
 
-        router.get(route('announcements.index'), {}, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
+    const handleOpenReader = (announcement: AnnouncementRecord) => {
+        setReaderAnnouncement({
+            ...announcement,
+            is_read: announcement.is_read_by_user,
+            is_acknowledged: announcement.is_acknowledged_by_user,
+            user_reaction: announcement.current_user_reaction,
+        });
+        setIsReaderOpen(true);
+    };
+
+    const handleDelete = () => {
+        if (!deleteTarget) return;
+        router.delete(route('announcements.destroy', deleteTarget.id), {
+            onSuccess: () => {
+                setDeleteTarget(null);
+            },
+            onError: () => {
+                toast.error('Could not delete announcement.');
+            },
         });
     };
 
-    const confirmDelete = () => {
-        if (!pendingDelete) {
-            return;
+    const getPriorityBadge = (p: string) => {
+        switch (p) {
+            case 'critical':
+                return <Badge className="bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 text-[10px] font-semibold"><AlertTriangle className="w-2.5 h-2.5 mr-1" /> Critical</Badge>;
+            case 'important':
+                return <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-[10px] font-semibold"><Bell className="w-2.5 h-2.5 mr-1" /> Important</Badge>;
+            default:
+                return <Badge variant="secondary" className="text-[10px] font-medium text-muted-foreground">General</Badge>;
         }
+    };
 
-        const target = pendingDelete;
-        setIsDeleting(true);
-
-        router.delete(route('announcements.destroy', target.id), {
-            preserveScroll: true,
-            onSuccess: () => {
-                setPendingDelete(null);
-                toast.success(`Announcement "${target.title}" deleted.`);
-            },
-            onError: () => {
-                toast.error('Could not delete this announcement.');
-            },
-            onFinish: () => setIsDeleting(false),
-        });
+    const getCategoryBadge = (c: string) => {
+        const labels: Record<string, string> = {
+            policy: 'Policy',
+            safety: 'Safety',
+            payroll: 'Payroll',
+            holiday: 'Holiday',
+            event: 'Event',
+            general: 'General',
+        };
+        return <Badge variant="outline" className="text-[10px] text-muted-foreground">{labels[c] || c}</Badge>;
     };
 
     return (
         <AuthenticatedLayout
-            title="Announcements"
-            subtitle="Official company-wide announcements from Human Resources."
+            title="Company Notice Board"
+            subtitle="Official circulars, engineering safety directives, policies, and company memos."
         >
-            <Head title="Announcements - Elhadar Engineering HRMS" />
+            <Head title="Notice Board & Announcements - Elhadar Engineering HRMS" />
 
-            <p className="mb-5 text-sm text-muted-foreground">
-                Official company-wide updates from Human Resources.
-            </p>
-
-            <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <form
-                    onSubmit={submitSearch}
-                    className="flex w-full max-w-xl items-center gap-2"
-                >
-                    <div className="relative min-w-0 flex-1">
-                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                            aria-label="Search announcements"
-                            placeholder="Search announcements..."
-                            value={search}
-                            onChange={(event) => setSearch(event.target.value)}
-                            className="h-10 border-border bg-card pl-9 pr-9 text-sm shadow-none"
-                        />
-                        {search.length > 0 && (
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={clearSearch}
-                                aria-label="Clear search"
-                                className="absolute right-1 top-1 h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
-                            >
-                                <X className="h-3.5 w-3.5" />
-                            </Button>
-                        )}
-                    </div>
-                    <Button
-                        type="submit"
-                        variant="outline"
-                        className="h-10 shrink-0 px-4 shadow-none"
-                    >
-                        Search
-                    </Button>
+            {/* Top Toolbar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-80">
+                    <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
+                    <Input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search circulars by keyword..."
+                        className="h-9 pl-9 text-xs rounded-xl border-border/80 focus-visible:ring-primary/20"
+                    />
+                    {search && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSearch('');
+                                router.get(route('announcements.index'));
+                            }}
+                            className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
+                        >
+                            <X className="w-3.5 h-3.5" />
+                        </button>
+                    )}
                 </form>
 
-                <div className="flex items-center gap-2 self-end lg:self-auto">
-                    <Badge
-                        variant="secondary"
-                        className="h-7 px-2.5 text-xs font-medium"
-                    >
-                        {announcements.total}{' '}
-                        {announcements.total === 1
-                            ? 'announcement'
-                            : 'announcements'}
-                    </Badge>
-
-                    {canManage && (
-                        <Button asChild className="h-9 px-4 shadow-none">
-                            <Link href={route('announcements.create')}>
-                                <Plus className="h-4 w-4" />
-                                New announcement
-                            </Link>
-                        </Button>
-                    )}
-                </div>
+                {isHR && (
+                    <Button asChild size="sm" className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-1.5 shadow-sm text-xs h-9">
+                        <Link href={route('announcements.create')}>
+                            <Plus className="w-4 h-4" />
+                            <span>Publish Circular</span>
+                        </Link>
+                    </Button>
+                )}
             </div>
 
-            {hasResults ? (
-                <div className="space-y-8">
-                    {pinned.length > 0 && (
-                        <section aria-labelledby="pinned-announcements">
-                            <div className="mb-3 flex items-center gap-2">
-                                <Pin className="h-4 w-4 text-primary" />
-                                <h2
-                                    id="pinned-announcements"
-                                    className="text-sm font-semibold tracking-tight text-foreground"
-                                >
-                                    Pinned announcements
-                                </h2>
-                                <Badge variant="mint" className="ml-1">
-                                    {pinned.length}
-                                </Badge>
-                            </div>
+            {/* Filter Pills */}
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+                <span className="text-xs font-semibold text-muted-foreground mr-1">Category:</span>
+                {['all', 'policy', 'safety', 'payroll', 'holiday', 'event', 'general'].map((cat) => (
+                    <button
+                        key={cat}
+                        onClick={() => {
+                            setSelectedCategory(cat);
+                            applyFilters(cat, selectedPriority);
+                        }}
+                        className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-all ${
+                            selectedCategory === cat
+                                ? 'bg-primary text-primary-foreground shadow-xs font-semibold'
+                                : 'bg-muted/40 hover:bg-muted text-muted-foreground border border-border/60'
+                        }`}
+                    >
+                        {cat === 'all' ? 'All Categories' : cat}
+                    </button>
+                ))}
 
-                            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                                {pinned.map((announcement) => (
-                                    <AnnouncementCard
-                                        key={announcement.id}
-                                        announcement={announcement}
-                                        canManage={canManage}
-                                        pinned
-                                        onDelete={setPendingDelete}
-                                    />
-                                ))}
-                            </div>
-                        </section>
-                    )}
+                <div className="h-4 w-px bg-border mx-1 hidden sm:block" />
 
-                    {(regular.length > 0 || pinned.length === 0) && (
-                        <section aria-labelledby="all-announcements">
-                            <div className="mb-3 flex items-center gap-2">
-                                <Megaphone className="h-4 w-4 text-muted-foreground" />
-                                <h2
-                                    id="all-announcements"
-                                    className="text-sm font-semibold tracking-tight text-foreground"
-                                >
-                                    {pinned.length > 0
-                                        ? 'All announcements'
-                                        : 'Announcements'}
-                                </h2>
-                                <Badge
-                                    variant="secondary"
-                                    className="ml-1 font-mono text-[11px]"
-                                >
-                                    {regular.length}
-                                </Badge>
-                            </div>
+                <span className="text-xs font-semibold text-muted-foreground mr-1 hidden sm:inline">Priority:</span>
+                {['all', 'critical', 'important', 'standard'].map((pri) => (
+                    <button
+                        key={pri}
+                        onClick={() => {
+                            setSelectedPriority(pri);
+                            applyFilters(selectedCategory, pri);
+                        }}
+                        className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-all ${
+                            selectedPriority === pri
+                                ? 'bg-primary text-primary-foreground shadow-xs font-semibold'
+                                : 'bg-muted/40 hover:bg-muted text-muted-foreground border border-border/60'
+                        }`}
+                    >
+                        {pri === 'all' ? 'All Priorities' : pri}
+                    </button>
+                ))}
+            </div>
 
-                            {regular.length > 0 ? (
-                                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                                    {regular.map((announcement) => (
-                                        <AnnouncementCard
-                                            key={announcement.id}
-                                            announcement={announcement}
-                                            canManage={canManage}
-                                            onDelete={setPendingDelete}
-                                        />
-                                    ))}
-                                </div>
-                            ) : (
-                                <Card className="border-dashed border-border bg-muted/20 shadow-none">
-                                    <Empty className="py-10">
-                                        <EmptyHeader>
-                                            <EmptyMedia
-                                                variant="icon"
-                                                className="bg-primary/10 text-primary"
-                                            >
-                                                <Megaphone className="h-5 w-5" />
-                                            </EmptyMedia>
-                                            <EmptyTitle className="text-sm font-semibold">
-                                                No other announcements
-                                            </EmptyTitle>
-                                            <EmptyDescription className="text-xs">
-                                                Pinned notices are the only
-                                                active announcements right now.
-                                            </EmptyDescription>
-                                        </EmptyHeader>
-                                    </Empty>
-                                </Card>
-                            )}
-                        </section>
-                    )}
-                </div>
-            ) : (
-                <Card className="border-dashed border-border bg-muted/20 shadow-none">
-                    <Empty className="py-14">
-                        <EmptyHeader>
-                            <EmptyMedia
-                                variant="icon"
-                                className="bg-primary/10 text-primary"
-                            >
-                                <Megaphone className="h-5 w-5" />
-                            </EmptyMedia>
-                            <EmptyTitle className="text-base font-semibold tracking-tight">
-                                {hasQuery
-                                    ? 'No announcements match your search'
-                                    : 'No announcements yet'}
-                            </EmptyTitle>
-                            <EmptyDescription className="text-sm">
-                                {hasQuery
-                                    ? `Nothing matched "${search.trim()}". Try a different keyword or clear the search.`
-                                    : 'Company-wide updates from Human Resources will appear here once published.'}
-                            </EmptyDescription>
-                        </EmptyHeader>
-                        <EmptyContent>
-                            {hasQuery ? (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={clearSearch}
-                                    className="shadow-none"
-                                >
-                                    <X className="h-4 w-4" />
-                                    Clear search
-                                </Button>
-                            ) : (
-                                canManage && (
-                                    <Button
-                                        asChild
-                                        className="shadow-none"
-                                    >
-                                        <Link
-                                            href={route(
-                                                'announcements.create'
-                                            )}
-                                        >
-                                            <Plus className="h-4 w-4" />
-                                            Create the first announcement
-                                        </Link>
-                                    </Button>
-                                )
-                            )}
-                        </EmptyContent>
-                    </Empty>
-                </Card>
-            )}
-
-            {announcements.last_page > 1 && (
-                <div className="mt-6 flex flex-col items-center justify-between gap-3 border-t border-border/70 pt-4 sm:flex-row">
-                    <p className="text-xs text-muted-foreground">
-                        Showing{' '}
-                        <span className="font-medium text-foreground">
-                            {announcements.from || 0}
-                        </span>{' '}
-                        to{' '}
-                        <span className="font-medium text-foreground">
-                            {announcements.to || 0}
-                        </span>{' '}
-                        of{' '}
-                        <span className="font-medium text-foreground">
-                            {announcements.total}
-                        </span>
+            {/* Grid of Circular Cards */}
+            {announcements.data.length === 0 ? (
+                <Card className="rounded-2xl border-dashed border-2 border-border/80 p-12 text-center bg-card/40">
+                    <Megaphone className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
+                    <h3 className="text-sm font-semibold text-foreground">No circulars found</h3>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                        There are no active company announcements matching your search criteria.
                     </p>
+                </Card>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {announcements.data.map((item) => {
+                        const isUnread = !item.is_read_by_user;
+                        return (
+                            <Card
+                                key={item.id}
+                                className={`rounded-2xl border transition-all duration-200 hover:shadow-md flex flex-col justify-between overflow-hidden bg-card ${
+                                    item.priority === 'critical'
+                                        ? 'border-red-500/30'
+                                        : item.priority === 'important'
+                                        ? 'border-amber-500/30'
+                                        : 'border-border/80'
+                                }`}
+                            >
+                                <div className="p-5 pb-3">
+                                    {/* Top Metadata */}
+                                    <div className="flex items-center justify-between gap-2 mb-2.5">
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                            {getPriorityBadge(item.priority)}
+                                            {getCategoryBadge(item.category)}
+                                            {item.is_pinned && (
+                                                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-[9px] font-semibold">
+                                                    <Pin className="w-2 h-2 mr-0.5" /> Pinned
+                                                </Badge>
+                                            )}
+                                        </div>
 
-                    <Pagination className="mx-0 w-auto justify-end">
-                        <PaginationContent className="flex-wrap">
-                            {announcements.links.map((link, index) => {
-                                if (link.label === '...') {
-                                    return (
-                                        <PaginationItem key={index}>
-                                            <PaginationEllipsis className="h-8 w-8" />
-                                        </PaginationItem>
-                                    );
-                                }
+                                        {isHR && (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button className="p-1 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground">
+                                                        <MoreHorizontal className="w-4 h-4" />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-44 text-xs rounded-xl">
+                                                    <DropdownMenuItem
+                                                        onClick={() => {
+                                                            setAnalyticsId(item.id);
+                                                            setAnalyticsTitle(item.title);
+                                                        }}
+                                                        className="gap-2 cursor-pointer"
+                                                    >
+                                                        <Activity className="w-3.5 h-3.5 text-primary" />
+                                                        <span>Delivery Audit</span>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+                                                        <Link href={route('announcements.edit', item.id)}>
+                                                            <Pencil className="w-3.5 h-3.5" />
+                                                            <span>Edit Circular</span>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                        onClick={() => setDeleteTarget(item)}
+                                                        className="gap-2 text-destructive focus:text-destructive cursor-pointer"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                        <span>Delete</span>
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        )}
+                                    </div>
 
-                                const isPrevious =
-                                    link.label.includes('Previous') ||
-                                    link.label.includes('&laquo;');
-                                const isNext =
-                                    link.label.includes('Next') ||
-                                    link.label.includes('&raquo;');
-                                const label = isPrevious
-                                    ? 'Prev'
-                                    : isNext
-                                      ? 'Next'
-                                      : link.label;
+                                    {/* Title & Amharic Pill */}
+                                    <h3
+                                        onClick={() => handleOpenReader(item)}
+                                        className="text-sm font-bold text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer line-clamp-2 leading-snug"
+                                    >
+                                        {item.title}
+                                    </h3>
 
-                                return (
-                                    <PaginationItem key={index}>
-                                        <Button
-                                            asChild
-                                            variant={
-                                                link.active
-                                                    ? 'default'
-                                                    : 'outline'
-                                            }
-                                            size="sm"
-                                            className={`h-8 min-w-8 px-2.5 text-xs shadow-none ${
-                                                link.url
-                                                    ? ''
-                                                    : 'pointer-events-none opacity-40'
-                                            }`}
-                                        >
-                                            <Link
-                                                href={link.url || '#'}
-                                                preserveState
-                                                preserveScroll
+                                    {item.title_am && (
+                                        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
+                                            {item.title_am}
+                                        </p>
+                                    )}
+
+                                    {/* Snippet */}
+                                    <p
+                                        onClick={() => handleOpenReader(item)}
+                                        className="text-xs text-muted-foreground line-clamp-3 mt-2.5 leading-relaxed cursor-pointer"
+                                    >
+                                        {item.content}
+                                    </p>
+                                </div>
+
+                                {/* Footer & Compliance Badges */}
+                                <div className="p-4 pt-3 bg-muted/20 border-t border-border/50 text-xs flex items-center justify-between gap-2 mt-auto">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                            <Clock className="w-2.5 h-2.5" />
+                                            {new Date(item.published_at || item.created_at).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                            })}
+                                        </span>
+
+                                        {item.attachment_url && (
+                                            <a
+                                                href={item.attachment_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                download
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="text-[10px] text-primary hover:underline font-semibold flex items-center gap-1"
                                             >
-                                                {isPrevious && (
-                                                    <ChevronLeft className="h-3.5 w-3.5" />
-                                                )}
-                                                {label}
-                                                {isNext && (
-                                                    <ChevronRight className="h-3.5 w-3.5" />
-                                                )}
-                                            </Link>
-                                        </Button>
-                                    </PaginationItem>
-                                );
-                            })}
-                        </PaginationContent>
-                    </Pagination>
+                                                <Download className="w-2.5 h-2.5" /> PDF
+                                            </a>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center gap-1.5">
+                                        {item.requires_acknowledgment && (
+                                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                                                item.is_acknowledged_by_user
+                                                    ? 'bg-emerald-500/10 text-emerald-600'
+                                                    : 'bg-primary/10 text-primary'
+                                            }`}>
+                                                <Shield className="w-2.5 h-2.5" />
+                                                {item.is_acknowledged_by_user ? 'Acknowledged' : 'E-Sign'}
+                                            </span>
+                                        )}
+
+                                        {isHR && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setAnalyticsId(item.id);
+                                                    setAnalyticsTitle(item.title);
+                                                }}
+                                                className="h-7 px-2 text-[10px] font-medium text-muted-foreground hover:text-foreground gap-1 rounded-lg"
+                                            >
+                                                <Eye className="w-3 h-3 text-primary" />
+                                                <span>Audit ({item.reads_count || 0})</span>
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            </Card>
+                        );
+                    })}
                 </div>
             )}
 
-            <AlertDialog
-                open={Boolean(pendingDelete)}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setPendingDelete(null);
-                    }
+            {/* Reader Modal */}
+            <AnnouncementReaderModal
+                announcement={readerAnnouncement}
+                isOpen={isReaderOpen}
+                onClose={() => setIsReaderOpen(false)}
+                onAcknowledged={(id) => {
+                    // Update in list
+                    announcements.data.forEach((it) => {
+                        if (it.id === id) {
+                            it.is_acknowledged_by_user = true;
+                            it.is_read_by_user = true;
+                        }
+                    });
                 }}
-            >
-                <AlertDialogContent className="border-border bg-card shadow-none">
+            />
+
+            {/* Compliance & Delivery Audit Drawer */}
+            <AnnouncementAnalyticsDrawer
+                announcementId={analyticsId}
+                announcementTitle={analyticsTitle}
+                isOpen={analyticsId !== null}
+                onClose={() => setAnalyticsId(null)}
+            />
+
+            {/* Delete Confirmation Alert */}
+            <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+                <AlertDialogContent className="rounded-2xl">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="tracking-tight">
-                            Delete this announcement?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription className="text-sm leading-relaxed">
-                            &ldquo;{pendingDelete?.title}&rdquo; will be
-                            permanently removed for all employees. This action
-                            cannot be undone.
+                        <AlertDialogTitle>Delete Circular?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete &ldquo;{deleteTarget?.title}&rdquo;? This will remove the circular and all associated compliance records.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isDeleting}>
-                            Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                            disabled={isDeleting}
-                            onClick={(event) => {
-                                event.preventDefault();
-                                confirmDelete();
-                            }}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                            {isDeleting ? 'Deleting…' : 'Delete announcement'}
+                        <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90 rounded-xl">
+                            Delete Circular
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

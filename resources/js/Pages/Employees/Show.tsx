@@ -377,7 +377,7 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 )}
-                                <input
+                                <Input
                                     type="file"
                                     ref={fileInputRef}
                                     className="hidden"
@@ -1088,36 +1088,36 @@ export default function Show({ employee, tenure, annualLeaveEntitlement, retirem
 
                             {/* Termination / Separation Record (If Separated) */}
                             {(employee.status === 'Separated' || employee.separation) && (
-                                <Card className="border-destructive/30 bg-destructive/5 shadow-xs rounded-xl overflow-hidden">
-                                    <CardHeader className="py-4 px-6 border-b border-destructive/20">
+                                <Card className="border border-red-600 bg-red-600 dark:bg-red-700 text-white shadow-md rounded-xl overflow-hidden">
+                                    <CardHeader className="py-4 px-6 border-b border-red-500/40 text-white">
                                         <div className="flex items-center justify-between">
-                                            <CardTitle className="text-base sm:text-lg font-bold text-destructive flex items-center gap-2">
-                                                <AlertCircle className="w-5 h-5" />
+                                            <CardTitle className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                                                <AlertCircle className="w-5 h-5 text-white" />
                                                 <span>Official Termination &amp; Separation Record</span>
                                             </CardTitle>
-                                            <Badge variant="destructive" className="text-xs px-2.5 py-0.5">Archived</Badge>
+                                            <Badge className="bg-white text-red-600 hover:bg-white/90 font-bold text-xs px-2.5 py-0.5 border-0 shadow-xs">Archived</Badge>
                                         </div>
                                     </CardHeader>
                                     <CardContent className="p-6">
-                                        <div className="border border-destructive/25 rounded-xl overflow-x-auto bg-card">
+                                        <div className="border border-white/25 rounded-xl overflow-x-auto bg-red-700/60 dark:bg-red-800/60 text-white shadow-xs">
                                             <table className="w-full text-xs sm:text-sm text-left border-collapse min-w-[500px]">
-                                                <tbody className="divide-y divide-destructive/20">
-                                                    <tr className="hover:bg-destructive/5 transition-colors">
-                                                        <th scope="row" className="py-3 px-4 font-medium text-muted-foreground bg-destructive/5 w-1/4 whitespace-nowrap">Termination Date (E.C.)</th>
-                                                        <td className="py-3 px-4 font-mono font-bold text-destructive w-1/4">{employee.separation?.termination_date_ec || '—'} E.C.</td>
-                                                        <th scope="row" className="py-3 px-4 font-medium text-muted-foreground bg-destructive/5 w-1/4 whitespace-nowrap border-l border-destructive/20">Gregorian Equivalent</th>
-                                                        <td className="py-3 px-4 font-mono font-medium text-foreground w-1/4">{employee.separation?.effective_date || '—'}</td>
+                                                <tbody className="divide-y divide-white/20">
+                                                    <tr className="hover:bg-white/10 transition-colors">
+                                                        <th scope="row" className="py-3 px-4 font-semibold text-red-100 bg-red-800/50 dark:bg-red-900/50 w-1/4 whitespace-nowrap">Termination Date (E.C.)</th>
+                                                        <td className="py-3 px-4 font-mono font-black text-white w-1/4">{employee.separation?.termination_date_ec || '—'} E.C.</td>
+                                                        <th scope="row" className="py-3 px-4 font-semibold text-red-100 bg-red-800/50 dark:bg-red-900/50 w-1/4 whitespace-nowrap border-l border-white/20">Gregorian Equivalent</th>
+                                                        <td className="py-3 px-4 font-mono font-semibold text-white/95 w-1/4">{employee.separation?.effective_date || '—'}</td>
                                                     </tr>
-                                                    <tr className="hover:bg-destructive/5 transition-colors">
-                                                        <th scope="row" className="py-3 px-4 font-medium text-muted-foreground bg-destructive/5 whitespace-nowrap">Separation Classification</th>
-                                                        <td className="py-3 px-4 font-semibold text-foreground">{employee.separation?.separation_type?.replace(/_/g, ' ') || 'Resigned'}</td>
-                                                        <th scope="row" className="py-3 px-4 font-medium text-muted-foreground bg-destructive/5 whitespace-nowrap border-l border-destructive/20">Completed Service</th>
-                                                        <td className="py-3 px-4 font-semibold text-foreground">{employee.separation?.completed_years_service ? `${employee.separation.completed_years_service} Years` : '—'}</td>
+                                                    <tr className="hover:bg-white/10 transition-colors">
+                                                        <th scope="row" className="py-3 px-4 font-semibold text-red-100 bg-red-800/50 dark:bg-red-900/50 whitespace-nowrap">Separation Classification</th>
+                                                        <td className="py-3 px-4 font-semibold text-white">{employee.separation?.separation_type?.replace(/_/g, ' ') || 'Resigned'}</td>
+                                                        <th scope="row" className="py-3 px-4 font-semibold text-red-100 bg-red-800/50 dark:bg-red-900/50 whitespace-nowrap border-l border-white/20">Completed Service</th>
+                                                        <td className="py-3 px-4 font-semibold text-white">{employee.separation?.completed_years_service ? `${employee.separation.completed_years_service} Years` : '—'}</td>
                                                     </tr>
                                                     {employee.separation?.reason && (
-                                                        <tr className="hover:bg-destructive/5 transition-colors">
-                                                            <th scope="row" className="py-3 px-4 font-medium text-muted-foreground bg-destructive/5 whitespace-nowrap">Official Reason</th>
-                                                            <td colSpan={3} className="py-3 px-4 text-foreground font-medium">{employee.separation.reason}</td>
+                                                        <tr className="hover:bg-white/10 transition-colors">
+                                                            <th scope="row" className="py-3 px-4 font-semibold text-red-100 bg-red-800/50 dark:bg-red-900/50 whitespace-nowrap">Official Reason</th>
+                                                            <td colSpan={3} className="py-3 px-4 text-white font-medium">{employee.separation.reason}</td>
                                                         </tr>
                                                     )}
                                                 </tbody>

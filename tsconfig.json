@@ -13,6 +13,10 @@
         "noEmit": true,
         "paths": {
             "@/*": ["./resources/js/*"],
+            "@/boardui/*": ["./resources/js/Components/boardui/*"],
+            "next/link": ["./resources/js/Components/boardui/shims/next-link.tsx"],
+            "next/image": ["./resources/js/Components/boardui/shims/next-image.tsx"],
+            "next/navigation": ["./resources/js/Components/boardui/shims/next-navigation.ts"],
             "ziggy-js": ["./vendor/tightenco/ziggy"]
         }
     },

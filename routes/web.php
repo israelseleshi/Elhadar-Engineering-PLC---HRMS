@@ -10,6 +10,7 @@ use App\Http\Controllers\EmployeeSalaryController;
 use App\Http\Controllers\ExcelImportExportController;
 use App\Http\Controllers\LeaveBalanceController;
 use App\Http\Controllers\NewEmployeeController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\ProbationController;
 use App\Http\Controllers\ProfileController;
@@ -36,6 +37,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 Route::middleware(['auth', 'password.changed'])->group(function () {
     // Employee Self-Service (ESS) - Accessible to all staff
     Route::get('/portal/profile', [PortalController::class, 'profile'])->name('portal.profile');
+    Route::get('/portal/leave', [PortalController::class, 'leaveIndex'])->name('portal.leave.index');
     Route::post('/portal/discrepancies', [PortalController::class, 'reportDiscrepancy'])->name('portal.discrepancy.store');
     Route::post('/portal/leave-requests', [PortalController::class, 'requestLeave'])->name('portal.leave.store');
     Route::patch('/portal/leave-requests/{leaveRequest}/cancel', [PortalController::class, 'cancelLeaveRequest'])->name('portal.leave.cancel');
@@ -43,8 +45,15 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::post('/employees/{employee}/photo', [EmployeePhotoController::class, 'store'])->name('employees.photo.store');
     Route::delete('/employees/{employee}/photo', [EmployeePhotoController::class, 'destroy'])->name('employees.photo.destroy');
 
-    // Announcements - Viewable by all staff, managed by HR Admin & SysAdmin
+    // Announcements & Notifications - Viewable & interactive for all staff
     Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::get('/notifications/feed', [NotificationController::class, 'feed'])->name('notifications.feed');
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+    Route::post('/notifications/{announcement}/read', [NotificationController::class, 'markRead'])->whereNumber('announcement')->name('notifications.read');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
+    Route::post('/announcements/{announcement}/acknowledge', [NotificationController::class, 'acknowledge'])->whereNumber('announcement')->name('announcements.acknowledge');
+    Route::post('/announcements/{announcement}/react', [NotificationController::class, 'react'])->whereNumber('announcement')->name('announcements.react');
+    Route::post('/notifications/push-subscribe', [NotificationController::class, 'subscribePush'])->name('notifications.push-subscribe');
 
     // Administrative Governance - Strictly HRAdmin and SysAdmin
     Route::middleware('role:HRAdmin,SysAdmin')->group(function () {
@@ -86,14 +95,18 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
         // Announcements - HR Admin & SysAdmin management
         Route::get('/announcements/create', [AnnouncementController::class, 'create'])->name('announcements.create');
         Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
-        Route::get('/announcements/{announcement}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
-        Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
-        Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+        Route::get('/announcements/{announcement}/edit', [AnnouncementController::class, 'edit'])->whereNumber('announcement')->name('announcements.edit');
+        Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update'])->whereNumber('announcement')->name('announcements.update');
+        Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->whereNumber('announcement')->name('announcements.destroy');
+        Route::get('/announcements/{announcement}/analytics', [NotificationController::class, 'analytics'])->whereNumber('announcement')->name('announcements.analytics');
 
         // Immutable Security Audit Log & Changes Inspector
         Route::get('/audit', [AuditLogController::class, 'index'])->name('audit.index');
         Route::get('/audit/{auditLog}', [AuditLogController::class, 'show'])->name('audit.show');
     });
+
+    // Announcement Detail View - Viewable for all staff (declared after create route with numeric constraint)
+    Route::get('/announcements/{announcement}', [AnnouncementController::class, 'show'])->whereNumber('announcement')->name('announcements.show');
 
     // Operational Core - Accessible to HR Admin, SysAdmin, and Site Managers
     Route::middleware('role:HRAdmin,SysAdmin,Manager')->group(function () {

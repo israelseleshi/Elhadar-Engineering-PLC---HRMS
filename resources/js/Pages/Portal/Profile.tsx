@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import InteractiveTour, { TourStep } from '@/Components/InteractiveTour';
 import EmployeeAvatar from '@/Components/EmployeeAvatar';
+import NoticeBoardWidget from '@/Components/NoticeBoardWidget';
 import { formatEthPhone } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
@@ -11,6 +12,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Textarea } from '@/Components/ui/textarea';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { DatePicker as BoardUIDatePicker } from '@/Components/boardui/components/base/date-picker/date-picker';
+import { NumberField as BoardUINumberField } from '@/Components/boardui/components/base/number-field/number-field';
+import { Textarea as BoardUITextarea } from '@/Components/boardui/components/base/textarea/textarea';
+import { Button as BoardUIButton } from '@/Components/boardui/components/base/buttons/button';
+import { IconButton as BoardUIIconButton } from '@/Components/boardui/components/base/buttons/icon-button';
+import { Chip as BoardUIChip } from '@/Components/boardui/components/base/badges/chip';
+import { StatusDot as BoardUIStatusDot } from '@/Components/boardui/components/base/badges/status-dot';
+import { Accordion as BoardUIAccordion, AccordionItem as BoardUIAccordionItem } from '@/Components/boardui/components/base/accordion/accordion';
+import { parseDate, type CalendarDate } from '@internationalized/date';
 import {
     Dialog,
     DialogContent,
@@ -364,6 +374,30 @@ export default function Profile({
         explanation: '',
     });
 
+    const sanitizePhoneNumber = (raw: string): string => {
+        let digits = raw.replace(/\D/g, '');
+
+        if (digits.startsWith('251')) {
+            digits = digits.slice(3);
+        }
+
+        digits = digits.replace(/^0+/, '');
+
+        if (digits.length > 0 && !digits.startsWith('9') && !digits.startsWith('7')) {
+            const validIdx = digits.search(/[97]/);
+            if (validIdx !== -1) {
+                digits = digits.slice(validIdx);
+            } else {
+                digits = '';
+            }
+        }
+
+        return digits.slice(0, 9);
+    };
+
+    const initialPhoneNational = sanitizePhoneNumber(employee?.phone || '');
+    const [leavePhoneNational, setLeavePhoneNational] = useState(initialPhoneNational);
+
     const {
         data: leaveData,
         setData: setLeaveData,
@@ -391,9 +425,24 @@ export default function Profile({
         requested_days: '1',
         reason: '',
         handover_employee_id: '',
-        contact_phone: employee?.phone || '',
+        contact_phone: initialPhoneNational ? `+251${initialPhoneNational}` : '',
         attachment: null,
     });
+
+    const handleLeavePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const sanitized = sanitizePhoneNumber(e.target.value);
+        setLeavePhoneNational(sanitized);
+        setLeaveData('contact_phone', sanitized ? `+251${sanitized}` : '');
+    };
+
+    const toCalendarDate = (dateStr?: string): CalendarDate | null => {
+        if (!dateStr) return null;
+        try {
+            return parseDate(dateStr);
+        } catch {
+            return null;
+        }
+    };
 
     const handleStartDateChange = (val: string) => {
         const ec = gcToEc(val);
@@ -422,6 +471,7 @@ export default function Profile({
             preserveScroll: true,
             onSuccess: () => {
                 resetLeave();
+                setLeavePhoneNational(initialPhoneNational);
                 setShowLeaveModal(false);
                 toast.success('Leave request submitted successfully for HR review');
             },
@@ -503,34 +553,36 @@ export default function Profile({
         switch (empStatus) {
             case 'Permanent':
                 return (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <BoardUIChip variant="subtle" color="lime" className="gap-1.5 px-3 py-1 text-xs font-semibold rounded-full">
+                        <BoardUIStatusDot color="green" />
                         Permanent Staff
-                    </span>
+                    </BoardUIChip>
                 );
             case 'Contract':
                 return (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-500/20">
+                    <BoardUIChip variant="subtle" color="blue" className="gap-1.5 px-3 py-1 text-xs font-semibold rounded-full">
+                        <BoardUIStatusDot color="indigo" />
                         Fixed-Term Contract
-                    </span>
+                    </BoardUIChip>
                 );
             case 'Probation':
                 return (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                    <BoardUIChip variant="subtle" color="yellow" className="gap-1.5 px-3 py-1 text-xs font-semibold rounded-full">
+                        <BoardUIStatusDot color="yellow" />
                         Under Probation
-                    </span>
+                    </BoardUIChip>
                 );
             case 'Separated':
                 return (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground border border-border">
+                    <BoardUIChip variant="subtle" color="neutral" className="gap-1.5 px-3 py-1 text-xs font-semibold rounded-full">
                         Separated / Archived
-                    </span>
+                    </BoardUIChip>
                 );
             default:
                 return (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-muted text-foreground border border-border">
+                    <BoardUIChip variant="subtle" color="neutral" className="gap-1.5 px-3 py-1 text-xs font-semibold rounded-full">
                         {empStatus}
-                    </span>
+                    </BoardUIChip>
                 );
         }
     };
@@ -581,40 +633,47 @@ export default function Profile({
                     <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight leading-tight">
                         Employee Self-Service (ESS) Portal
                     </h1>
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                        Review verified personnel records, payroll allowances, and report data discrepancies.
-                    </p>
                 </div>
 
                 <div data-tour="portal-actions" className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto shrink-0">
-                    <Button
+                    <BoardUIButton
                         type="button"
                         variant="ghost"
+                        size="medium"
                         onClick={() => setIsTourOpen(true)}
                         title="Start the guided self-service tour"
                         className="h-9 px-3 text-xs font-semibold gap-1.5 text-primary hover:bg-primary/10 rounded-full transition-all cursor-pointer"
                     >
                         <Compass className="w-4 h-4" />
                         <span>Tour</span>
-                    </Button>
-                    <Button
+                    </BoardUIButton>
+                    <Link href={route('portal.leave.index')}>
+                        <BoardUIButton
+                            type="button"
+                            variant="primary"
+                            size="medium"
+                            className="h-9 px-4 text-xs font-semibold gap-2 rounded-full shadow-xs transition-all cursor-pointer"
+                        >
+                            <CalendarCheck className="w-4 h-4" />
+                            <span>Request Leave</span>
+                        </BoardUIButton>
+                    </Link>
+                    <BoardUIButton
                         type="button"
-                        onClick={() => setShowLeaveModal(true)}
-                        className="h-9 px-4 text-xs font-semibold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-xs transition-all cursor-pointer"
-                    >
-                        <CalendarCheck className="w-4 h-4" />
-                        <span>Request Leave</span>
-                    </Button>
-                    <Button
-                        type="button"
-                        variant="outline"
+                        variant="secondary"
+                        size="medium"
                         onClick={() => setShowModal(true)}
-                        className="h-9 px-4 text-xs font-semibold gap-2 border-border hover:bg-muted text-foreground rounded-full shadow-xs transition-all cursor-pointer"
+                        className="h-9 px-4 text-xs font-semibold gap-2 rounded-full shadow-xs transition-all cursor-pointer"
                     >
                         <ShieldAlert className="w-4 h-4" />
                         <span>Report Correction</span>
-                    </Button>
+                    </BoardUIButton>
                 </div>
+            </div>
+
+            {/* Company Notice Board Widget */}
+            <div className="mb-6 no-print">
+                <NoticeBoardWidget />
             </div>
 
             {/* Master-Detail 2-Column Responsive Layout */}
@@ -653,7 +712,7 @@ export default function Profile({
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 )}
-                                <input
+                                <Input
                                     type="file"
                                     ref={fileInputRef}
                                     className="hidden"
@@ -667,11 +726,12 @@ export default function Profile({
                                 {employee.full_name}
                             </h2>
                             <div className="flex items-center gap-2 mt-2 mb-3.5">
-                                <button
-                                    type="button"
+                                <BoardUIChip
+                                    variant="bold"
+                                    color="blue"
                                     onClick={() => copyToClipboard(employee.file_no, 'File No')}
                                     title="Click to copy File No"
-                                    className="font-mono text-sm font-semibold text-primary hover:underline inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20 cursor-pointer"
+                                    className="cursor-pointer font-mono text-sm gap-1.5 px-2.5 py-1 rounded-md"
                                 >
                                     <span>{employee.file_no}</span>
                                     {copiedKey === 'File No' ? (
@@ -679,7 +739,7 @@ export default function Profile({
                                     ) : (
                                         <Copy className="w-3 h-3 text-primary/70" />
                                     )}
-                                </button>
+                                </BoardUIChip>
                                 <span className="text-sm text-muted-foreground">&bull;</span>
                                 <span className="text-sm text-muted-foreground font-medium">{employee.gender}</span>
                             </div>
@@ -745,14 +805,13 @@ export default function Profile({
                                     <a href={`tel:${employee.phone}`} className="font-mono text-primary font-semibold hover:underline text-sm">
                                         {formatEthPhone(employee.phone)}
                                     </a>
-                                    <button
-                                        type="button"
+                                    <BoardUIIconButton
+                                        size="small"
+                                        icon={copiedKey === 'Phone' ? Check : Copy}
+                                        aria-label="Copy phone"
                                         onClick={() => copyToClipboard(employee.phone || '', 'Phone')}
-                                        className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-muted cursor-pointer"
-                                        title="Copy phone"
-                                    >
-                                        {copiedKey === 'Phone' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                                    </button>
+                                        className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
+                                    />
                                 </div>
                             </div>
                         ) : (
@@ -772,14 +831,13 @@ export default function Profile({
                                     {employee.bank_account_no || '—'}
                                 </span>
                                 {employee.bank_account_no && (
-                                    <button
-                                        type="button"
+                                    <BoardUIIconButton
+                                        size="small"
+                                        icon={copiedKey === 'Bank Account' ? Check : Copy}
+                                        aria-label="Copy bank account"
                                         onClick={() => copyToClipboard(employee.bank_account_no || '', 'Bank Account')}
-                                        className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-muted cursor-pointer"
-                                        title="Copy bank account"
-                                    >
-                                        {copiedKey === 'Bank Account' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                                    </button>
+                                        className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
+                                    />
                                 )}
                             </div>
                         </div>
@@ -794,14 +852,13 @@ export default function Profile({
                                     {employee.tin_no || '—'}
                                 </span>
                                 {employee.tin_no && (
-                                    <button
-                                        type="button"
+                                    <BoardUIIconButton
+                                        size="small"
+                                        icon={copiedKey === 'TIN' ? Check : Copy}
+                                        aria-label="Copy TIN"
                                         onClick={() => copyToClipboard(employee.tin_no || '', 'TIN')}
-                                        className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-muted cursor-pointer"
-                                        title="Copy TIN"
-                                    >
-                                        {copiedKey === 'TIN' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                                    </button>
+                                        className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
+                                    />
                                 )}
                             </div>
                         </div>
@@ -816,14 +873,13 @@ export default function Profile({
                                     {employee.poessa_no || employee.psssa_no || '—'}
                                 </span>
                                 {(employee.poessa_no || employee.psssa_no) && (
-                                    <button
-                                        type="button"
+                                    <BoardUIIconButton
+                                        size="small"
+                                        icon={copiedKey === 'Pension ID' ? Check : Copy}
+                                        aria-label="Copy Pension ID"
                                         onClick={() => copyToClipboard(employee.poessa_no || employee.psssa_no || '', 'Pension ID')}
-                                        className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-muted cursor-pointer"
-                                        title="Copy Pension ID"
-                                    >
-                                        {copiedKey === 'Pension ID' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                                    </button>
+                                        className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
+                                    />
                                 )}
                             </div>
                         </div>
@@ -863,16 +919,16 @@ export default function Profile({
                         <p className="text-xs text-muted-foreground leading-relaxed">
                             If any personal identification, academic credential, or salary allowance requires adjustment, submit an official correction request to HR.
                         </p>
-                        <Button
+                        <BoardUIButton
                             type="button"
                             onClick={() => setShowModal(true)}
-                            variant="outline"
-                            size="sm"
-                            className="w-full text-xs font-semibold gap-1.5 border-primary/30 hover:bg-primary/10 text-primary rounded-lg"
+                            variant="secondary"
+                            size="small"
+                            className="w-full text-xs font-semibold gap-1.5 border-primary/30 text-primary hover:bg-primary/10 rounded-lg cursor-pointer"
                         >
                             <Send className="w-3.5 h-3.5" />
                             <span>Report Data Discrepancy</span>
-                        </Button>
+                        </BoardUIButton>
                     </Card>
                 </div>
 
@@ -1056,29 +1112,22 @@ export default function Profile({
                             </Card>
 
                             {/* Remarks / Personnel Notes */}
-                            <Card className="border-border bg-card shadow-xs rounded-xl overflow-hidden">
-                                <CardHeader 
-                                    className="py-4 px-6 border-b border-border/70 flex flex-row items-center justify-between cursor-pointer hover:bg-muted/20"
-                                    onClick={() => setRemarksExpanded(!remarksExpanded)}
+                            <BoardUIAccordion variant="separated" defaultExpandedKeys={employee.remarks ? ["remarks"] : []}>
+                                <BoardUIAccordionItem
+                                    id="remarks"
+                                    title="Personnel Notes & Remarks"
+                                    description="Internal HR administrative notes and contractual remarks"
+                                    icon={FileText}
                                 >
-                                    <div className="flex items-center gap-2.5">
-                                        <FileText className="w-4 h-4 text-muted-foreground" />
-                                        <span className="text-sm font-bold text-foreground">Personnel Notes &amp; Remarks</span>
-                                    </div>
-                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground">
-                                        {remarksExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                                    </Button>
-                                </CardHeader>
-                                {remarksExpanded && (
-                                    <CardContent className="p-6 text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
+                                    <div className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed py-1">
                                         {employee.remarks || (
                                             <span className="text-muted-foreground italic">
                                                 No special personnel remarks logged for this employee record.
                                             </span>
                                         )}
-                                    </CardContent>
-                                )}
-                            </Card>
+                                    </div>
+                                </BoardUIAccordionItem>
+                            </BoardUIAccordion>
                         </TabsContent>
 
                         {/* -------------------------------------------------------------
@@ -1381,15 +1430,17 @@ export default function Profile({
                                             Track pending, approved, and historic leave requests with balance impact
                                         </CardDescription>
                                     </div>
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        onClick={() => setShowLeaveModal(true)}
-                                        className="h-8 px-3 text-xs font-semibold gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-xs cursor-pointer self-start sm:self-auto"
-                                    >
-                                        <CalendarCheck className="w-3.5 h-3.5" />
-                                        <span>Apply for Leave</span>
-                                    </Button>
+                                    <Link href={route('portal.leave.index')}>
+                                        <BoardUIButton
+                                            type="button"
+                                            variant="primary"
+                                            size="small"
+                                            className="h-8 px-3 text-xs font-semibold gap-1.5 rounded-full shadow-xs cursor-pointer self-start sm:self-auto"
+                                        >
+                                            <CalendarCheck className="w-3.5 h-3.5" />
+                                            <span>Apply for Leave</span>
+                                        </BoardUIButton>
+                                    </Link>
                                 </CardHeader>
                                 <CardContent className="p-6">
                                     {leaveRequests.length === 0 ? (
@@ -1401,15 +1452,16 @@ export default function Profile({
                                             <p className="text-xs text-muted-foreground mt-1 max-w-sm">
                                                 You have not submitted any leave requests yet. Click &ldquo;Apply for Leave&rdquo; whenever you need to schedule statutory rest or excused leave.
                                             </p>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => setShowLeaveModal(true)}
-                                                className="mt-4 text-xs font-medium border-border"
-                                            >
-                                                Apply for Leave
-                                            </Button>
+                                            <Link href={route('portal.leave.index')}>
+                                                <BoardUIButton
+                                                    type="button"
+                                                    variant="secondary"
+                                                    size="small"
+                                                    className="mt-4 text-xs font-medium"
+                                                >
+                                                    Apply for Leave
+                                                </BoardUIButton>
+                                            </Link>
                                         </div>
                                     ) : (
                                         <div className="border border-border/70 rounded-xl overflow-x-auto bg-card">
@@ -1468,13 +1520,13 @@ export default function Profile({
                                                             <td className="py-3 px-4">
                                                                 {req.status === 'Approved' ? (
                                                                     req.is_deducted ? (
-                                                                        <Badge variant="outline" className="text-[11px] bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20">
+                                                                        <BoardUIChip variant="caption" color="yellow" className="text-[11px] font-semibold">
                                                                             -{req.days_deducted} days deducted
-                                                                        </Badge>
+                                                                        </BoardUIChip>
                                                                     ) : (
-                                                                        <Badge variant="outline" className="text-[11px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
+                                                                        <BoardUIChip variant="caption" color="lime" className="text-[11px] font-semibold">
                                                                             Excused (0 Deduction)
-                                                                        </Badge>
+                                                                        </BoardUIChip>
                                                                     )
                                                                 ) : req.status === 'Pending' ? (
                                                                     <span className="text-xs text-muted-foreground">Pending HR deduction</span>
@@ -1483,26 +1535,23 @@ export default function Profile({
                                                                 )}
                                                             </td>
                                                             <td className="py-3 px-4 whitespace-nowrap">
-                                                                <Badge
-                                                                    variant={
+                                                                <BoardUIChip
+                                                                    variant="subtle"
+                                                                    color={
                                                                         req.status === 'Approved'
-                                                                            ? 'secondary'
-                                                                            : req.status === 'Rejected'
-                                                                            ? 'destructive'
-                                                                            : 'outline'
-                                                                    }
-                                                                    className={`text-xs px-2.5 py-0.5 font-semibold ${
-                                                                        req.status === 'Approved'
-                                                                            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20'
+                                                                            ? 'lime'
                                                                             : req.status === 'Pending'
-                                                                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20'
-                                                                            : req.status === 'Cancelled'
-                                                                            ? 'bg-muted text-muted-foreground border-border'
-                                                                            : ''
-                                                                    }`}
+                                                                            ? 'yellow'
+                                                                            : req.status === 'Rejected'
+                                                                            ? 'rose'
+                                                                            : 'neutral'
+                                                                    }
+                                                                    className="gap-1 px-2.5 py-0.5 text-xs font-semibold"
                                                                 >
-                                                                    {req.status}
-                                                                </Badge>
+                                                                    {req.status === 'Approved' && <BoardUIStatusDot color="green" />}
+                                                                    {req.status === 'Pending' && <BoardUIStatusDot color="yellow" />}
+                                                                    <span>{req.status}</span>
+                                                                </BoardUIChip>
                                                                 {req.reviewer_notes && (
                                                                     <p className="text-[10px] text-muted-foreground mt-1 max-w-[180px] truncate" title={req.reviewer_notes}>
                                                                         Note: {req.reviewer_notes}
@@ -1511,19 +1560,19 @@ export default function Profile({
                                                             </td>
                                                             <td className="py-3 px-4 text-right whitespace-nowrap">
                                                                 {req.status === 'Pending' ? (
-                                                                    <Button
+                                                                    <BoardUIButton
                                                                         type="button"
                                                                         variant="ghost"
-                                                                        size="sm"
+                                                                        size="xs"
                                                                         onClick={() => {
                                                                             setRequestToCancel(req);
                                                                             setCancelDialogOpen(true);
                                                                         }}
-                                                                        className="h-8 px-2.5 text-xs font-medium text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                                        className="h-8 px-2.5 text-xs font-medium text-destructive hover:bg-destructive/10 gap-1"
                                                                     >
-                                                                        <XCircle className="w-3.5 h-3.5 mr-1" />
-                                                                        Cancel
-                                                                    </Button>
+                                                                        <XCircle className="w-3.5 h-3.5" />
+                                                                        <span>Cancel</span>
+                                                                    </BoardUIButton>
                                                                 ) : (
                                                                     <span className="text-xs text-muted-foreground">—</span>
                                                                 )}
@@ -1636,15 +1685,16 @@ export default function Profile({
                                             Audit trail of submitted discrepancy requests and HR administrative review status
                                         </CardDescription>
                                     </div>
-                                    <Button
+                                    <BoardUIButton
                                         type="button"
-                                        size="sm"
+                                        variant="primary"
+                                        size="small"
                                         onClick={() => setShowModal(true)}
-                                        className="h-8 px-3 text-xs font-semibold gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-xs cursor-pointer self-start sm:self-auto"
+                                        className="h-8 px-3 text-xs font-semibold gap-1.5 rounded-full shadow-xs cursor-pointer self-start sm:self-auto"
                                     >
                                         <Send className="w-3.5 h-3.5" />
                                         <span>New Correction Request</span>
-                                    </Button>
+                                    </BoardUIButton>
                                 </CardHeader>
                                 <CardContent className="p-6">
                                     {discrepancyReports.length === 0 ? (
@@ -1656,15 +1706,15 @@ export default function Profile({
                                             <p className="text-xs text-muted-foreground mt-1 max-w-sm">
                                                 All your personnel records are up-to-date. If you spot any inaccuracy, click &ldquo;Report Correction&rdquo; to notify HR.
                                             </p>
-                                            <Button
+                                            <BoardUIButton
                                                 type="button"
-                                                variant="outline"
-                                                size="sm"
+                                                variant="secondary"
+                                                size="small"
                                                 onClick={() => setShowModal(true)}
-                                                className="mt-4 text-xs font-medium border-border"
+                                                className="mt-4 text-xs font-medium"
                                             >
                                                 Report a Discrepancy
-                                            </Button>
+                                            </BoardUIButton>
                                         </div>
                                     ) : (
                                         <div className="border border-border/70 rounded-xl overflow-x-auto bg-card">
@@ -1692,24 +1742,23 @@ export default function Profile({
                                                                 {report.created_at ? new Date(report.created_at).toLocaleDateString() : '—'}
                                                             </td>
                                                             <td className="py-3 px-4 text-right whitespace-nowrap">
-                                                                <Badge
-                                                                    variant={
+                                                                <BoardUIChip
+                                                                    variant="subtle"
+                                                                    color={
                                                                         report.status === 'Approved'
-                                                                            ? 'secondary'
-                                                                            : report.status === 'Rejected'
-                                                                            ? 'destructive'
-                                                                            : 'outline'
-                                                                    }
-                                                                    className={`text-xs px-2.5 py-0.5 font-semibold ${
-                                                                        report.status === 'Approved'
-                                                                            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20'
+                                                                            ? 'lime'
                                                                             : report.status === 'Pending'
-                                                                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20'
-                                                                            : ''
-                                                                    }`}
+                                                                            ? 'yellow'
+                                                                            : report.status === 'Rejected'
+                                                                            ? 'rose'
+                                                                            : 'neutral'
+                                                                    }
+                                                                    className="gap-1 px-2.5 py-0.5 text-xs font-semibold"
                                                                 >
-                                                                    {report.status}
-                                                                </Badge>
+                                                                    {report.status === 'Approved' && <BoardUIStatusDot color="green" />}
+                                                                    {report.status === 'Pending' && <BoardUIStatusDot color="yellow" />}
+                                                                    <span>{report.status}</span>
+                                                                </BoardUIChip>
                                                             </td>
                                                         </tr>
                                                     ))}
@@ -1822,31 +1871,38 @@ export default function Profile({
                             <label className="block text-xs font-semibold text-foreground mb-1.5">
                                 Explanation / Supporting Notes
                             </label>
-                            <Textarea
+                            <BoardUITextarea
+                                aria-label="Explanation / Supporting Notes"
                                 value={data.explanation}
-                                onChange={(e) => setData('explanation', e.target.value)}
+                                onChange={(val) => setData('explanation', val)}
                                 rows={3}
+                                autoResize
+                                maxRows={8}
                                 placeholder="Provide supporting context or document reference for HR..."
-                                className="w-full rounded-xl border border-border bg-background text-foreground p-3 text-xs leading-relaxed focus-visible:ring-1 focus-visible:ring-primary"
+                                fieldClassName="p-3 rounded-xl border border-border bg-background text-foreground shadow-2xs hover:border-border/80"
+                                className="text-xs leading-relaxed"
                             />
                         </div>
 
                         <DialogFooter className="flex justify-end gap-2 pt-3 border-t border-border/70">
-                            <Button
+                            <BoardUIButton
                                 type="button"
-                                variant="outline"
+                                variant="secondary"
+                                size="small"
                                 onClick={() => setShowModal(false)}
-                                className="text-xs border-border rounded-xl h-9"
+                                className="text-xs rounded-xl h-9"
                             >
                                 Cancel
-                            </Button>
-                            <Button
+                            </BoardUIButton>
+                            <BoardUIButton
                                 type="submit"
+                                variant="primary"
+                                size="small"
                                 disabled={processing}
-                                className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-xl h-9 shadow-xs"
+                                className="text-xs font-semibold rounded-xl h-9 shadow-xs"
                             >
                                 {processing ? 'Submitting...' : 'Submit Correction'}
-                            </Button>
+                            </BoardUIButton>
                         </DialogFooter>
                     </form>
                 </DialogContent>
@@ -1932,12 +1988,11 @@ export default function Profile({
                                 <label className="block text-xs font-semibold text-foreground mb-1.5">
                                     Start Date (G.C.) <span className="text-destructive">*</span>
                                 </label>
-                                <Input
-                                    type="date"
-                                    required
-                                    value={leaveData.start_date}
-                                    onChange={(e) => handleStartDateChange(e.target.value)}
-                                    className="bg-background border-border text-foreground text-xs h-10 rounded-xl"
+                                <BoardUIDatePicker
+                                    value={toCalendarDate(leaveData.start_date)}
+                                    onChange={(cDate) => handleStartDateChange(cDate ? cDate.toString() : '')}
+                                    aria-label="Start Date (G.C.)"
+                                    className="w-full h-10 px-3 rounded-xl border border-border bg-background text-foreground text-xs justify-start"
                                 />
                                 {leaveErrors.start_date && (
                                     <p className="text-xs text-destructive mt-1 font-medium">{leaveErrors.start_date}</p>
@@ -1965,12 +2020,11 @@ export default function Profile({
                                 <label className="block text-xs font-semibold text-foreground mb-1.5">
                                     End Date (G.C.) <span className="text-destructive">*</span>
                                 </label>
-                                <Input
-                                    type="date"
-                                    required
-                                    value={leaveData.end_date}
-                                    onChange={(e) => handleEndDateChange(e.target.value)}
-                                    className="bg-background border-border text-foreground text-xs h-10 rounded-xl"
+                                <BoardUIDatePicker
+                                    value={toCalendarDate(leaveData.end_date)}
+                                    onChange={(cDate) => handleEndDateChange(cDate ? cDate.toString() : '')}
+                                    aria-label="End Date (G.C.)"
+                                    className="w-full h-10 px-3 rounded-xl border border-border bg-background text-foreground text-xs justify-start"
                                 />
                                 {leaveErrors.end_date && (
                                     <p className="text-xs text-destructive mt-1 font-medium">{leaveErrors.end_date}</p>
@@ -1998,15 +2052,16 @@ export default function Profile({
                                 <label className="block text-xs font-semibold text-foreground mb-1.5">
                                     Requested Working Days <span className="text-destructive">*</span>
                                 </label>
-                                <Input
-                                    type="number"
-                                    step="0.5"
-                                    min="0.5"
-                                    max="120"
-                                    required
-                                    value={leaveData.requested_days}
-                                    onChange={(e) => setLeaveData('requested_days', e.target.value)}
-                                    className="bg-background border-border text-foreground text-xs h-10 rounded-xl font-mono"
+                                <BoardUINumberField
+                                    aria-label="Requested Working Days"
+                                    value={Number(leaveData.requested_days) || 1}
+                                    onChange={(val) => setLeaveData('requested_days', String(val))}
+                                    minValue={0.5}
+                                    maxValue={120}
+                                    step={0.5}
+                                    isRequired
+                                    className="w-full"
+                                    fieldClassName="h-10 rounded-xl border border-border bg-background text-foreground text-xs font-mono shadow-2xs hover:border-border/80"
                                 />
                                 {leaveErrors.requested_days && (
                                     <p className="text-xs text-destructive mt-1 font-medium">{leaveErrors.requested_days}</p>
@@ -2016,12 +2071,21 @@ export default function Profile({
                                 <label className="block text-xs font-semibold text-foreground mb-1.5">
                                     Contact Phone on Leave
                                 </label>
-                                <Input
-                                    value={leaveData.contact_phone}
-                                    onChange={(e) => setLeaveData('contact_phone', e.target.value)}
-                                    placeholder="+251..."
-                                    className="bg-background border-border text-foreground text-xs h-10 rounded-xl font-mono"
-                                />
+                                <div className="relative group">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-mono font-semibold pointer-events-none select-none flex items-center gap-1">
+                                        <Phone className="w-3.5 h-3.5 text-muted-foreground/80" />
+                                        <span>+251</span>
+                                    </span>
+                                    <Input
+                                        type="tel"
+                                        inputMode="numeric"
+                                        value={leavePhoneNational}
+                                        onChange={handleLeavePhoneChange}
+                                        placeholder="9XXXXXXXX"
+                                        autoComplete="tel-national"
+                                        className="bg-background border-border text-foreground text-xs h-10 rounded-xl font-mono tracking-wider pl-[72px]"
+                                    />
+                                </div>
                                 {leaveErrors.contact_phone && (
                                     <p className="text-xs text-destructive mt-1 font-medium">{leaveErrors.contact_phone}</p>
                                 )}
@@ -2069,16 +2133,26 @@ export default function Profile({
                         </div>
 
                         <div>
-                            <label className="block text-xs font-semibold text-foreground mb-1.5">
-                                Reason &amp; Justification <span className="text-destructive">*</span>
-                            </label>
-                            <Textarea
-                                required
+                            <div className="flex items-center justify-between mb-1.5">
+                                <label className="block text-xs font-semibold text-foreground">
+                                    Reason &amp; Justification <span className="text-destructive">*</span>
+                                </label>
+                                <span className="text-[11px] text-muted-foreground font-normal">
+                                    {leaveData.reason.length} / 1000
+                                </span>
+                            </div>
+                            <BoardUITextarea
+                                aria-label="Reason & Justification"
+                                isRequired
                                 rows={3}
+                                autoResize
+                                maxRows={8}
+                                maxLength={1000}
                                 value={leaveData.reason}
-                                onChange={(e) => setLeaveData('reason', e.target.value)}
+                                onChange={(val) => setLeaveData('reason', val)}
                                 placeholder="Provide details regarding the nature of the request, travel, or medical circumstance..."
-                                className="w-full rounded-xl border border-border bg-background text-foreground p-3 text-xs leading-relaxed focus-visible:ring-1 focus-visible:ring-primary"
+                                fieldClassName="p-3 rounded-xl border border-border bg-background text-foreground shadow-2xs hover:border-border/80"
+                                className="text-xs leading-relaxed"
                             />
                             {leaveErrors.reason && (
                                 <p className="text-xs text-destructive mt-1 font-medium">{leaveErrors.reason}</p>
@@ -2086,21 +2160,24 @@ export default function Profile({
                         </div>
 
                         <DialogFooter className="flex justify-end gap-2 pt-3 border-t border-border/70">
-                            <Button
+                            <BoardUIButton
                                 type="button"
-                                variant="outline"
+                                variant="secondary"
+                                size="small"
                                 onClick={() => setShowLeaveModal(false)}
-                                className="text-xs border-border rounded-xl h-9"
+                                className="text-xs rounded-xl h-9"
                             >
                                 Cancel
-                            </Button>
-                            <Button
+                            </BoardUIButton>
+                            <BoardUIButton
                                 type="submit"
+                                variant="primary"
+                                size="small"
                                 disabled={leaveProcessing}
-                                className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-xl h-9 shadow-xs"
+                                className="text-xs font-semibold rounded-xl h-9 shadow-xs"
                             >
                                 {leaveProcessing ? 'Submitting...' : 'Submit Application'}
-                            </Button>
+                            </BoardUIButton>
                         </DialogFooter>
                     </form>
                 </DialogContent>

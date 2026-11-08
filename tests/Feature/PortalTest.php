@@ -67,6 +67,28 @@ class PortalTest extends TestCase
         ]);
     }
 
+    public function test_authenticated_user_can_view_ess_leave_page(): void
+    {
+        $user = User::factory()->create(['role' => 'Employee']);
+        $employee = Employee::factory()->create([
+            'user_id' => $user->id,
+            'full_name' => 'Tirunesh Dibaba',
+        ]);
+
+        $response = $this->actingAs($user)->get('/portal/leave');
+
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Portal/Leave')
+            ->has('employee')
+            ->where('employee.full_name', 'Tirunesh Dibaba')
+            ->has('availableDays')
+            ->has('annualLeaveEntitlement')
+            ->has('leaveRequests')
+            ->has('colleagues')
+        );
+    }
+
     public function test_hr_admin_can_review_discrepancy_report(): void
     {
         $admin = User::factory()->create(['role' => 'HRAdmin']);

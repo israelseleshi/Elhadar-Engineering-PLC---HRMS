@@ -3,6 +3,7 @@ import { motion, useSpring, type Variants } from 'framer-motion';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import InteractiveTour, { TourStep } from '@/Components/InteractiveTour';
+import NoticeBoardWidget from '@/Components/NoticeBoardWidget';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -219,31 +220,31 @@ const dashboardTourSteps: TourStep[] = [
     {
         target: '[data-tour="kpi-metrics"]',
         title: 'Key metrics',
-        content: 'Monitor active headcount and year-to-date employee turnover rates.',
+        content: 'Quick glance at your total team size and annual turnover rate.',
         placement: 'bottom',
     },
     {
         target: '[data-tour="gender-chart"]',
         title: 'Gender diversity',
-        content: 'View the distribution and proportion of male and female staff.',
+        content: 'See the gender balance across the entire company.',
         placement: 'bottom',
     },
     {
         target: '[data-tour="workplace-chart"]',
         title: 'Workplace deployment',
-        content: 'Track staff stationed at regional project sites versus the head office.',
+        content: 'See how many people are out on project sites versus at Head Office.',
         placement: 'top',
     },
     {
         target: '[data-tour="tenure-chart"]',
         title: 'Tenure and stability',
-        content: 'Review the proportion of permanent staff, probation pipeline, and contracts.',
+        content: 'Keep track of permanent hires, ongoing probations, and contract staff.',
         placement: 'top',
     },
     {
         target: '[data-tour="department-chart"]',
         title: 'Department breakdown',
-        content: 'Compare workforce distribution across all operational departments.',
+        content: 'Compare team sizes across all 11 departments.',
         placement: 'top',
     },
 ];
@@ -400,10 +401,6 @@ export default function Dashboard({
 
     const allDeptsTotalEmployees = departmentBreakdown.reduce((acc, d) => acc + d.employees_count, 0);
 
-    const top2Depts = [...departmentChartData].sort((a, b) => b.employees_count - a.employees_count).slice(0, 2);
-    const top2Total = top2Depts.reduce((acc, d) => acc + d.employees_count, 0);
-    const top2Pct = metrics.total_active > 0 ? ((top2Total / metrics.total_active) * 100).toFixed(1) : '0';
-
     const departmentChartConfig = {
         employees_count: {
             label: 'Active Staff',
@@ -414,9 +411,13 @@ export default function Dashboard({
     return (
         <AuthenticatedLayout
             title="Dashboard"
-            subtitle="Overview of your staff, payroll and upcoming deadlines."
+            subtitle="Executive overview of active personnel, site staffing, and team distribution."
         >
             <Head title="Dashboard - Elhadar Engineering HRMS" />
+
+            <div className="mb-6">
+                <NoticeBoardWidget />
+            </div>
 
             {/* Top Stat Section: 2 Stacked Cards on Left, Tall Gender Donut on Right */}
             <motion.div
@@ -436,7 +437,7 @@ export default function Dashboard({
                         <Card className="border-border bg-card shadow-xs hover:shadow-md transition-shadow duration-300 rounded-xl p-5 sm:p-6 flex flex-col justify-between h-full">
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <p className="text-xs font-medium text-muted-foreground">Active headcount</p>
+                                    <h3 className="text-base font-semibold text-foreground">Active headcount</h3>
                                     <p className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground mt-2">
                                         <AnimatedNumber value={metrics.total_active} delay={0.15} />
                                     </p>
@@ -465,9 +466,7 @@ export default function Dashboard({
                         <Card className="border-border bg-card shadow-xs hover:shadow-md transition-shadow duration-300 rounded-xl p-5 sm:p-6 flex flex-col justify-between h-full">
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-xs font-medium text-muted-foreground">Employee turnover rate</p>
-                                    </div>
+                                    <h3 className="text-base font-semibold text-foreground">Employee turnover rate</h3>
                                     <p className={`text-3xl sm:text-4xl font-semibold tracking-tight mt-2 ${turnoverColor === 'primary' ? 'text-primary' : turnoverColor === 'success-600' ? 'text-success-600' : turnoverColor === 'warning-600' ? 'text-warning-600' : 'text-destructive-600'}`}>
                                         <AnimatedNumber value={ytdRate} precision={2} suffix="%" delay={0.25} />
                                     </p>
@@ -481,12 +480,9 @@ export default function Dashboard({
                                     <TrendingDown className={`w-5 h-5 ${turnoverColor === 'primary' ? 'text-primary' : turnoverColor === 'success-600' ? 'text-success-600' : turnoverColor === 'warning-600' ? 'text-warning-600' : 'text-destructive-600'}`} />
                                 </motion.div>
                             </div>
-                            <div className="mt-3 pt-2.5 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+                            <div className="mt-3 pt-2.5 border-t border-border/50 text-xs text-muted-foreground">
                                 <span>
-                                    Avg staff: <strong className="font-semibold text-foreground">{avgHeadcount}</strong> &middot; <strong className="font-semibold text-foreground">{ytdSeparations}</strong> {ytdSeparations === 1 ? 'exit' : 'exits'}
-                                </span>
-                                <span className="text-muted-foreground">
-                                    {mtdRate.toFixed(2)}% this mo.
+                                    Avg staff: <strong className="font-semibold text-foreground">{avgHeadcount}</strong> &middot; <strong className="font-semibold text-foreground">{ytdSeparations}</strong> exits
                                 </span>
                             </div>
                         </Card>
@@ -636,14 +632,14 @@ export default function Dashboard({
                             <div>
                                 <div className="flex items-center gap-2">
                                     <CardTitle className="text-base text-foreground">
-                                        Pending Employee Data Correction Requests
+                                        Pending Profile Updates
                                     </CardTitle>
                                     <Badge className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0 font-semibold rounded-full">
                                         {alerts.discrepancies.length} Pending
                                     </Badge>
                                 </div>
                                 <CardDescription className="text-xs text-foreground/80">
-                                    Submitted by staff members through the Self-Service Portal awaiting HR review
+                                    Updates submitted by staff waiting for HR approval
                                 </CardDescription>
                             </div>
                         </div>
@@ -655,9 +651,9 @@ export default function Dashboard({
                                     <TableRow>
                                         <TableHead className="text-xs font-bold py-2">Staff member</TableHead>
                                         <TableHead className="text-xs font-bold py-2">Field</TableHead>
-                                        <TableHead className="text-xs font-bold py-2">Current record</TableHead>
-                                        <TableHead className="text-xs font-bold py-2">Requested value</TableHead>
-                                        <TableHead className="text-xs font-bold py-2">Explanation</TableHead>
+                                        <TableHead className="text-xs font-bold py-2">Current Info</TableHead>
+                                        <TableHead className="text-xs font-bold py-2">Requested Change</TableHead>
+                                        <TableHead className="text-xs font-bold py-2">Reason</TableHead>
                                         <TableHead className="text-xs font-bold py-2 text-right"><span className="sr-only">Actions</span></TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -730,20 +726,14 @@ export default function Dashboard({
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <CardTitle className="text-base text-foreground font-bold">
-                                            Workplace Deployment
+                                            Staff by Location
                                         </CardTitle>
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-bold bg-muted text-primary border-border">
-                                            Field vs. H.O.
-                                        </Badge>
                                     </div>
                                     <CardDescription className="text-xs text-muted-foreground">
-                                        Regional project mobilization vs. centralized Head Office
+                                        Employees on regional projects compared to Head Office
                                     </CardDescription>
                                 </div>
                             </div>
-                            <span className="text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-500/10 px-2.5 py-1 rounded-md border border-sky-500/20 hidden sm:inline-block font-mono">
-                                {projectPct}% Field Staff
-                            </span>
                         </div>
                     </CardHeader>
 
@@ -790,7 +780,7 @@ export default function Dashboard({
                                         {totalActiveStaff}
                                     </span>
                                     <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mt-1">
-                                        Mobilized
+                                        Total Staff
                                     </span>
                                 </div>
                             </div>
@@ -808,7 +798,7 @@ export default function Dashboard({
                                         <span className="text-lg font-bold text-foreground font-mono">{projectCount}</span>
                                         <span className="text-xs font-semibold text-sky-600 dark:text-sky-400">{projectPct}%</span>
                                     </div>
-                                    <span className="text-[10px] text-muted-foreground mt-0.5">Bishoftu, GERD II, Gibe II</span>
+                                    <span className="text-[10px] text-muted-foreground mt-0.5">Active regional project sites</span>
                                 </div>
 
                                 <div className="p-2.5 rounded-md bg-purple-500/10 border border-purple-500/20 flex flex-col">
@@ -822,14 +812,14 @@ export default function Dashboard({
                                         <span className="text-lg font-bold text-foreground font-mono">{headOfficeCount}</span>
                                         <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">{headOfficePct}%</span>
                                     </div>
-                                    <span className="text-[10px] text-muted-foreground mt-0.5">Addis Ababa Central H.O.</span>
+                                    <span className="text-[10px] text-muted-foreground mt-0.5">Addis Ababa Head Office</span>
                                 </div>
                             </div>
 
                             {/* Top Project Locations Chips */}
                             <div className="mt-3.5 pt-3 border-t border-border">
                                 <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
-                                    Active Deployment Locations
+                                    Current Project Sites
                                 </p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {siteBreakdown && siteBreakdown.length > 0 ? (
@@ -854,11 +844,6 @@ export default function Dashboard({
                                     )}
                                 </div>
                             </div>
-
-                            {/* Executive Takeaway */}
-                            <p className="mt-3 text-[11px] text-muted-foreground bg-muted p-2 rounded-xs border border-border leading-relaxed">
-                                <strong>Management Rationale:</strong> As an engineering &amp; construction PLC, management has 24/7 visibility into operational mobilization — ensuring regional projects have adequate engineering manpower while monitoring Head Office administrative overhead and field allowance budgets.
-                            </p>
                         </div>
                     </CardContent>
                 </Card>
@@ -874,20 +859,14 @@ export default function Dashboard({
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <CardTitle className="text-base text-foreground font-bold">
-                                            Employment Tenure &amp; Stability
+                                            Employment Types
                                         </CardTitle>
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-bold bg-muted text-primary border-border">
-                                            Proc. No. 1156/2019
-                                        </Badge>
                                     </div>
                                     <CardDescription className="text-xs text-muted-foreground">
-                                        Statutory tenure distribution, permanence ratio, and contract pipeline
+                                        Breakdown of permanent staff, probation reviews, and contract hires
                                     </CardDescription>
                                 </div>
                             </div>
-                            <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-md border border-primary/20 hidden sm:inline-block font-mono">
-                                {permPct}% Permanent
-                            </span>
                         </div>
                     </CardHeader>
 
@@ -897,7 +876,7 @@ export default function Dashboard({
                             <div className="mt-2 mb-4">
                                 <div className="flex justify-between items-center text-xs mb-1.5">
                                     <span className="font-bold uppercase tracking-wider text-[11px] text-muted-foreground">
-                                        Statutory Roster Composition
+                                        Staff Contract Types
                                     </span>
                                     <span className="font-mono text-xs text-muted-foreground">
                                         {permCount} Perm / {probCount} Prob / {contCount} Cont
@@ -935,7 +914,7 @@ export default function Dashboard({
                                                 Permanent
                                             </span>
                                         </div>
-                                        <p className="text-[10px] text-muted-foreground mt-0.5">Statutory Core Roster</p>
+                                        <p className="text-[10px] text-muted-foreground mt-0.5">Permanent Staff</p>
                                     </div>
                                     <div className="mt-2 pt-2 border-t border-blue-500/20 flex items-baseline justify-between">
                                         <span className="text-lg font-bold text-foreground font-mono">{permCount}</span>
@@ -952,7 +931,7 @@ export default function Dashboard({
                                                 Probation
                                             </span>
                                         </div>
-                                        <p className="text-[10px] text-muted-foreground mt-0.5">60-Day Review Pipeline</p>
+                                        <p className="text-[10px] text-muted-foreground mt-0.5">Under 60-day probation review</p>
                                     </div>
                                     <div className="mt-2 pt-2 border-t border-amber-500/20 flex items-baseline justify-between">
                                         <span className="text-lg font-bold text-foreground font-mono">{probCount}</span>
@@ -969,7 +948,7 @@ export default function Dashboard({
                                                 Contract
                                             </span>
                                         </div>
-                                        <p className="text-[10px] text-muted-foreground mt-0.5">Fixed-Term Projects</p>
+                                        <p className="text-[10px] text-muted-foreground mt-0.5">Fixed-term project contracts</p>
                                     </div>
                                     <div className="mt-2 pt-2 border-t border-emerald-500/20 flex items-baseline justify-between">
                                         <span className="text-lg font-bold text-foreground font-mono">{contCount}</span>
@@ -980,17 +959,12 @@ export default function Dashboard({
 
                             {/* Proclamation Compliance Status */}
                             <div className="mt-3.5 p-2.5 rounded-md bg-accent border border-border flex items-center justify-between text-xs">
-                                <span className="text-muted-foreground font-medium">Statutory Compliance Status</span>
+                                <span className="text-muted-foreground font-medium">Contract Status</span>
                                 <span className="font-bold text-primary inline-flex items-center gap-1">
-                                    <CheckCircle2 className="w-3.5 h-3.5" /> Fully Documented
+                                    <CheckCircle2 className="w-3.5 h-3.5" /> All staff contracts up to date
                                 </span>
                             </div>
                         </div>
-
-                        {/* Executive Takeaway */}
-                        <p className="mt-3 text-[11px] text-muted-foreground bg-muted p-2 rounded-xs border border-border leading-relaxed">
-                            <strong>Legal Alignment:</strong> Under Ethiopian Labour Proclamation No. 1156/2019, tracking the ratio of permanent staff versus probation/contract hires is essential for statutory compliance, contract renewal forecasting, and measuring workforce stability.
-                        </p>
                     </CardContent>
                 </Card>
             </div>
@@ -1003,16 +977,11 @@ export default function Dashboard({
                             <Building2 className="w-5 h-5" />
                         </div>
                         <div>
-                            <div className="flex items-center gap-2">
-                                <CardTitle className="text-base text-foreground font-bold">
-                                    Workforce by Department
-                                </CardTitle>
-                                <span className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-xs border border-primary/20 shrink-0">
-                                    All {departmentBreakdown.length} Operational Units
-                                </span>
-                            </div>
+                            <CardTitle className="text-base text-foreground font-bold">
+                                Staff by Department
+                            </CardTitle>
                             <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                                Complete headcount concentration and personnel allocation across all active organizational units
+                                Headcount across each department and operational division
                             </CardDescription>
                         </div>
                     </div>
@@ -1023,7 +992,7 @@ export default function Dashboard({
                                 {allDeptsTotalEmployees} / {metrics.total_active} Staff
                             </span>
                             <span className="text-[11px] text-primary font-semibold block">
-                                100% Active Workforce
+                                All 11 Departments Active
                             </span>
                         </div>
                         <Link href={route('employees.index')}>
@@ -1036,132 +1005,71 @@ export default function Dashboard({
                 </CardHeader>
 
                 <CardContent className="p-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                        {/* Shadcn Recharts Horizontal Bar Chart (All Operational Units) */}
-                        <div className="lg:col-span-8 flex flex-col justify-center">
-                            <div className="flex items-center justify-between mb-3 text-xs text-muted-foreground">
-                                <span className="font-semibold uppercase tracking-wider text-[11px] text-muted-foreground">
-                                    Headcount by Division ({departmentBreakdown.length} Operational Units)
-                                </span>
-                                <span className="text-[11px]">
-                                    Hover bars for detailed percentage share
-                                </span>
-                            </div>
+                    <div className="w-full flex flex-col justify-center">
+                        <div className="flex items-center justify-between mb-3 text-xs text-muted-foreground">
+                            <span className="font-semibold uppercase tracking-wider text-[11px] text-muted-foreground">
+                                Department Overview
+                            </span>
+                            <span className="text-[11px]">
+                                Click or hover over any bar for details
+                            </span>
+                        </div>
 
-                            <ChartContainer config={departmentChartConfig} className="aspect-auto h-[480px] w-full">
-                                <BarChart
-                                    data={departmentChartData}
-                                    layout="vertical"
-                                    margin={{ top: 8, right: 80, left: 10, bottom: 8 }}
-                                >
-                                    <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.6} />
-                                    <XAxis
-                                        type="number"
-                                        tickLine={false}
-                                        axisLine={false}
-                                        tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                                    />
-                                    <YAxis
-                                        dataKey="name"
-                                        type="category"
-                                        tickLine={false}
-                                        axisLine={false}
-                                        tick={{ fontSize: 11, fill: 'hsl(var(--foreground))', fontWeight: 600 }}
-                                        width={185}
-                                    />
-                                    <ChartTooltip
-                                        cursor={{ fill: 'rgba(100, 116, 139, 0.12)' }}
-                                        content={
-                                            <ChartTooltipContent
-                                                indicator="dot"
-                                                formatter={(value, name, item) => (
-                                                    <div className="flex items-center justify-between gap-4 w-full">
-                                                        <span className="text-muted-foreground">Active Staff:</span>
-                                                        <span className="font-bold text-foreground font-mono">
-                                                            {value} ({item.payload.percentage}%)
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            />
-                                        }
-                                    />
-                                    <Bar
-                                        dataKey="employees_count"
-                                        radius={[0, 6, 6, 0]}
-                                        barSize={18}
-                                    >
-                                        {departmentChartData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.fill} />
-                                        ))}
-                                        <LabelList
-                                            dataKey="employees_count"
-                                            position="right"
-                                            formatter={(val: any) => `${val} staff`}
-                                            className="text-xs font-bold font-mono"
-                                            fill="hsl(var(--muted-foreground))"
+                        <ChartContainer config={departmentChartConfig} className="aspect-auto h-[480px] w-full">
+                            <BarChart
+                                data={departmentChartData}
+                                layout="vertical"
+                                margin={{ top: 8, right: 80, left: 10, bottom: 8 }}
+                            >
+                                <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.6} />
+                                <XAxis
+                                    type="number"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                                />
+                                <YAxis
+                                    dataKey="name"
+                                    type="category"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tick={{ fontSize: 11, fill: 'hsl(var(--foreground))', fontWeight: 600 }}
+                                    width={185}
+                                />
+                                <ChartTooltip
+                                    cursor={{ fill: 'rgba(100, 116, 139, 0.12)' }}
+                                    content={
+                                        <ChartTooltipContent
+                                            indicator="dot"
+                                            formatter={(value, name, item) => (
+                                                <div className="flex items-center justify-between gap-4 w-full">
+                                                    <span className="text-muted-foreground">Active Staff:</span>
+                                                    <span className="font-bold text-foreground font-mono">
+                                                        {value} ({item.payload.percentage}%)
+                                                    </span>
+                                                </div>
+                                            )}
                                         />
-                                    </Bar>
-                                </BarChart>
-                            </ChartContainer>
-                        </div>
-
-                        {/* Breakdown Summary Side Panel (All Units) */}
-                        <div className="lg:col-span-4 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-border pt-6 lg:pt-0 lg:pl-8 space-y-4">
-                            <div>
-                                <div className="flex items-center justify-between mb-3">
-                                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                                        All {departmentBreakdown.length} Unit Rankings
-                                    </span>
-                                    <span className="text-[11px] text-muted-foreground font-medium">
-                                        Share of {metrics.total_active} Staff
-                                    </span>
-                                </div>
-                                <div className="space-y-1.5 max-h-[460px] overflow-y-auto pr-1">
-                                    {departmentChartData.map((dept, index) => (
-                                        <div
-                                            key={dept.id}
-                                            className="flex items-center justify-between p-2 rounded-md hover:bg-muted transition-colors border border-transparent hover:border-border"
-                                        >
-                                            <div className="flex items-center gap-2 min-w-0">
-                                                <span className="text-[10px] font-bold font-mono w-5 text-muted-foreground">
-                                                    #{index + 1}
-                                                </span>
-                                                <span
-                                                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                                                    style={{ backgroundColor: dept.fill }}
-                                                />
-                                                <span className="text-xs font-bold text-foreground truncate" title={dept.name}>
-                                                    {dept.name}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-1.5 shrink-0 text-xs pl-2">
-                                                <span className="font-bold text-foreground font-mono">{dept.employees_count}</span>
-                                                <span className="text-muted-foreground text-[10px] font-medium">({dept.percentage}%)</span>
-                                            </div>
-                                        </div>
+                                    }
+                                />
+                                <Bar
+                                    dataKey="employees_count"
+                                    radius={[0, 6, 6, 0]}
+                                    barSize={18}
+                                >
+                                    {departmentChartData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.fill} />
                                     ))}
-                                </div>
-                            </div>
-
-                            {/* Key Takeaway Callout */}
-                            <div className="p-3.5 rounded-md bg-muted border border-border text-xs">
-                                <div className="flex items-center gap-1.5 text-primary font-bold text-[11px] uppercase tracking-wider mb-1">
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                    <span>Engineering Core Weighting</span>
-                                </div>
-                                <p className="text-foreground leading-relaxed">
-                                    <strong>{top2Depts[0]?.name ?? 'Construction & Engineering'}</strong> ({top2Depts[0]?.employees_count ?? 0} staff) and <strong>{top2Depts[1]?.name ?? 'P&ED'}</strong> ({top2Depts[1]?.employees_count ?? 0} staff) form the operational engineering backbone, accounting for <strong>{top2Pct}%</strong> of all personnel across active infrastructure projects.
-                                </p>
-                            </div>
-
-                            <div>
-                                <Link href={route('employees.index')}>
-                                    <Button variant="outline" className="w-full text-xs font-semibold text-primary border-border">
-                                        View All Departments &amp; Units
-                                    </Button>
-                                </Link>
-                            </div>
-                        </div>
+                                    <LabelList
+                                        dataKey="employees_count"
+                                        position="right"
+                                        formatter={(val: any) => `${val} staff`}
+                                        className="text-xs font-bold font-mono"
+                                        fill="hsl(var(--muted-foreground))"
+                                    />
+                                </Bar>
+                            </BarChart>
+                        </ChartContainer>
                     </div>
                 </CardContent>
             </Card>
@@ -1176,19 +1084,19 @@ export default function Dashboard({
                             ) : (
                                 <AlertTriangle className="w-5 h-5 text-destructive" />
                             )}
-                            {reviewConfirm?.status} Employee Discrepancy Report?
+                            {reviewConfirm?.status} Profile Update Request?
                         </AlertDialogTitle>
                         <AlertDialogDescription className="text-xs text-muted-foreground space-y-2">
                             <p>
-                                Are you sure you want to mark this correction request as <strong className="text-foreground">{reviewConfirm?.status}</strong>?
+                                Are you sure you want to mark this update request as <strong className="text-foreground">{reviewConfirm?.status}</strong>?
                             </p>
                             {reviewConfirm?.status === 'Approved' ? (
                                 <p className="bg-primary/10 border border-primary/20 p-2.5 rounded-sm text-primary font-medium text-[11px]">
-                                    Approving will apply the requested modification directly to the employee's master record and notify the employee in their self-service portal.
+                                    This will update the employee's profile and notify them on their portal.
                                 </p>
                             ) : (
                                 <p className="bg-destructive/10 border border-destructive/20 p-2.5 rounded-sm text-destructive font-medium text-[11px]">
-                                    Rejecting will close the report without altering the employee's profile.
+                                    This will decline the request without making any changes to their profile.
                                 </p>
                             )}
                         </AlertDialogDescription>

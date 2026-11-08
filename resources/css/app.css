@@ -38,42 +38,194 @@
     --sidebar-accent-foreground: 240 3% 12%;
     --sidebar-border: 240 6% 88%;
     --sidebar-ring: 211 100% 45%;
+
+    /* Board UI / Apple Tokens */
+    --color-segmented-control-background: hsl(var(--muted));
+    --color-segmented-control-selected-background: hsl(var(--card));
+    --color-text-primary: hsl(var(--foreground));
+    --color-text-secondary: hsl(var(--muted-foreground));
+    --color-border-focus-ring: hsl(var(--ring));
   }
 
-  .dark {
-    /* Apple-inspired dark theme */
-    --background: 240 4% 10%;
-    --foreground: 0 0% 98%;
-    --card: 240 3% 13%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 3% 14%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 210 100% 58%;
-    --primary-foreground: 240 6% 10%;
-    --secondary: 240 3% 18%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3% 18%;
+  html.dark[data-dark-tone="material"] {
+    /* 1. Material Dark (#121212) - Soft neutral slate, easy on eyes */
+    --background: 0 0% 7.1%;
+    --foreground: 0 0% 93%;
+    --card: 240 9% 13%;
+    --card-foreground: 0 0% 95%;
+    --popover: 240 9% 13%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 6% 16%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 240 6% 16%;
     --muted-foreground: 240 5% 65%;
-    --accent: 240 3% 20%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 240 6% 18%;
+    --accent-foreground: 0 0% 95%;
     --destructive: 3 100% 61%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 3% 22%;
-    --input: 240 3% 22%;
-    --ring: 210 100% 58%;
-    --chart-1: 210 100% 58%;
+    --border: 240 10% 21%;
+    --input: 240 10% 21%;
+    --ring: 217 91% 60%;
+    --chart-1: 217 91% 60%;
     --chart-2: 142 60% 50%;
     --chart-3: 35 100% 55%;
     --chart-4: 262 83% 68%;
     --chart-5: 3 100% 61%;
-    --sidebar-background: 240 4% 11%;
-    --sidebar-foreground: 0 0% 96%;
-    --sidebar-primary: 210 100% 58%;
-    --sidebar-primary-foreground: 240 6% 10%;
-    --sidebar-accent: 240 3% 16%;
-    --sidebar-accent-foreground: 0 0% 96%;
-    --sidebar-border: 240 3% 20%;
-    --sidebar-ring: 210 100% 58%;
+    --sidebar-background: 240 7% 10.5%;
+    --sidebar-foreground: 0 0% 93%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 6% 16%;
+    --sidebar-accent-foreground: 0 0% 93%;
+    --sidebar-border: 240 10% 20%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
+  html.dark[data-dark-tone="obsidian"] {
+    /* 2. Obsidian Blue (#0D1117 / #0F1115) - GitHub modern cool blue-gray */
+    --background: 216 30% 8%;
+    --foreground: 210 56% 96%;
+    --card: 214 18% 13%;
+    --card-foreground: 210 56% 96%;
+    --popover: 214 18% 13%;
+    --popover-foreground: 210 56% 96%;
+    --primary: 213 100% 65%;
+    --primary-foreground: 216 30% 8%;
+    --secondary: 214 15% 17%;
+    --secondary-foreground: 210 56% 96%;
+    --muted: 214 15% 17%;
+    --muted-foreground: 215 10% 64%;
+    --accent: 214 16% 20%;
+    --accent-foreground: 210 56% 96%;
+    --destructive: 3 100% 61%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 212 14% 22%;
+    --input: 212 14% 22%;
+    --ring: 213 100% 65%;
+    --chart-1: 213 100% 65%;
+    --chart-2: 142 60% 50%;
+    --chart-3: 35 100% 55%;
+    --chart-4: 262 83% 68%;
+    --chart-5: 3 100% 61%;
+    --sidebar-background: 216 26% 10%;
+    --sidebar-foreground: 210 56% 96%;
+    --sidebar-primary: 213 100% 65%;
+    --sidebar-primary-foreground: 216 30% 8%;
+    --sidebar-accent: 214 15% 16%;
+    --sidebar-accent-foreground: 210 56% 96%;
+    --sidebar-border: 212 14% 21%;
+    --sidebar-ring: 213 100% 65%;
+  }
+
+  html.dark[data-dark-tone="charcoal"] {
+    /* 3. Warm Charcoal (#161618) - Apple macOS Sequoia warm pro aesthetic */
+    --background: 240 4% 9%;
+    --foreground: 240 6% 96%;
+    --card: 240 5% 13.5%;
+    --card-foreground: 240 6% 96%;
+    --popover: 240 5% 14%;
+    --popover-foreground: 240 6% 96%;
+    --primary: 211 100% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 17%;
+    --secondary-foreground: 240 6% 96%;
+    --muted: 240 5% 17%;
+    --muted-foreground: 240 3% 62%;
+    --accent: 240 5% 19%;
+    --accent-foreground: 240 6% 96%;
+    --destructive: 3 100% 61%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 5% 22%;
+    --input: 240 5% 22%;
+    --ring: 211 100% 58%;
+    --chart-1: 211 100% 58%;
+    --chart-2: 142 60% 50%;
+    --chart-3: 35 100% 55%;
+    --chart-4: 262 83% 68%;
+    --chart-5: 3 100% 61%;
+    --sidebar-background: 240 5% 11%;
+    --sidebar-foreground: 240 6% 96%;
+    --sidebar-primary: 211 100% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 16%;
+    --sidebar-accent-foreground: 240 6% 96%;
+    --sidebar-border: 240 5% 20%;
+    --sidebar-ring: 211 100% 58%;
+  }
+
+  .dark,
+  html.dark[data-dark-tone="titanium"] {
+    /* 4. Deep Titanium (#18181B) - Linear / Raycast modern zinc dark (Default Dark Theme) */
+    --background: 240 5% 10%;
+    --foreground: 240 5% 96%;
+    --card: 240 5% 15.5%;
+    --card-foreground: 240 5% 96%;
+    --popover: 240 5% 16%;
+    --popover-foreground: 240 5% 96%;
+    --primary: 217 91% 65%;
+    --primary-foreground: 240 5% 10%;
+    --secondary: 240 4% 19%;
+    --secondary-foreground: 240 5% 96%;
+    --muted: 240 4% 19%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 240 4% 22%;
+    --accent-foreground: 240 5% 96%;
+    --destructive: 3 100% 61%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 5% 25%;
+    --input: 240 5% 25%;
+    --ring: 217 91% 65%;
+    --chart-1: 217 91% 65%;
+    --chart-2: 142 60% 50%;
+    --chart-3: 35 100% 55%;
+    --chart-4: 262 83% 68%;
+    --chart-5: 3 100% 61%;
+    --sidebar-background: 240 5% 12%;
+    --sidebar-foreground: 240 5% 96%;
+    --sidebar-primary: 217 91% 65%;
+    --sidebar-primary-foreground: 240 5% 10%;
+    --sidebar-accent: 240 4% 18%;
+    --sidebar-accent-foreground: 240 5% 96%;
+    --sidebar-border: 240 5% 23%;
+    --sidebar-ring: 217 91% 65%;
+  }
+
+  html.dark[data-dark-tone="velvet"] {
+    /* 5. Soft Velvet Ash (#1A1B1E) - Deep warm espresso comfort, low glare */
+    --background: 225 8% 11%;
+    --foreground: 240 10% 92%;
+    --card: 231 9% 16%;
+    --card-foreground: 240 10% 92%;
+    --popover: 231 9% 16.5%;
+    --popover-foreground: 240 10% 92%;
+    --primary: 239 84% 72%;
+    --primary-foreground: 225 8% 11%;
+    --secondary: 231 9% 20%;
+    --secondary-foreground: 240 10% 92%;
+    --muted: 231 9% 20%;
+    --muted-foreground: 227 6% 64%;
+    --accent: 231 9% 23%;
+    --accent-foreground: 240 10% 92%;
+    --destructive: 3 100% 61%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 232 9% 26%;
+    --input: 232 9% 26%;
+    --ring: 239 84% 72%;
+    --chart-1: 239 84% 72%;
+    --chart-2: 142 60% 50%;
+    --chart-3: 35 100% 55%;
+    --chart-4: 262 83% 68%;
+    --chart-5: 3 100% 61%;
+    --sidebar-background: 230 9% 13%;
+    --sidebar-foreground: 240 10% 92%;
+    --sidebar-primary: 239 84% 72%;
+    --sidebar-primary-foreground: 225 8% 11%;
+    --sidebar-accent: 231 9% 18%;
+    --sidebar-accent-foreground: 240 10% 92%;
+    --sidebar-border: 232 9% 24%;
+    --sidebar-ring: 239 84% 72%;
   }
 }
 
@@ -101,4 +253,106 @@
 
 [data-magicui-theme-vt="active"]::view-transition-new(root) {
     clip-path: var(--magicui-theme-vt-clip-from, none);
+}
+
+@layer utilities {
+  .text-body-medium { font-size: 0.8125rem; line-height: 1.25rem; font-weight: 500; }
+  .text-body-regular { font-size: 0.8125rem; line-height: 1.25rem; font-weight: 400; }
+  .text-body-2-medium { font-size: 0.75rem; line-height: 1rem; font-weight: 500; }
+  .text-body-2-regular { font-size: 0.75rem; line-height: 1rem; font-weight: 400; }
+  .text-caption-1-medium { font-size: 0.6875rem; line-height: 0.875rem; font-weight: 500; }
+  .text-caption-1-semibold { font-size: 0.6875rem; line-height: 0.875rem; font-weight: 600; }
+
+  /* Board UI Surfaces */
+  .bg-background-primary-default { background-color: hsl(var(--card)); }
+  .bg-background-primary-hover:hover { background-color: hsl(var(--muted)); }
+  .bg-background-primary-active:active { background-color: hsl(var(--accent)); }
+  .bg-background-secondary-default { background-color: hsl(var(--muted)); }
+  .bg-background-secondary-hover:hover { background-color: hsl(var(--muted) / 0.8); }
+  .bg-background-tertiary-default { background-color: hsl(var(--muted) / 0.45); }
+  .bg-background-tertiary-hover:hover { background-color: hsl(var(--muted)); }
+  .bg-background-tertiary-error { background-color: hsl(var(--destructive) / 0.12); }
+
+  /* Board UI Borders & Rings */
+  .border-border-button-default { border-color: hsl(var(--border)); }
+  .border-border-button-hover:hover { border-color: hsl(var(--border) / 0.8); }
+  .border-border-button-active:active { border-color: hsl(var(--ring)); }
+  .border-border-checkbox-default { border-color: hsl(var(--border)); }
+  .ring-border-button-hover { --tw-ring-color: hsl(var(--border)); }
+  .ring-border-button-active { --tw-ring-color: hsl(var(--ring)); }
+
+  /* Board UI Text & Icon Colors */
+  .text-text-primary { color: hsl(var(--foreground)); }
+  .text-text-secondary { color: hsl(var(--muted-foreground)); }
+  .text-text-tertiary { color: hsl(var(--muted-foreground) / 0.8); }
+  .text-text-white { color: #ffffff; }
+  .text-text-error-primary { color: hsl(var(--destructive)); }
+  .text-text-error-placeholder { color: hsl(var(--destructive) / 0.6); }
+  .text-foreground-icon-primary { color: hsl(var(--foreground)); }
+  .text-foreground-icon-secondary { color: hsl(var(--muted-foreground)); }
+  .text-foreground-icon-tertiary { color: hsl(var(--muted-foreground) / 0.8); }
+  .text-foreground-icon-error { color: hsl(var(--destructive)); }
+
+  /* Board UI Buttons */
+  .bg-button-primary {
+    background-color: #0066cc;
+    color: #ffffff;
+  }
+  .bg-button-primary:hover {
+    background-color: #0071e3;
+  }
+  .bg-button-primary-hover { background-color: #0071e3; }
+  .bg-button-primary-active { background-color: #005bb5; }
+  .bg-background-primary-disabled { background-color: hsl(var(--muted)); }
+  .text-text-disabled { color: hsl(var(--muted-foreground)); }
+  .button-press-motion {
+    transition: transform 120ms cubic-bezier(0.2, 0.8, 0.4, 1), background-color 150ms ease, opacity 150ms ease;
+  }
+  .button-press-motion:active {
+    transform: scale(0.98);
+  }
+
+  /* File Upload */
+  .bg-file-upload-icon-background { background-color: hsl(var(--muted)); }
+  .text-file-upload-icon-foreground { color: hsl(var(--muted-foreground)); }
+  .text-file-upload-icon-foreground-hover { color: hsl(var(--primary)); }
+
+  /* Status Chips (Board UI palette) */
+  .bg-status-blue-background { background-color: rgba(0, 102, 204, 0.12); }
+  .text-status-blue-text { color: #0066cc; }
+  .dark .text-status-blue-text { color: #3894ff; }
+  .bg-status-lime-background { background-color: rgba(22, 163, 74, 0.12); }
+  .text-status-lime-text { color: #16a34a; }
+  .dark .text-status-lime-text { color: #4ade80; }
+  .bg-status-rose-background { background-color: rgba(225, 29, 72, 0.12); }
+  .text-status-rose-text { color: #e11d48; }
+  .dark .text-status-rose-text { color: #fb7185; }
+  .bg-status-yellow-background { background-color: rgba(217, 119, 6, 0.12); }
+  .text-status-yellow-text { color: #d97706; }
+  .dark .text-status-yellow-text { color: #fbbf24; }
+  .bg-status-cyan-background { background-color: rgba(8, 145, 178, 0.12); }
+  .text-status-cyan-text { color: #0891b2; }
+  .dark .text-status-cyan-text { color: #22d3ee; }
+  .bg-status-purple-background { background-color: rgba(147, 51, 234, 0.12); }
+  .text-status-purple-text { color: #9333ea; }
+  .dark .text-status-purple-text { color: #c084fc; }
+  .bg-status-orange-background { background-color: rgba(234, 88, 12, 0.12); }
+  .text-status-orange-text { color: #ea580c; }
+  .dark .text-status-orange-text { color: #fb923c; }
+
+  /* Status Dots & Halo */
+  .bg-status-dot-green-halo { background-color: rgba(22, 163, 74, 0.2); }
+  .bg-status-dot-yellow-halo { background-color: rgba(217, 119, 6, 0.2); }
+  .bg-status-dot-indigo-halo { background-color: rgba(0, 102, 204, 0.2); }
+
+  /* Board UI Tabs & Segmented Control */
+  .border-separator-border { border-color: hsl(var(--border)); }
+  .bg-tab-count-selected-background { background-color: rgba(0, 102, 204, 0.12); }
+  .bg-segmented-control-selected-background { background-color: hsl(var(--card)); }
+  .bg-badge-neutral-background { background-color: hsl(var(--muted)); }
+  .text-accent-600 { color: #0066cc; }
+  .dark .text-accent-600 { color: #2997ff; }
+  .bg-accent-600 { background-color: #0066cc; }
+  .dark .bg-accent-600 { background-color: #2997ff; }
+  .ring-border-focus-ring { --tw-ring-color: #0066cc; }
 }

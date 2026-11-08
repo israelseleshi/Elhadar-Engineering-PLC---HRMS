@@ -1,0 +1,17 @@
+{
+  "$schema": "https://www.boardui.com/schema.json",
+  "paths": {
+    "components": "resources/js/Components/boardui/components",
+    "utils": "resources/js/Components/boardui/utils",
+    "hooks": "resources/js/Components/boardui/hooks",
+    "styles": "resources/js/Components/boardui/styles",
+    "lib": "resources/js/Components/boardui/lib"
+  },
+  "aliases": {
+    "components": "@/Components/boardui/components",
+    "utils": "@/Components/boardui/utils",
+    "hooks": "@/Components/boardui/hooks",
+    "styles": "@/Components/boardui/styles",
+    "lib": "@/Components/boardui/lib"
+  }
+}

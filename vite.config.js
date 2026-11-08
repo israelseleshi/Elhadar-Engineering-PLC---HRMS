@@ -14,6 +14,10 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': path.resolve(import.meta.dirname, './resources/js'),
+            '@/boardui': path.resolve(import.meta.dirname, './resources/js/Components/boardui'),
+            'next/link': path.resolve(import.meta.dirname, './resources/js/Components/boardui/shims/next-link.tsx'),
+            'next/image': path.resolve(import.meta.dirname, './resources/js/Components/boardui/shims/next-image.tsx'),
+            'next/navigation': path.resolve(import.meta.dirname, './resources/js/Components/boardui/shims/next-navigation.ts'),
         },
     },
 });

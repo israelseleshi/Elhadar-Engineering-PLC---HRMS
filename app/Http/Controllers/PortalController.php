@@ -101,6 +101,69 @@ class PortalController extends Controller
     }
 
     /**
+     * Display the dedicated Employee Self-Service Leave Requests page.
+     */
+    public function leaveIndex(Request $request): Response
+    {
+        $user = $request->user();
+        $employee = Employee::where('user_id', $user->id)->first();
+
+        if (! $employee && in_array($user->role, ['HRAdmin', 'SysAdmin'], true)) {
+            $employee = Employee::first();
+        }
+
+        if ($employee) {
+            $employee->load([
+                'department',
+                'leaveBalances' => fn ($q) => $q->orderByDesc('leave_year'),
+                'leaveRequests' => fn ($q) => $q->with(['handoverEmployee:id,full_name,file_no,position', 'reviewer:id,name'])->orderByDesc('created_at'),
+            ]);
+
+            $tenure = $this->tenureService->calculateTenure($employee);
+            $annualLeaveEntitlement = $this->leaveService->calculateAnnualEntitlement($employee);
+
+            $currentYear = Carbon::now()->year;
+            $currentBalance = $employee->leaveBalances->firstWhere('leave_year', $currentYear);
+            $availableDays = $currentBalance ? (float) $currentBalance->remaining_days : (float) $annualLeaveEntitlement;
+            $approvedDaysTaken = (float) $employee->leaveRequests
+                ->where('status', 'Approved')
+                ->where('is_deducted', true)
+                ->sum('requested_days');
+            $pendingCount = $employee->leaveRequests->where('status', 'Pending')->count();
+        } else {
+            $tenure = ['years' => 0, 'months' => 0, 'days' => 0, 'formatted' => '0 Days'];
+            $annualLeaveEntitlement = 16;
+            $availableDays = 16.0;
+            $approvedDaysTaken = 0.0;
+            $pendingCount = 0;
+        }
+
+        $colleagues = Employee::active()
+            ->when($employee, fn ($q) => $q->where('id', '!=', $employee->id))
+            ->orderBy('full_name')
+            ->select('id', 'full_name', 'file_no', 'position')
+            ->get();
+
+        return Inertia::render('Portal/Leave', [
+            'employee' => $employee ? [
+                'id' => $employee->id,
+                'full_name' => $employee->full_name,
+                'file_no' => $employee->file_no,
+                'position' => $employee->position,
+                'department' => $employee->department?->name,
+                'phone' => $employee->phone,
+            ] : null,
+            'tenure' => $tenure,
+            'annualLeaveEntitlement' => $annualLeaveEntitlement,
+            'availableDays' => $availableDays,
+            'approvedDaysTaken' => $approvedDaysTaken,
+            'pendingCount' => $pendingCount,
+            'leaveRequests' => $employee ? $employee->leaveRequests : [],
+            'colleagues' => $colleagues,
+        ]);
+    }
+
+    /**
      * Submit a data discrepancy report for HR review.
      */
     public function reportDiscrepancy(StoreDiscrepancyRequest $request): RedirectResponse
