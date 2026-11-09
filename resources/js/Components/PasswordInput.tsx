@@ -1,4 +1,4 @@
-﻿import {
+import {
     forwardRef,
     InputHTMLAttributes,
     useEffect,
@@ -33,7 +33,7 @@ export default forwardRef(function PasswordInput(
     }, [isFocused]);
 
     return (
-        <div className="relative">
+        <div className="relative w-full">
             <Input
                 {...props}
                 type={visible ? 'text' : 'password'}

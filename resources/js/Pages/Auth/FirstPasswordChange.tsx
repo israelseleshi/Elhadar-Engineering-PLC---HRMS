@@ -1,4 +1,4 @@
-﻿import InputError from '@/Components/InputError';
+import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PasswordInput from '@/Components/PasswordInput';
 import GuestLayout from '@/Layouts/GuestLayout';
@@ -69,7 +69,7 @@ export default function FirstPasswordChange({
                         className="text-xs font-semibold text-foreground"
                     />
 
-                    <div className="mt-1 flex rounded-xl shadow-sm border border-input focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20 bg-background overflow-hidden">
+                    <div className="mt-1">
                         <PasswordInput
                             id="current_password"
                             name="current_password"
@@ -93,7 +93,7 @@ export default function FirstPasswordChange({
                         className="text-xs font-semibold text-foreground"
                     />
 
-                    <div className="mt-1 flex rounded-xl shadow-sm border border-input focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20 bg-background overflow-hidden">
+                    <div className="mt-1">
                         <PasswordInput
                             id="password"
                             name="password"
@@ -114,7 +114,7 @@ export default function FirstPasswordChange({
                         className="text-xs font-semibold text-foreground"
                     />
 
-                    <div className="mt-1 flex rounded-xl shadow-sm border border-input focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20 bg-background overflow-hidden">
+                    <div className="mt-1">
                         <PasswordInput
                             id="password_confirmation"
                             name="password_confirmation"
@@ -136,7 +136,7 @@ export default function FirstPasswordChange({
                 <div className="pt-2">
                     <Button
                         type="submit"
-                        className="w-full rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold py-2.5 text-sm rounded-xl shadow-sm flex items-center justify-center space-x-2 transition-all cursor-pointer disabled:pointer-events-none disabled:opacity-50"
                         disabled={processing}
                     >
                         <Lock className="h-3.5 w-3.5" />
