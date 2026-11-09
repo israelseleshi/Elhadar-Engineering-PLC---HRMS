@@ -127,15 +127,18 @@ class LeaveBalanceController extends Controller
         $pendingRequests = $pendingQuery->orderBy('created_at')->get();
         $recentReviews = $historyQuery->orderByDesc('reviewed_at')->limit(50)->get();
 
-        // Calculate statutory annual entitlement for employees on pending requests
-        $pendingRequests->each(function ($req) {
+        // Calculate statutory annual entitlement for employees on pending requests and review history
+        $enrichEmployeeBalance = function ($req) {
             if ($req->employee) {
                 $statutory = $this->leaveService->calculateAnnualEntitlement($req->employee);
                 $req->employee->statutory_entitlement = $statutory;
                 $balance = $req->employee->currentLeaveBalance;
                 $req->employee->available_annual_days = $balance ? (float) $balance->remaining_days : (float) $statutory;
             }
-        });
+        };
+
+        $pendingRequests->each($enrichEmployeeBalance);
+        $recentReviews->each($enrichEmployeeBalance);
 
         $year = (int) date('Y');
         $approvedCount = LeaveRequest::where('status', 'Approved')
