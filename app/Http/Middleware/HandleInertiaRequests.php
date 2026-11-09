@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Symfony\Component\HttpFoundation\Response;
@@ -46,14 +47,35 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
-        if ($user && ! $user->relationLoaded('employee')) {
-            $user->load('employee:id,user_id,phone');
+        $pendingApprovalsCount = 0;
+
+        if ($user) {
+            if (! $user->relationLoaded('employee')) {
+                $user->load(['employee:id,user_id,phone,position,department_id,full_name', 'employee.department:id,name']);
+            }
+
+            if ($user->canApproveLeave()) {
+                $scope = $user->getManagerialScope();
+                $pendingQuery = LeaveRequest::where('status', 'Pending');
+                if ($user->employee) {
+                    $pendingQuery->where('employee_id', '!=', $user->employee->id);
+                }
+                if ($scope === 'department' && $user->employee?->department_id) {
+                    $deptId = $user->employee->department_id;
+                    $pendingQuery->whereHas('employee', fn ($q) => $q->where('department_id', $deptId));
+                }
+                $pendingApprovalsCount = $pendingQuery->count();
+            }
         }
 
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $user,
+                'user' => $user ? array_merge($user->toArray(), [
+                    'pending_leave_approvals_count' => $pendingApprovalsCount,
+                    'managerial_level' => $user->employee?->getManagerialLevel(),
+                    'managerial_scope' => $user->getManagerialScope(),
+                ]) : null,
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),

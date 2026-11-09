@@ -85,10 +85,114 @@ class LeaveBalanceController extends Controller
     }
 
     /**
+     * Display the dedicated Leave Requests review dashboard for managerial staff.
+     */
+    public function managerialIndex(Request $request): Response
+    {
+        $user = $request->user();
+        abort_unless($user->canApproveLeave(), 403, 'Unauthorized access: leave approvals are restricted to managerial staff.');
+
+        $employee = $user->employee;
+        $scope = $user->getManagerialScope();
+        $managerLevel = $employee?->getManagerialLevel() ?? ($user->isHRAdmin() ? 'Executive / HR Admin' : 'Manager');
+
+        // Base query for pending requests within this manager's scope
+        $pendingQuery = LeaveRequest::with([
+            'employee.department',
+            'employee.currentLeaveBalance',
+            'handoverEmployee:id,full_name,file_no,position',
+        ])->where('status', 'Pending');
+
+        // Base query for reviewed history within this manager's scope
+        $historyQuery = LeaveRequest::with([
+            'employee.department',
+            'employee.currentLeaveBalance',
+            'handoverEmployee:id,full_name,file_no,position',
+            'reviewer:id,name',
+        ])->whereIn('status', ['Approved', 'Rejected', 'Cancelled']);
+
+        // Exclude manager's own requests (they cannot approve their own leave)
+        if ($employee) {
+            $pendingQuery->where('employee_id', '!=', $employee->id);
+            $historyQuery->where('employee_id', '!=', $employee->id);
+        }
+
+        // Apply department scope if applicable
+        if ($scope === 'department' && $employee?->department_id) {
+            $deptId = $employee->department_id;
+            $pendingQuery->whereHas('employee', fn ($q) => $q->where('department_id', $deptId));
+            $historyQuery->whereHas('employee', fn ($q) => $q->where('department_id', $deptId));
+        }
+
+        $pendingRequests = $pendingQuery->orderBy('created_at')->get();
+        $recentReviews = $historyQuery->orderByDesc('reviewed_at')->limit(50)->get();
+
+        // Calculate statutory annual entitlement for employees on pending requests
+        $pendingRequests->each(function ($req) {
+            if ($req->employee) {
+                $statutory = $this->leaveService->calculateAnnualEntitlement($req->employee);
+                $req->employee->statutory_entitlement = $statutory;
+                $balance = $req->employee->currentLeaveBalance;
+                $req->employee->available_annual_days = $balance ? (float) $balance->remaining_days : (float) $statutory;
+            }
+        });
+
+        $year = (int) date('Y');
+        $approvedCount = LeaveRequest::where('status', 'Approved')
+            ->whereYear('reviewed_at', $year)
+            ->when($scope === 'department' && $employee?->department_id, function ($q) use ($employee) {
+                $q->whereHas('employee', fn ($empQ) => $empQ->where('department_id', $employee->department_id));
+            })
+            ->count();
+
+        $rejectedCount = LeaveRequest::where('status', 'Rejected')
+            ->whereYear('reviewed_at', $year)
+            ->when($scope === 'department' && $employee?->department_id, function ($q) use ($employee) {
+                $q->whereHas('employee', fn ($empQ) => $empQ->where('department_id', $employee->department_id));
+            })
+            ->count();
+
+        return Inertia::render('Portal/LeaveRequests', [
+            'managerInfo' => [
+                'name' => $user->name,
+                'position' => $employee?->position ?? $user->role,
+                'level' => $managerLevel,
+                'scope' => $scope,
+                'department' => $employee?->department?->name ?? 'All Departments (Company-wide)',
+            ],
+            'pendingRequests' => $pendingRequests,
+            'recentReviews' => $recentReviews,
+            'stats' => [
+                'pending_count' => $pendingRequests->count(),
+                'approved_this_year' => $approvedCount,
+                'rejected_this_year' => $rejectedCount,
+            ],
+        ]);
+    }
+
+    /**
      * Review an employee leave request (Approve & Deduct, Approve Excused, or Reject).
      */
     public function reviewRequest(Request $request, LeaveRequest $leaveRequest): RedirectResponse
     {
+        $user = $request->user();
+        abort_unless($user->canApproveLeave(), 403, 'Unauthorized access: leave approvals are restricted to managerial staff.');
+
+        // Prevent self-approval
+        if ($user->employee && $leaveRequest->employee_id === $user->employee->id) {
+            return back()->withErrors(['decision' => 'You cannot approve or reject your own leave request.']);
+        }
+        if ($leaveRequest->user_id === $user->id) {
+            return back()->withErrors(['decision' => 'You cannot approve or reject your own leave request.']);
+        }
+
+        // Check department scope
+        if ($user->getManagerialScope() === 'department' && $user->employee?->department_id) {
+            if ($leaveRequest->employee?->department_id !== $user->employee->department_id) {
+                abort(403, 'You are only authorized to review leave requests within your department.');
+            }
+        }
+
         $validated = $request->validate([
             'decision' => ['required', 'in:approve,reject'],
             'deduct_balance' => ['required_if:decision,approve', 'boolean'],

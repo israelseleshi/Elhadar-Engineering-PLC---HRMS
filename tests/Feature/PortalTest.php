@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\DataCorrectionReport;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\LeaveRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -113,5 +114,178 @@ class PortalTest extends TestCase
             'reviewed_by' => $admin->id,
             'reviewer_notes' => 'Verified with passbook copy.',
         ]);
+    }
+
+    public function test_managerial_staff_can_view_leave_requests_page(): void
+    {
+        $dept = Department::factory()->create(['name' => 'Finance']);
+        $managerUser = User::factory()->create(['role' => 'Employee']);
+        Employee::factory()->create([
+            'user_id' => $managerUser->id,
+            'department_id' => $dept->id,
+            'position' => 'Finance & Treasury Departmenet Manager',
+        ]);
+        $managerUser->refresh();
+
+        $response = $this->actingAs($managerUser)->get('/portal/leave-requests');
+
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Portal/LeaveRequests')
+            ->has('managerInfo')
+            ->where('managerInfo.level', 'Department Manager')
+            ->has('pendingRequests')
+            ->has('recentReviews')
+            ->has('stats')
+        );
+    }
+
+    public function test_regular_non_managerial_employee_cannot_access_leave_requests_page(): void
+    {
+        $user = User::factory()->create(['role' => 'Employee']);
+        Employee::factory()->create([
+            'user_id' => $user->id,
+            'position' => 'Junior Accountant',
+        ]);
+
+        $response = $this->actingAs($user)->get('/portal/leave-requests');
+        $response->assertForbidden();
+    }
+
+    public function test_department_manager_can_approve_staff_leave_request_and_deduct_balance(): void
+    {
+        $dept = Department::factory()->create(['name' => 'Engineering']);
+        $managerUser = User::factory()->create(['role' => 'Employee']);
+        $managerEmp = Employee::factory()->create([
+            'user_id' => $managerUser->id,
+            'department_id' => $dept->id,
+            'position' => 'Design Department Manager',
+        ]);
+        $managerUser->refresh();
+
+        $staffUser = User::factory()->create(['role' => 'Employee']);
+        $staffEmp = Employee::factory()->create([
+            'user_id' => $staffUser->id,
+            'department_id' => $dept->id,
+            'position' => 'Draftsman',
+        ]);
+
+        $leaveRequest = LeaveRequest::create([
+            'employee_id' => $staffEmp->id,
+            'user_id' => $staffUser->id,
+            'leave_type' => 'Annual',
+            'start_date' => '2026-11-10',
+            'start_date_ec' => '01/03/2019',
+            'end_date' => '2026-11-13',
+            'end_date_ec' => '04/03/2019',
+            'requested_days' => 4.0,
+            'reason' => 'Annual rest vacation',
+            'status' => 'Pending',
+            'is_deducted' => true,
+            'days_deducted' => 0.0,
+        ]);
+
+        $response = $this->actingAs($managerUser)->post("/portal/leave-requests/{$leaveRequest->id}/review", [
+            'decision' => 'approve',
+            'deduct_balance' => true,
+            'days_to_deduct' => 4.0,
+            'reviewer_notes' => 'Approved by Department Manager.',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('leave_requests', [
+            'id' => $leaveRequest->id,
+            'status' => 'Approved',
+            'is_deducted' => true,
+            'days_deducted' => 4.0,
+            'reviewed_by' => $managerUser->id,
+            'reviewer_notes' => 'Approved by Department Manager.',
+        ]);
+
+        $this->assertDatabaseHas('leave_balances', [
+            'employee_id' => $staffEmp->id,
+            'taken_days' => 4.0,
+        ]);
+    }
+
+    public function test_manager_cannot_approve_their_own_leave_request(): void
+    {
+        $dept = Department::factory()->create(['name' => 'ICT']);
+        $managerUser = User::factory()->create(['role' => 'Employee']);
+        $managerEmp = Employee::factory()->create([
+            'user_id' => $managerUser->id,
+            'department_id' => $dept->id,
+            'position' => 'ICT Directorat Director',
+        ]);
+        $managerUser->refresh();
+
+        $leaveRequest = LeaveRequest::create([
+            'employee_id' => $managerEmp->id,
+            'user_id' => $managerUser->id,
+            'leave_type' => 'Annual',
+            'start_date' => '2026-11-15',
+            'start_date_ec' => '06/03/2019',
+            'end_date' => '2026-11-18',
+            'end_date_ec' => '09/03/2019',
+            'requested_days' => 3.0,
+            'reason' => 'Director personal vacation',
+            'status' => 'Pending',
+            'is_deducted' => true,
+            'days_deducted' => 0.0,
+        ]);
+
+        $response = $this->actingAs($managerUser)->post("/portal/leave-requests/{$leaveRequest->id}/review", [
+            'decision' => 'approve',
+            'deduct_balance' => true,
+            'days_to_deduct' => 3.0,
+        ]);
+
+        $response->assertSessionHasErrors('decision');
+        $this->assertEquals('Pending', $leaveRequest->fresh()->status);
+    }
+
+    public function test_department_scoped_manager_cannot_approve_leave_for_other_department(): void
+    {
+        $deptA = Department::factory()->create(['name' => 'HR']);
+        $deptB = Department::factory()->create(['name' => 'Finance']);
+
+        $managerUser = User::factory()->create(['role' => 'Employee']);
+        Employee::factory()->create([
+            'user_id' => $managerUser->id,
+            'department_id' => $deptA->id,
+            'position' => 'Division Head',
+        ]);
+        $managerUser->refresh();
+
+        $staffUser = User::factory()->create(['role' => 'Employee']);
+        $staffEmp = Employee::factory()->create([
+            'user_id' => $staffUser->id,
+            'department_id' => $deptB->id,
+            'position' => 'Junior Cashier',
+        ]);
+
+        $leaveRequest = LeaveRequest::create([
+            'employee_id' => $staffEmp->id,
+            'user_id' => $staffUser->id,
+            'leave_type' => 'Annual',
+            'start_date' => '2026-11-20',
+            'start_date_ec' => '11/03/2019',
+            'end_date' => '2026-11-22',
+            'end_date_ec' => '13/03/2019',
+            'requested_days' => 2.0,
+            'reason' => 'Family leave',
+            'status' => 'Pending',
+            'is_deducted' => true,
+            'days_deducted' => 0.0,
+        ]);
+
+        $response = $this->actingAs($managerUser)->post("/portal/leave-requests/{$leaveRequest->id}/review", [
+            'decision' => 'approve',
+            'deduct_balance' => true,
+            'days_to_deduct' => 2.0,
+        ]);
+
+        $response->assertForbidden();
+        $this->assertEquals('Pending', $leaveRequest->fresh()->status);
     }
 }

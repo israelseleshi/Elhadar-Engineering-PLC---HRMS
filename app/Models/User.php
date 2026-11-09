@@ -34,6 +34,8 @@ class User extends Authenticatable
      */
     protected $appends = [
         'phone',
+        'is_managerial',
+        'can_approve_leave',
     ];
 
     protected function casts(): array
@@ -94,5 +96,66 @@ class User extends Authenticatable
     public function isEmployee(): bool
     {
         return $this->role === 'Employee';
+    }
+
+    /**
+     * Determine if this user qualifies as managerial staff:
+     * - Role is HRAdmin, SysAdmin, or Manager; OR
+     * - Linked employee occupies one of the 6 managerial levels:
+     *   Division Head, Department Manager, Director, DCEO, Chief Officer, CEO.
+     */
+    public function isManagerialStaff(): bool
+    {
+        if (in_array($this->role, ['HRAdmin', 'SysAdmin', 'Manager'], true)) {
+            return true;
+        }
+
+        return $this->employee?->isManagerial() ?? false;
+    }
+
+    /**
+     * Check if this user has authority to approve/reject leave requests.
+     */
+    public function canApproveLeave(): bool
+    {
+        return $this->isManagerialStaff();
+    }
+
+    /**
+     * Determine authority scope:
+     * - 'company': Executive level (CEO, DCEO, Chief Officer, Director, HRAdmin, SysAdmin)
+     * - 'department': Division Head, Department Manager, or Manager role
+     * - 'none': Regular non-managerial staff
+     */
+    public function getManagerialScope(): string
+    {
+        if (in_array($this->role, ['HRAdmin', 'SysAdmin'], true)) {
+            return 'company';
+        }
+
+        $level = $this->employee?->getManagerialLevel();
+        if (in_array($level, ['CEO', 'DCEO', 'Chief Officer', 'Director'], true)) {
+            return 'company';
+        }
+
+        if (in_array($level, ['Department Manager', 'Division Head'], true)) {
+            return 'department';
+        }
+
+        if ($this->role === 'Manager') {
+            return 'department';
+        }
+
+        return 'none';
+    }
+
+    public function getIsManagerialAttribute(): bool
+    {
+        return $this->isManagerialStaff();
+    }
+
+    public function getCanApproveLeaveAttribute(): bool
+    {
+        return $this->canApproveLeave();
     }
 }

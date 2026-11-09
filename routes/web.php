@@ -41,6 +41,10 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::post('/portal/discrepancies', [PortalController::class, 'reportDiscrepancy'])->name('portal.discrepancy.store');
     Route::post('/portal/leave-requests', [PortalController::class, 'requestLeave'])->name('portal.leave.store');
     Route::patch('/portal/leave-requests/{leaveRequest}/cancel', [PortalController::class, 'cancelLeaveRequest'])->name('portal.leave.cancel');
+
+    // Managerial Staff Leave Review & Approval Portal
+    Route::get('/portal/leave-requests', [LeaveBalanceController::class, 'managerialIndex'])->name('portal.leave-requests.index');
+    Route::post('/portal/leave-requests/{leaveRequest}/review', [LeaveBalanceController::class, 'reviewRequest'])->name('portal.leave-requests.review');
     // Staff Photo Management (HR/Admin or Self)
     Route::post('/employees/{employee}/photo', [EmployeePhotoController::class, 'store'])->name('employees.photo.store');
     Route::delete('/employees/{employee}/photo', [EmployeePhotoController::class, 'destroy'])->name('employees.photo.destroy');

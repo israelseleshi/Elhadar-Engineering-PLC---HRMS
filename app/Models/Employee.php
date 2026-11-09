@@ -166,6 +166,62 @@ class Employee extends Model
         return $this->hasMany(LeaveRequest::class);
     }
 
+    /**
+     * Determine whether this employee belongs to the managerial staff tier:
+     * Division Head, Department Manager, Director, DCEO, Chief Officer, or CEO.
+     */
+    public function isManagerial(): bool
+    {
+        if (! $this->position) {
+            return false;
+        }
+
+        $pos = trim($this->position);
+
+        if (strcasecmp($pos, 'Chief Surveyor') === 0) {
+            return false;
+        }
+
+        return (bool) preg_match('/(\bCEO\b|\bDCEO\b|Chief\s+.*Officer|Director|Departm.*Manager|Development\s+Manager|Division\s+(Head|Manager))/i', $pos);
+    }
+
+    /**
+     * Get the standardized managerial classification level.
+     */
+    public function getManagerialLevel(): ?string
+    {
+        if (! $this->position) {
+            return null;
+        }
+
+        $pos = trim($this->position);
+
+        if (strcasecmp($pos, 'Chief Surveyor') === 0) {
+            return null;
+        }
+
+        if (preg_match('/\bCEO\b/i', $pos) && ! preg_match('/\bDCEO\b/i', $pos)) {
+            return 'CEO';
+        }
+        if (preg_match('/\bDCEO\b/i', $pos)) {
+            return 'DCEO';
+        }
+        if (preg_match('/Chief\s+.*Officer/i', $pos)) {
+            return 'Chief Officer';
+        }
+        if (preg_match('/Director/i', $pos)) {
+            return 'Director';
+        }
+        if (preg_match('/(Departm.*Manager|Development\s+Manager)/i', $pos)) {
+            return 'Department Manager';
+        }
+        if (preg_match('/Division\s+(Head|Manager)/i', $pos)) {
+            return 'Division Head';
+        }
+
+        return null;
+    }
+
     // Scopes
     public function scopeActive($query)
     {

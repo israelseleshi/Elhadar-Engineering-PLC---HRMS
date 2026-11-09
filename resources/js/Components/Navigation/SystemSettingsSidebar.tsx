@@ -97,13 +97,16 @@ export default function SystemSettingsSidebar({
                                         >
                                             {/* Apple Squircle Icon Container */}
                                             <div
-                                                className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-xs transition-transform group-hover:scale-105 ${
+                                                className={`relative w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-xs transition-transform group-hover:scale-105 ${
                                                     active
                                                         ? 'bg-white/20 text-white ring-1 ring-white/30'
                                                         : item.squircleColor.bg
                                                 }`}
                                             >
                                                 <Icon className="w-4 h-4 text-white" strokeWidth={2.2} />
+                                                {sidebarCollapsed && typeof item.badge === 'number' && item.badge > 0 && (
+                                                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#0066cc] ring-2 ring-background" />
+                                                )}
                                             </div>
 
                                             {!sidebarCollapsed && (
@@ -111,13 +114,26 @@ export default function SystemSettingsSidebar({
                                                     <span className={`text-[13px] truncate ${active ? '!text-white font-semibold' : 'text-foreground'}`}>
                                                         {item.name}
                                                     </span>
-                                                    <ChevronRight
-                                                        className={`w-3.5 h-3.5 shrink-0 transition-transform group-hover:translate-x-0.5 ${
-                                                            active
-                                                                ? '!text-white'
-                                                                : 'text-muted-foreground/40'
-                                                        }`}
-                                                    />
+                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                        {typeof item.badge === 'number' && item.badge > 0 && (
+                                                            <span
+                                                                className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full leading-none shadow-xs ${
+                                                                    active
+                                                                        ? 'bg-white text-[#0066cc]'
+                                                                        : 'bg-[#0066cc] text-white'
+                                                                }`}
+                                                            >
+                                                                {item.badge}
+                                                            </span>
+                                                        )}
+                                                        <ChevronRight
+                                                            className={`w-3.5 h-3.5 shrink-0 transition-transform group-hover:translate-x-0.5 ${
+                                                                active
+                                                                    ? '!text-white'
+                                                                    : 'text-muted-foreground/40'
+                                                            }`}
+                                                        />
+                                                    </div>
                                                 </div>
                                             )}
                                         </Link>

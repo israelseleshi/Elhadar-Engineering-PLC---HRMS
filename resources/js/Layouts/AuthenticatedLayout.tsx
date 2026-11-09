@@ -98,7 +98,12 @@ export default function AuthenticatedLayout({
         }
     };
 
-    const navItems = getNavItems();
+    const navItems = getNavItems().map((item) => {
+        if (item.id === 'leave' || item.id === 'portal-leave-requests') {
+            return { ...item, badge: user.pending_leave_approvals_count };
+        }
+        return item;
+    });
 
     const employeeCategories: NavCategoryConfig[] = [
         {
@@ -140,6 +145,26 @@ export default function AuthenticatedLayout({
                 text: 'text-emerald-600',
             },
         },
+        ...(user.can_approve_leave
+            ? [
+                  {
+                      id: 'portal-leave-requests',
+                      name: 'Leave Requests',
+                      shortName: 'Approvals',
+                      href: route('portal.leave-requests.index'),
+                      routeName: 'portal.leave-requests.*',
+                      icon: CalendarCheck,
+                      category: 'personal' as const,
+                      description: 'Review and approve/reject staff leave applications',
+                      activeBg: 'bg-[#0066cc]',
+                      squircleColor: {
+                          bg: 'bg-[#0066cc] text-white',
+                          text: 'text-[#0066cc]',
+                      },
+                      badge: user.pending_leave_approvals_count,
+                  },
+              ]
+            : []),
         {
             id: 'announcements',
             name: 'Announcements',
@@ -336,6 +361,17 @@ export default function AuthenticatedLayout({
                                                                 <Icon className={`w-4 h-4 ${active ? '!text-white' : ''}`} />
                                                                 <span className={active ? '!text-white font-semibold' : ''}>{item.name}</span>
                                                             </div>
+                                                            {typeof item.badge === 'number' && item.badge > 0 && (
+                                                                <span
+                                                                    className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full leading-none shadow-xs ${
+                                                                        active
+                                                                            ? 'bg-white text-[#0066cc]'
+                                                                            : 'bg-[#0066cc] text-white'
+                                                                    }`}
+                                                                >
+                                                                    {item.badge}
+                                                                </span>
+                                                            )}
                                                         </Link>
                                                     );
                                                 })}

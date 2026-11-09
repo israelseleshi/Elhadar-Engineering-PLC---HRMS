@@ -62,13 +62,27 @@ export default function PortalLayout({ title, subtitle, children }: PropsWithChi
         },
         {
             id: 'leave',
-            name: 'Leave Requests',
+            name: 'Request Leave',
             href: route('portal.leave.index'),
             routeName: 'portal.leave.*',
             icon: CalendarCheck,
             activeBg: 'bg-emerald-600',
             squircle: 'bg-emerald-600 text-white',
         },
+        ...(user.can_approve_leave
+            ? [
+                  {
+                      id: 'leave-requests',
+                      name: 'Leave Requests',
+                      href: route('portal.leave-requests.index'),
+                      routeName: 'portal.leave-requests.*',
+                      icon: CalendarCheck,
+                      activeBg: 'bg-[#0066cc]',
+                      squircle: 'bg-[#0066cc] text-white',
+                      badge: user.pending_leave_approvals_count,
+                  },
+              ]
+            : []),
         {
             id: 'announcements',
             name: 'Announcements',
@@ -78,15 +92,19 @@ export default function PortalLayout({ title, subtitle, children }: PropsWithChi
             activeBg: 'bg-amber-500',
             squircle: 'bg-amber-500 text-white',
         },
-        ...(user.role !== 'Employee' ? [{
-            id: 'dashboard',
-            name: 'HR Admin Console',
-            href: route('dashboard'),
-            routeName: 'dashboard',
-            icon: LayoutDashboard,
-            activeBg: 'bg-[#0066cc]',
-            squircle: 'bg-[#0066cc] text-white',
-        }] : []),
+        ...(user.role !== 'Employee'
+            ? [
+                  {
+                      id: 'dashboard',
+                      name: 'HR Admin Console',
+                      href: route('dashboard'),
+                      routeName: 'dashboard',
+                      icon: LayoutDashboard,
+                      activeBg: 'bg-[#0066cc]',
+                      squircle: 'bg-[#0066cc] text-white',
+                  },
+              ]
+            : []),
     ];
 
     return (
@@ -160,13 +178,16 @@ export default function PortalLayout({ title, subtitle, children }: PropsWithChi
                                             }`}
                                         >
                                             <div
-                                                className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-xs transition-transform group-hover:scale-105 ${
+                                                className={`relative w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-xs transition-transform group-hover:scale-105 ${
                                                     active
                                                         ? 'bg-white/20 text-white ring-1 ring-white/30'
                                                         : item.squircle
                                                 }`}
                                             >
                                                 <Icon className="w-4 h-4 text-white" strokeWidth={2.2} />
+                                                {sidebarCollapsed && typeof item.badge === 'number' && item.badge > 0 && (
+                                                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#0066cc] ring-2 ring-background" />
+                                                )}
                                             </div>
 
                                             {!sidebarCollapsed && (
@@ -174,13 +195,26 @@ export default function PortalLayout({ title, subtitle, children }: PropsWithChi
                                                     <span className={`text-[13px] truncate ${active ? '!text-white font-semibold' : 'text-foreground'}`}>
                                                         {item.name}
                                                     </span>
-                                                    <ChevronRight
-                                                        className={`w-3.5 h-3.5 shrink-0 transition-transform group-hover:translate-x-0.5 ${
-                                                            active
-                                                                ? '!text-white'
-                                                                : 'text-muted-foreground/40'
-                                                        }`}
-                                                    />
+                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                        {typeof item.badge === 'number' && item.badge > 0 && (
+                                                            <span
+                                                                className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full leading-none shadow-xs ${
+                                                                    active
+                                                                        ? 'bg-white text-[#0066cc]'
+                                                                        : 'bg-[#0066cc] text-white'
+                                                                }`}
+                                                            >
+                                                                {item.badge}
+                                                            </span>
+                                                        )}
+                                                        <ChevronRight
+                                                            className={`w-3.5 h-3.5 shrink-0 transition-transform group-hover:translate-x-0.5 ${
+                                                                active
+                                                                    ? '!text-white'
+                                                                    : 'text-muted-foreground/40'
+                                                            }`}
+                                                        />
+                                                    </div>
                                                 </div>
                                             )}
                                         </Link>
@@ -250,6 +284,17 @@ export default function PortalLayout({ title, subtitle, children }: PropsWithChi
                                                 <Icon className={`w-4 h-4 ${active ? '!text-white' : ''}`} />
                                                 <span className={active ? '!text-white font-semibold' : ''}>{item.name}</span>
                                             </div>
+                                            {typeof item.badge === 'number' && item.badge > 0 && (
+                                                <span
+                                                    className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full leading-none shadow-xs ${
+                                                        active
+                                                            ? 'bg-white text-[#0066cc]'
+                                                            : 'bg-[#0066cc] text-white'
+                                                    }`}
+                                                >
+                                                    {item.badge}
+                                                </span>
+                                            )}
                                         </Link>
                                     );
                                 })}

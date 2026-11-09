@@ -31,6 +31,7 @@ export interface NavItemConfig {
         bg: string;
         text: string;
     };
+    badge?: number;
 }
 
 export interface NavCategoryConfig {
@@ -254,6 +255,21 @@ export const getNavItems = (): NavItemConfig[] => {
             squircleColor: {
                 bg: 'bg-emerald-600 text-white',
                 text: 'text-emerald-600',
+            },
+        },
+        {
+            id: 'portal-leave-requests',
+            name: 'Leave Requests',
+            shortName: 'Approvals',
+            href: route('portal.leave-requests.index'),
+            routeName: 'portal.leave-requests.*',
+            icon: CalendarCheck,
+            category: 'personal',
+            description: 'Review and approve/reject staff leave applications',
+            activeBg: 'bg-[#0066cc]',
+            squircleColor: {
+                bg: 'bg-[#0066cc] text-white',
+                text: 'text-[#0066cc]',
             },
         },
     ];
