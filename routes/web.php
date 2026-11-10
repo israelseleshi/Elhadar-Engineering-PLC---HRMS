@@ -62,6 +62,8 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
 
     // Department Workspace Chat & Communications
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/colleagues', [ChatController::class, 'searchColleagues'])->name('chat.colleagues');
+    Route::post('/chat/direct/{targetUser}', [ChatController::class, 'startDirect'])->whereNumber('targetUser')->name('chat.direct.start');
     Route::get('/chat/conversations/{conversationId}', [ChatController::class, 'index'])->whereNumber('conversationId')->name('chat.show');
     Route::get('/chat/conversations/{conversation}/messages', [ChatController::class, 'messages'])->whereNumber('conversation')->name('chat.messages');
     Route::post('/chat/conversations/{conversation}/messages', [ChatController::class, 'send'])->whereNumber('conversation')->name('chat.send');

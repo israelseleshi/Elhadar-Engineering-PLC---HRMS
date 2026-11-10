@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
@@ -26,12 +26,14 @@ import { Input } from '@/Components/ui/input';
 import { toast } from 'sonner';
 import AnnouncementReaderModal, { AnnouncementItem } from '@/Components/AnnouncementReaderModal';
 import AnnouncementAnalyticsDrawer from '@/Components/AnnouncementAnalyticsDrawer';
+import InteractiveTour, { TourStep } from '@/Components/InteractiveTour';
 import {
     Activity,
     AlertTriangle,
     Bell,
     CheckCircle2,
     Clock,
+    Compass,
     FileText,
     Megaphone,
     MoreHorizontal,
@@ -79,6 +81,105 @@ interface Props {
     departments: { id: number; name: string }[];
 }
 
+const announcementsIndexTourSteps: TourStep[] = [
+    {
+        target: '[data-tour="announcements-search"]',
+        title: 'Instant Circular Search',
+        content: 'Quickly find directives, engineering safety bulletins, policies, or memos by typing any keyword or subject.',
+        badge: 'Search & Retrieval',
+        placement: 'bottom',
+        tip: 'Press Enter or click the clear icon to reset your search filter.',
+    },
+    {
+        target: '[data-tour="announcements-tour-btn"]',
+        title: 'Interactive Guided Tour',
+        content: 'Re-trigger this walkthrough anytime to explore key notice board tools, reading modals, and delivery telemetry.',
+        badge: 'Help & Navigation',
+        placement: 'bottom',
+        tip: 'You can also trigger tours using the top navbar Tour button on supported pages.',
+    },
+    {
+        target: '[data-tour="announcements-publish-btn"]',
+        title: 'Author New Circular',
+        content: 'Draft and broadcast official company notices with bilingual copy, file attachments, and targeted audience rules.',
+        badge: 'Executive Publishing',
+        placement: 'bottom',
+        tip: 'Only HR Administrators and System Administrators can author new circulars.',
+    },
+    {
+        target: '[data-tour="announcements-category-filters"]',
+        title: 'Thematic Category Filters',
+        content: 'Filter circulars across Policies, Health & Safety, Payroll, Public Holidays, Corporate Events, and General memos.',
+        badge: 'Taxonomy',
+        placement: 'bottom',
+        tip: 'Pills update the active feed immediately without page reload.',
+    },
+    {
+        target: '[data-tour="announcements-priority-filters"]',
+        title: 'Urgency & Severity Tiers',
+        content: 'Filter notices by severity level — Critical safety directives, Important announcements, or General standard memos.',
+        badge: 'Priority Triage',
+        placement: 'bottom',
+        tip: 'Critical bulletins are highlighted with prominent red borders across the platform.',
+    },
+    {
+        target: '[data-tour="announcements-feed"]',
+        title: 'Company Directives Feed',
+        content: 'Responsive grid displaying all active announcements with live read badges, e-sign indicators, and publication stamps.',
+        badge: 'Notice Board',
+        placement: 'top',
+        tip: 'Hover over any card to reveal quick actions and elevated card styling.',
+    },
+    {
+        target: '[data-tour="first-circular-card"]',
+        title: 'Circular Overview Card',
+        content: 'Each card summarizes key metadata, bilingual Amharic subtitle, truncated body copy, and compliance markers.',
+        badge: 'Card Dossier',
+        placement: 'top',
+        tip: 'Cards are arranged chronologically with pinned announcements anchored first.',
+    },
+    {
+        target: '[data-tour="first-circular-badges"]',
+        title: 'Urgency & Pinned Status',
+        content: 'Visual badges indicate urgency level, category classification, and whether the memo is pinned as a company priority.',
+        badge: 'Status Markers',
+        placement: 'bottom',
+        tip: 'Pinned circulars stay visible at the top of employee portal widgets until unpinned.',
+    },
+    {
+        target: '[data-tour="first-circular-headline"]',
+        title: 'Full Reader Modal',
+        content: 'Click the headline or excerpt to open the reader modal with full bilingual text, download links, and acknowledgment actions.',
+        badge: 'Interactive Reader',
+        placement: 'bottom',
+        tip: 'Reading a circular automatically logs a read receipt timestamp in the audit database.',
+    },
+    {
+        target: '[data-tour="first-circular-attachment"]',
+        title: 'Official Document Download',
+        content: 'Download officially stamped circulars, signed executive memos, or PDF annexes directly in one click.',
+        badge: 'Document Vault',
+        placement: 'top',
+        tip: 'Attachments open in a secure browser tab or trigger direct PDF download.',
+    },
+    {
+        target: '[data-tour="first-circular-compliance"]',
+        title: 'E-Sign Compliance Status',
+        content: 'Shows whether this circular legally mandates employee acknowledgment and whether you have completed sign-off.',
+        badge: 'Compliance & E-Sign',
+        placement: 'top',
+        tip: 'Green indicates verified acknowledgment; blue indicates pending sign-off.',
+    },
+    {
+        target: '[data-tour="first-circular-actions"]',
+        title: 'Delivery Audit & Governance',
+        content: 'Administrators can open the real-time Delivery Audit drawer to see read receipts, or use the menu to edit or delete circulars.',
+        badge: 'Auditing & Controls',
+        placement: 'left',
+        tip: 'The Audit drawer reveals exact employee names, departments, and confirmation times.',
+    },
+];
+
 export default function AnnouncementsIndex({
     announcements,
     filters,
@@ -92,12 +193,26 @@ export default function AnnouncementsIndex({
     const [selectedCategory, setSelectedCategory] = useState(filters.category || 'all');
     const [selectedPriority, setSelectedPriority] = useState(filters.priority || 'all');
 
-    // Modals
+    // Modals & Tours
     const [readerAnnouncement, setReaderAnnouncement] = useState<AnnouncementItem | null>(null);
     const [isReaderOpen, setIsReaderOpen] = useState(false);
     const [analyticsId, setAnalyticsId] = useState<number | null>(null);
     const [analyticsTitle, setAnalyticsTitle] = useState<string>('');
     const [deleteTarget, setDeleteTarget] = useState<AnnouncementRecord | null>(null);
+    const [isTourOpen, setIsTourOpen] = useState(false);
+
+    useEffect(() => {
+        const handleOpenTour = () => setIsTourOpen(true);
+        window.addEventListener('open-announcements-index-tour', handleOpenTour);
+
+        if (typeof window !== 'undefined' && window.location.search.includes('tour=true')) {
+            setIsTourOpen(true);
+        }
+
+        return () => {
+            window.removeEventListener('open-announcements-index-tour', handleOpenTour);
+        };
+    }, []);
 
     const applyFilters = (newCategory?: string, newPriority?: string) => {
         const cat = newCategory !== undefined ? newCategory : selectedCategory;
@@ -173,7 +288,7 @@ export default function AnnouncementsIndex({
 
             {/* Top Toolbar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-80">
+                <form onSubmit={handleSearchSubmit} data-tour="announcements-search" className="relative w-full sm:w-80">
                     <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
                     <Input
                         value={search}
@@ -195,60 +310,77 @@ export default function AnnouncementsIndex({
                     )}
                 </form>
 
-                {isHR && (
-                    <Button asChild size="sm" className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-1.5 shadow-sm text-xs h-9">
-                        <Link href={route('announcements.create')}>
-                            <Plus className="w-4 h-4" />
-                            <span>Publish Circular</span>
-                        </Link>
+                <div className="flex items-center gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsTourOpen(true)}
+                        data-tour="announcements-tour-btn"
+                        className="rounded-xl border-border text-xs h-9 font-medium gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer shadow-2xs"
+                    >
+                        <Compass className="w-3.5 h-3.5 text-primary" />
+                        <span>Tour Board</span>
                     </Button>
-                )}
+                    {isHR && (
+                        <Button asChild size="sm" data-tour="announcements-publish-btn" className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-1.5 shadow-sm text-xs h-9">
+                            <Link href={route('announcements.create')}>
+                                <Plus className="w-4 h-4" />
+                                <span>Publish Circular</span>
+                            </Link>
+                        </Button>
+                    )}
+                </div>
             </div>
 
             {/* Filter Pills */}
             <div className="flex flex-wrap items-center gap-2 mb-6">
-                <span className="text-xs font-semibold text-muted-foreground mr-1">Category:</span>
-                {['all', 'policy', 'safety', 'payroll', 'holiday', 'event', 'general'].map((cat) => (
-                    <button
-                        key={cat}
-                        onClick={() => {
-                            setSelectedCategory(cat);
-                            applyFilters(cat, selectedPriority);
-                        }}
-                        className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-all ${
-                            selectedCategory === cat
-                                ? 'bg-primary text-primary-foreground shadow-xs font-semibold'
-                                : 'bg-muted/40 hover:bg-muted text-muted-foreground border border-border/60'
-                        }`}
-                    >
-                        {cat === 'all' ? 'All Categories' : cat}
-                    </button>
-                ))}
+                <div data-tour="announcements-category-filters" className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-xs font-semibold text-muted-foreground mr-1">Category:</span>
+                    {['all', 'policy', 'safety', 'payroll', 'holiday', 'event', 'general'].map((cat) => (
+                        <button
+                            key={cat}
+                            onClick={() => {
+                                setSelectedCategory(cat);
+                                applyFilters(cat, selectedPriority);
+                            }}
+                            className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-all ${
+                                selectedCategory === cat
+                                    ? 'bg-primary text-primary-foreground shadow-xs font-semibold'
+                                    : 'bg-muted/40 hover:bg-muted text-muted-foreground border border-border/60'
+                            }`}
+                        >
+                            {cat === 'all' ? 'All Categories' : cat}
+                        </button>
+                    ))}
+                </div>
 
                 <div className="h-4 w-px bg-border mx-1 hidden sm:block" />
 
-                <span className="text-xs font-semibold text-muted-foreground mr-1 hidden sm:inline">Priority:</span>
-                {['all', 'critical', 'important', 'standard'].map((pri) => (
-                    <button
-                        key={pri}
-                        onClick={() => {
-                            setSelectedPriority(pri);
-                            applyFilters(selectedCategory, pri);
-                        }}
-                        className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-all ${
-                            selectedPriority === pri
-                                ? 'bg-primary text-primary-foreground shadow-xs font-semibold'
-                                : 'bg-muted/40 hover:bg-muted text-muted-foreground border border-border/60'
-                        }`}
-                    >
-                        {pri === 'all' ? 'All Priorities' : pri}
-                    </button>
-                ))}
+                <div data-tour="announcements-priority-filters" className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-xs font-semibold text-muted-foreground mr-1 hidden sm:inline">Priority:</span>
+                    {['all', 'critical', 'important', 'standard'].map((pri) => (
+                        <button
+                            key={pri}
+                            onClick={() => {
+                                setSelectedPriority(pri);
+                                applyFilters(selectedCategory, pri);
+                            }}
+                            className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-all ${
+                                selectedPriority === pri
+                                    ? 'bg-primary text-primary-foreground shadow-xs font-semibold'
+                                    : 'bg-muted/40 hover:bg-muted text-muted-foreground border border-border/60'
+                            }`}
+                        >
+                            {pri === 'all' ? 'All Priorities' : pri}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Grid of Circular Cards */}
             {announcements.data.length === 0 ? (
-                <Card className="rounded-2xl border-dashed border-2 border-border/80 p-12 text-center bg-card/40">
+                <Card data-tour="announcements-feed" className="rounded-2xl border-dashed border-2 border-border/80 p-12 text-center bg-card/40">
                     <Megaphone className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
                     <h3 className="text-sm font-semibold text-foreground">No circulars found</h3>
                     <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
@@ -256,12 +388,13 @@ export default function AnnouncementsIndex({
                     </p>
                 </Card>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {announcements.data.map((item) => {
+                <div data-tour="announcements-feed" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {announcements.data.map((item, idx) => {
                         const isUnread = !item.is_read_by_user;
                         return (
                             <Card
                                 key={item.id}
+                                {...(idx === 0 ? { 'data-tour': 'first-circular-card' } : {})}
                                 className={`rounded-2xl border transition-all duration-200 hover:shadow-md flex flex-col justify-between overflow-hidden bg-card ${
                                     item.priority === 'critical'
                                         ? 'border-red-500/30'
@@ -273,7 +406,10 @@ export default function AnnouncementsIndex({
                                 <div className="p-5 pb-3">
                                     {/* Top Metadata */}
                                     <div className="flex items-center justify-between gap-2 mb-2.5">
-                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                        <div
+                                            {...(idx === 0 ? { 'data-tour': 'first-circular-badges' } : {})}
+                                            className="flex items-center gap-1.5 flex-wrap"
+                                        >
                                             {getPriorityBadge(item.priority)}
                                             {getCategoryBadge(item.category)}
                                             {item.is_pinned && (
@@ -284,68 +420,75 @@ export default function AnnouncementsIndex({
                                         </div>
 
                                         {isHR && (
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <button className="p-1 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground">
-                                                        <MoreHorizontal className="w-4 h-4" />
-                                                    </button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-44 text-xs rounded-xl">
-                                                    <DropdownMenuItem
-                                                        onClick={() => {
-                                                            setAnalyticsId(item.id);
-                                                            setAnalyticsTitle(item.title);
-                                                        }}
-                                                        className="gap-2 cursor-pointer"
-                                                    >
-                                                        <Activity className="w-3.5 h-3.5 text-primary" />
-                                                        <span>Delivery Audit</span>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild className="gap-2 cursor-pointer">
-                                                        <Link href={route('announcements.edit', item.id)}>
-                                                            <Pencil className="w-3.5 h-3.5" />
-                                                            <span>Edit Circular</span>
-                                                        </Link>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                        onClick={() => setDeleteTarget(item)}
-                                                        className="gap-2 text-destructive focus:text-destructive cursor-pointer"
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                        <span>Delete</span>
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                            <div {...(idx === 0 ? { 'data-tour': 'first-circular-actions' } : {})}>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <button className="p-1 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground cursor-pointer">
+                                                            <MoreHorizontal className="w-4 h-4" />
+                                                        </button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-44 text-xs rounded-xl">
+                                                        <DropdownMenuItem
+                                                            onClick={() => {
+                                                                setAnalyticsId(item.id);
+                                                                setAnalyticsTitle(item.title);
+                                                            }}
+                                                            className="gap-2 cursor-pointer"
+                                                        >
+                                                            <Activity className="w-3.5 h-3.5 text-primary" />
+                                                            <span>Delivery Audit</span>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+                                                            <Link href={route('announcements.edit', item.id)}>
+                                                                <Pencil className="w-3.5 h-3.5" />
+                                                                <span>Edit Circular</span>
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem
+                                                            onClick={() => setDeleteTarget(item)}
+                                                            className="gap-2 text-destructive focus:text-destructive cursor-pointer"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                            <span>Delete</span>
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </div>
                                         )}
                                     </div>
 
-                                    {/* Title & Amharic Pill */}
-                                    <h3
-                                        onClick={() => handleOpenReader(item)}
-                                        className="text-sm font-bold text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer line-clamp-2 leading-snug"
-                                    >
-                                        {item.title}
-                                    </h3>
+                                    {/* Title & Amharic Pill & Snippet */}
+                                    <div {...(idx === 0 ? { 'data-tour': 'first-circular-headline' } : {})}>
+                                        <h3
+                                            onClick={() => handleOpenReader(item)}
+                                            className="text-sm font-bold text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer line-clamp-2 leading-snug"
+                                        >
+                                            {item.title}
+                                        </h3>
 
-                                    {item.title_am && (
-                                        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
-                                            {item.title_am}
+                                        {item.title_am && (
+                                            <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
+                                                {item.title_am}
+                                            </p>
+                                        )}
+
+                                        {/* Snippet */}
+                                        <p
+                                            onClick={() => handleOpenReader(item)}
+                                            className="text-xs text-muted-foreground line-clamp-3 mt-2.5 leading-relaxed cursor-pointer"
+                                        >
+                                            {item.content}
                                         </p>
-                                    )}
-
-                                    {/* Snippet */}
-                                    <p
-                                        onClick={() => handleOpenReader(item)}
-                                        className="text-xs text-muted-foreground line-clamp-3 mt-2.5 leading-relaxed cursor-pointer"
-                                    >
-                                        {item.content}
-                                    </p>
+                                    </div>
                                 </div>
 
                                 {/* Footer & Compliance Badges */}
                                 <div className="p-4 pt-3 bg-muted/20 border-t border-border/50 text-xs flex items-center justify-between gap-2 mt-auto">
-                                    <div className="flex items-center gap-2 flex-wrap">
+                                    <div
+                                        {...(idx === 0 ? { 'data-tour': 'first-circular-attachment' } : {})}
+                                        className="flex items-center gap-2 flex-wrap"
+                                    >
                                         <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                                             <Clock className="w-2.5 h-2.5" />
                                             {new Date(item.published_at || item.created_at).toLocaleDateString('en-US', {
@@ -368,7 +511,10 @@ export default function AnnouncementsIndex({
                                         )}
                                     </div>
 
-                                    <div className="flex items-center gap-1.5">
+                                    <div
+                                        {...(idx === 0 ? { 'data-tour': 'first-circular-compliance' } : {})}
+                                        className="flex items-center gap-1.5"
+                                    >
                                         {item.requires_acknowledgment && (
                                             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${
                                                 item.is_acknowledged_by_user
@@ -443,6 +589,14 @@ export default function AnnouncementsIndex({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Guided Tour Spotlight */}
+            <InteractiveTour
+                steps={announcementsIndexTourSteps}
+                isOpen={isTourOpen}
+                onClose={() => setIsTourOpen(false)}
+                tourTitle="Company notice board tour"
+            />
         </AuthenticatedLayout>
     );
 }

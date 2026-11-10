@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import InteractiveTour, { TourStep } from '@/Components/InteractiveTour';
 import { Button } from '@/Components/ui/button';
 import {
     Card,
@@ -19,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import {
     ArrowLeft,
+    Compass,
     FileText,
     Megaphone,
     Pin,
@@ -72,6 +74,105 @@ interface Props {
     employees: { id: number; name: string; role: string }[];
 }
 
+const announcementEditTourSteps: TourStep[] = [
+    {
+        target: '[data-tour="edit-back-btn"]',
+        title: 'Exit Without Saving',
+        content: 'Return to the main Notice Board without applying changes to this active announcement.',
+        badge: 'Navigation',
+        placement: 'bottom',
+        tip: 'Changes made during this session will be preserved only if you click Save Circular Changes.',
+    },
+    {
+        target: '[data-tour="edit-tour-btn"]',
+        title: 'Editing Workflow Tour',
+        content: 'Explore the full revision workflow including bilingual adjustments, attachment swapping, and re-targeting.',
+        badge: 'Help & Walkthrough',
+        placement: 'bottom',
+        tip: 'Use this guide to inspect all available settings before modifying live circulars.',
+    },
+    {
+        target: '[data-tour="edit-lang-tabs"]',
+        title: 'Bilingual Revision Switcher',
+        content: 'Toggle between English and Amharic copy to synchronize translations and ensure message consistency.',
+        badge: 'Bilingual Copy',
+        placement: 'bottom',
+        tip: 'Both English and Amharic versions will update simultaneously upon saving.',
+    },
+    {
+        target: '[data-tour="edit-title-input"]',
+        title: 'Revise Circular Title',
+        content: 'Refine the headline to reflect updated directives, extended deadlines, or corrected circular numbers.',
+        badge: 'Title & Heading',
+        placement: 'bottom',
+        tip: 'Clear titles help employees quickly understand what was revised.',
+    },
+    {
+        target: '[data-tour="edit-content-input"]',
+        title: 'Modify Directive Text',
+        content: 'Refine instructions, update deadlines, or expand details while preserving version clarity.',
+        badge: 'Content Revision',
+        placement: 'bottom',
+        tip: 'Use clear paragraph breaks and bullet points for effortless on-screen reading.',
+    },
+    {
+        target: '[data-tour="edit-attachment-section"]',
+        title: 'Manage Circular Attachment',
+        content: 'View the active attached file, remove obsolete documentation, or upload a newly signed replacement PDF.',
+        badge: 'Document Vault',
+        placement: 'top',
+        tip: 'Uploading a new file will automatically replace the previous attachment.',
+    },
+    {
+        target: '[data-tour="edit-audience-selector"]',
+        title: 'Reconfigure Target Audience',
+        content: 'Broaden or narrow the distribution scope across departments, project sites, job classifications, or custom staff.',
+        badge: 'Audience Scope',
+        placement: 'top',
+        tip: 'Newly targeted employees will immediately see the updated circular in their notifications feed.',
+    },
+    {
+        target: '[data-tour="edit-priority-selector"]',
+        title: 'Adjust Urgency Level',
+        content: 'Escalate to Critical for urgent compliance or downgrade to General once deadlines have lapsed.',
+        badge: 'Severity Triage',
+        placement: 'left',
+        tip: 'Card borders and badge indicators on the notice board update immediately.',
+    },
+    {
+        target: '[data-tour="edit-category-select"]',
+        title: 'Reclassify Circular Category',
+        content: 'Change the thematic classification between Policy, Safety, Payroll, Holiday, or Corporate Milestone.',
+        badge: 'Category Taxonomy',
+        placement: 'left',
+        tip: 'Proper categorization ensures accurate long-term record keeping and fast searching.',
+    },
+    {
+        target: '[data-tour="edit-esign-switch"]',
+        title: 'Maintain Statutory E-Sign',
+        content: 'Keep electronic signature enforcement active to mandate that employees acknowledge revised instructions.',
+        badge: 'E-Sign Compliance',
+        placement: 'left',
+        tip: 'Existing employee acknowledgments are preserved in the permanent compliance audit ledger.',
+    },
+    {
+        target: '[data-tour="edit-governance-options"]',
+        title: 'Reactions & Hero Pinning',
+        content: 'Manage staff engagement by enabling emoji feedback or anchoring the bulletin to the top of home screens.',
+        badge: 'Engagement & Pinning',
+        placement: 'left',
+        tip: 'Unpinning allows newer company directives to claim top rotation on the notice board.',
+    },
+    {
+        target: '[data-tour="edit-save-btn"]',
+        title: 'Commit Circular Revisions',
+        content: 'Save and immediately publish your updates. The revised circular is instantly synchronized across all devices.',
+        badge: 'Save & Broadcast',
+        placement: 'top',
+        tip: 'A success notification will confirm that all changes have been committed securely.',
+    },
+];
+
 export default function AnnouncementsEdit({
     announcement,
     departments,
@@ -82,6 +183,20 @@ export default function AnnouncementsEdit({
 }: Props) {
     const [langTab, setLangTab] = useState<'en' | 'am'>('en');
     const [hasExpiry, setHasExpiry] = useState(Boolean(announcement.expires_at));
+    const [isTourOpen, setIsTourOpen] = useState(false);
+
+    useEffect(() => {
+        const handleOpenTour = () => setIsTourOpen(true);
+        window.addEventListener('open-announcement-edit-tour', handleOpenTour);
+
+        if (typeof window !== 'undefined' && window.location.search.includes('tour=true')) {
+            setIsTourOpen(true);
+        }
+
+        return () => {
+            window.removeEventListener('open-announcement-edit-tour', handleOpenTour);
+        };
+    }, []);
 
     const { data, setData, post, processing, errors } = useForm({
         _method: 'PUT',
@@ -177,11 +292,23 @@ export default function AnnouncementsEdit({
             <Head title={`Edit Circular - ${announcement.title}`} />
 
             <div className="mb-6 flex items-center justify-between">
-                <Button asChild variant="ghost" size="sm" className="-ml-2 gap-1.5 text-muted-foreground hover:text-foreground">
+                <Button asChild variant="ghost" size="sm" data-tour="edit-back-btn" className="-ml-2 gap-1.5 text-muted-foreground hover:text-foreground">
                     <Link href={route('announcements.index')}>
                         <ArrowLeft className="w-4 h-4" />
                         <span>Back to Notice Board</span>
                     </Link>
+                </Button>
+
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsTourOpen(true)}
+                    data-tour="edit-tour-btn"
+                    className="rounded-xl border-border text-xs h-9 font-medium gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer shadow-2xs"
+                >
+                    <Compass className="w-3.5 h-3.5 text-primary" />
+                    <span>Tour Editor</span>
                 </Button>
             </div>
 
@@ -200,7 +327,7 @@ export default function AnnouncementsEdit({
                                     </CardDescription>
                                 </div>
 
-                                <div className="inline-flex items-center rounded-lg border border-border bg-background p-0.5 text-xs">
+                                <div data-tour="edit-lang-tabs" className="inline-flex items-center rounded-lg border border-border bg-background p-0.5 text-xs">
                                     <button
                                         type="button"
                                         onClick={() => setLangTab('en')}
@@ -229,7 +356,7 @@ export default function AnnouncementsEdit({
                             <CardContent className="p-6 space-y-5">
                                 {langTab === 'en' ? (
                                     <>
-                                        <div className="space-y-2">
+                                        <div data-tour="edit-title-input" className="space-y-2">
                                             <Label htmlFor="title" className="text-xs font-semibold text-foreground">
                                                 Announcement Title (English) <span className="text-destructive">*</span>
                                             </Label>
@@ -243,7 +370,7 @@ export default function AnnouncementsEdit({
                                             {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div data-tour="edit-content-input" className="space-y-2">
                                             <Label htmlFor="content" className="text-xs font-semibold text-foreground">
                                                 Body Content (English) <span className="text-destructive">*</span>
                                             </Label>
@@ -260,7 +387,7 @@ export default function AnnouncementsEdit({
                                     </>
                                 ) : (
                                     <>
-                                        <div className="space-y-2">
+                                        <div data-tour="edit-title-input" className="space-y-2">
                                             <Label htmlFor="title_am" className="text-xs font-semibold text-foreground">
                                                 የማስታወቂያው ርዕስ (አማርኛ)
                                             </Label>
@@ -272,7 +399,7 @@ export default function AnnouncementsEdit({
                                             />
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div data-tour="edit-content-input" className="space-y-2">
                                             <Label htmlFor="content_am" className="text-xs font-semibold text-foreground">
                                                 ዝርዝር መግለጫ (አማርኛ)
                                             </Label>
@@ -288,7 +415,7 @@ export default function AnnouncementsEdit({
                                 )}
 
                                 {/* Attachment Section */}
-                                <div className="pt-2 border-t border-border/60">
+                                <div data-tour="edit-attachment-section" className="pt-2 border-t border-border/60">
                                     <Label className="text-xs font-semibold text-foreground block mb-2">
                                         Official Circular Attachment
                                     </Label>
@@ -354,7 +481,7 @@ export default function AnnouncementsEdit({
                         </Card>
 
                         {/* Audience Targeting Selector */}
-                        <Card className="rounded-2xl border border-border/80 shadow-xs bg-card">
+                        <Card data-tour="edit-audience-selector" className="rounded-2xl border border-border/80 shadow-xs bg-card">
                             <CardHeader className="p-6 pb-3">
                                 <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
                                     <Users className="w-4 h-4 text-primary" />
@@ -445,7 +572,7 @@ export default function AnnouncementsEdit({
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-5 pt-0 space-y-4">
-                                <div>
+                                <div data-tour="edit-priority-selector">
                                     <Label className="text-xs font-semibold text-foreground block mb-1.5">
                                         Urgency Level
                                     </Label>
@@ -459,7 +586,7 @@ export default function AnnouncementsEdit({
                                                 type="button"
                                                 key={p.id}
                                                 onClick={() => setData('priority', p.id as any)}
-                                                className={`py-1.5 text-xs font-semibold rounded-lg border text-center transition-all ${
+                                                className={`py-1.5 text-xs font-semibold rounded-lg border text-center transition-all cursor-pointer ${
                                                     data.priority === p.id ? p.color + ' shadow-xs' : 'border-border text-muted-foreground'
                                                 }`}
                                             >
@@ -469,7 +596,7 @@ export default function AnnouncementsEdit({
                                     </div>
                                 </div>
 
-                                <div>
+                                <div data-tour="edit-category-select">
                                     <Label className="text-xs font-semibold text-foreground block mb-1.5">
                                         Category
                                     </Label>
@@ -493,14 +620,14 @@ export default function AnnouncementsEdit({
                             </CardContent>
                         </Card>
 
-                        <Card className="rounded-2xl border border-border/80 shadow-xs bg-card">
+                        <Card data-tour="edit-governance-options" className="rounded-2xl border border-border/80 shadow-xs bg-card">
                             <CardHeader className="p-5 pb-3">
                                 <CardTitle className="text-sm font-semibold text-foreground">
                                     Governance
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-5 pt-0 space-y-4 text-xs">
-                                <div className="flex items-center justify-between gap-3">
+                                <div data-tour="edit-esign-switch" className="flex items-center justify-between gap-3">
                                     <div>
                                         <p className="font-semibold text-foreground">Require Acknowledgment</p>
                                         <p className="text-muted-foreground text-[11px]">E-Sign tracking active</p>
@@ -538,7 +665,8 @@ export default function AnnouncementsEdit({
                         <Button
                             type="submit"
                             disabled={processing}
-                            className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-2xl shadow-sm gap-2 text-sm"
+                            data-tour="edit-save-btn"
+                            className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-2xl shadow-sm gap-2 text-sm cursor-pointer"
                         >
                             <Save className="w-4 h-4" />
                             <span>{processing ? 'Saving Changes...' : 'Save Circular Changes'}</span>
@@ -546,6 +674,14 @@ export default function AnnouncementsEdit({
                     </div>
                 </div>
             </form>
+
+            {/* Guided Tour Spotlight */}
+            <InteractiveTour
+                steps={announcementEditTourSteps}
+                isOpen={isTourOpen}
+                onClose={() => setIsTourOpen(false)}
+                tourTitle="Edit circular tour"
+            />
         </AuthenticatedLayout>
     );
 }

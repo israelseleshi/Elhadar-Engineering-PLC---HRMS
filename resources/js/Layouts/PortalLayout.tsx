@@ -4,6 +4,7 @@ import { ShieldCheck, LogOut, Menu, X, UserCheck, LayoutDashboard, Megaphone, Ch
 import { Button } from '@/Components/ui/button';
 import { ThemeToggle } from '@/Components/ThemeToggle';
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import EmployeeAvatar from '@/Components/EmployeeAvatar';
 import { formatEthPhone } from '@/lib/utils';
 import { Toaster } from '@/Components/ui/sonner';
 import { toast } from 'sonner';
@@ -236,9 +237,7 @@ export default function PortalLayout({ title, subtitle, children }: PropsWithChi
                     <div className="p-3 border-t border-border/70 bg-card/50">
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 overflow-hidden">
-                                <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold uppercase shrink-0">
-                                    {user.name.charAt(0)}
-                                </div>
+                                <EmployeeAvatar name={user.name} src={(user as any).profile_photo_url} size="sm" />
                                 {!sidebarCollapsed && (
                                     <div className="overflow-hidden min-w-0">
                                         <p className="text-xs font-semibold text-foreground truncate">{user.name}</p>
@@ -310,7 +309,7 @@ export default function PortalLayout({ title, subtitle, children }: PropsWithChi
                             </nav>
                             <div className="pt-4 border-t border-border">
                                 <div className="flex items-center gap-2.5 mb-3">
-                                    <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold uppercase shrink-0">{user.name.charAt(0)}</div>
+                                    <EmployeeAvatar name={user.name} src={(user as any).profile_photo_url} size="sm" />
                                     <div className="overflow-hidden">
                                         <p className="text-sm font-semibold text-foreground truncate leading-none">{user.name}</p>
                                         <p className="text-xs text-muted-foreground truncate mt-0.5">{displayPhone}</p>

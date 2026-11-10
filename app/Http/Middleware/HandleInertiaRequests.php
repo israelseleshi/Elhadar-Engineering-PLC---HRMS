@@ -51,7 +51,7 @@ class HandleInertiaRequests extends Middleware
 
         if ($user) {
             if (! $user->relationLoaded('employee')) {
-                $user->load(['employee:id,user_id,phone,position,department_id,full_name,status', 'employee.department:id,name']);
+                $user->load(['employee:id,user_id,phone,position,department_id,full_name,status,profile_photo_path', 'employee.department:id,name']);
             }
 
             if ($user->canApproveLeave()) {

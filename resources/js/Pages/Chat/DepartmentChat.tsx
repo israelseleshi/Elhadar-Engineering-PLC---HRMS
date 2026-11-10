@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
 import axios from 'axios';
 import {
     ArrowUp,
@@ -14,22 +13,22 @@ import {
     FolderArchive,
     Hash,
     Image as ImageIcon,
-    Info,
     MessageSquare,
+    MessageSquarePlus,
     Paperclip,
     Pin,
     PinOff,
-    Plus,
     Reply,
     Search,
-    Send,
-    Smile,
-    Trash2,
+    Shield,
+    Sparkles,
+    User as UserIcon,
     Users,
     X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import getEchoInstance from '@/echo';
+import EmployeeAvatar from '@/Components/EmployeeAvatar';
 import ChatVaultDrawer from './Partials/ChatVaultDrawer';
 import ReadReceiptsModal from './Partials/ReadReceiptsModal';
 
@@ -44,6 +43,17 @@ interface Channel {
     is_all_company: boolean;
     member_count: number;
     unread_count: number;
+    type?: 'department' | 'direct';
+    colleague?: {
+        id: number;
+        name: string;
+        role: string;
+        position: string;
+        department: string;
+        phone: string;
+        initials: string;
+        profile_photo_url?: string | null;
+    } | null;
     last_message: {
         body: string;
         type: string;
@@ -84,6 +94,7 @@ interface ChatMessage {
         name: string;
         role: string;
         initials: string;
+        profile_photo_url?: string | null;
     };
     reply_to: {
         id: number;
@@ -94,8 +105,23 @@ interface ChatMessage {
     reactions: MessageReaction[];
 }
 
+interface SearchedColleague {
+    id: number;
+    employee_id: number;
+    name: string;
+    role: string;
+    position: string;
+    department: string;
+    phone: string;
+    initials: string;
+    profile_photo_url?: string | null;
+    has_conversation: boolean;
+    conversation_id: number | null;
+}
+
 interface Props {
     channels: Channel[];
+    directConversations?: Channel[];
     activeChannel: Channel;
     initialMessages: ChatMessage[];
     hasMoreMessages: boolean;
@@ -107,6 +133,7 @@ interface Props {
         department_id: number | null;
         position: string;
         initials: string;
+        profile_photo_url?: string | null;
     };
 }
 
@@ -114,12 +141,15 @@ const QUICK_EMOJIS = ['👍', '❤️', '🔥', '👏', '🎉', '💡'];
 
 export default function DepartmentChat({
     channels,
+    directConversations = [],
     activeChannel,
     initialMessages,
     hasMoreMessages: initialHasMore,
     vaultData: initialVaultData,
     currentUser,
 }: Props) {
+    const [currentActiveChannel, setCurrentActiveChannel] = useState<Channel>(activeChannel);
+    const [directs, setDirects] = useState<Channel[]>(directConversations || []);
     const [messages, setMessages] = useState<ChatMessage[]>(initialMessages || []);
     const [hasMore, setHasMore] = useState<boolean>(initialHasMore);
     const [page, setPage] = useState<number>(1);
@@ -131,20 +161,34 @@ export default function DepartmentChat({
     const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
     const [isSending, setIsSending] = useState<boolean>(false);
 
+    // Initiation / Draft mode for 1-to-1 conversations
+    const [initiatingColleague, setInitiatingColleague] = useState<SearchedColleague | null>(null);
+
     // Vault & Modals state
-    const [isVaultOpen, setIsVaultOpen] = useState<boolean>(false);
     const [vaultData, setVaultData] = useState<any>(initialVaultData);
     const [receiptsMessageId, setReceiptsMessageId] = useState<number | null>(null);
     const [pinnedMessage, setPinnedMessage] = useState<any>(initialVaultData?.pinned || null);
 
-    // Presence & UI
+    // Search & Presence state
     const [onlineUserIds, setOnlineUserIds] = useState<number[]>([]);
     const [channelSearch, setChannelSearch] = useState<string>('');
+    const [searchedColleagues, setSearchedColleagues] = useState<SearchedColleague[]>([]);
+    const [isSearchingColleagues, setIsSearchingColleagues] = useState<boolean>(false);
     const [hoveredMessageId, setHoveredMessageId] = useState<number | null>(null);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Keep active channel in sync if prop changes
+    useEffect(() => {
+        setCurrentActiveChannel(activeChannel);
+        setMessages(initialMessages || []);
+        setHasMore(initialHasMore);
+        setVaultData(initialVaultData);
+        setPinnedMessage(initialVaultData?.pinned || null);
+        setInitiatingColleague(null);
+    }, [activeChannel?.id]);
 
     // Scroll to bottom on initial load or new message
     const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
@@ -153,16 +197,39 @@ export default function DepartmentChat({
 
     useEffect(() => {
         scrollToBottom('auto');
-    }, [activeChannel?.id]);
+    }, [currentActiveChannel?.id, initiatingColleague]);
+
+    // Live search colleagues when search text is entered
+    useEffect(() => {
+        const query = channelSearch.trim();
+        if (query.length < 2) {
+            setSearchedColleagues([]);
+            setIsSearchingColleagues(false);
+            return;
+        }
+
+        setIsSearchingColleagues(true);
+        const timer = setTimeout(() => {
+            axios
+                .get(route('chat.colleagues'), { params: { search: query } })
+                .then((res) => {
+                    setSearchedColleagues(res.data.colleagues || []);
+                })
+                .catch(() => {})
+                .finally(() => setIsSearchingColleagues(false));
+        }, 250);
+
+        return () => clearTimeout(timer);
+    }, [channelSearch]);
 
     // Setup Real-Time WebSockets with Laravel Echo
     useEffect(() => {
         const echo = getEchoInstance();
-        if (!activeChannel?.id || !echo) return;
+        if (!currentActiveChannel?.id || !echo || initiatingColleague) return;
 
-        const conversationChannelName = `chat.conversation.${activeChannel.id}`;
-        const presenceChannelName = activeChannel.department_id
-            ? `presence.department.${activeChannel.department_id}`
+        const conversationChannelName = `chat.conversation.${currentActiveChannel.id}`;
+        const presenceChannelName = currentActiveChannel.department_id
+            ? `presence.department.${currentActiveChannel.department_id}`
             : null;
 
         // 1. Subscribe to conversation message events
@@ -171,14 +238,13 @@ export default function DepartmentChat({
         convChannel.listen('ChatMessageSent', (e: { message: ChatMessage }) => {
             if (e.message) {
                 setMessages((prev) => {
-                    // Prevent duplicate if already added locally
                     if (prev.some((m) => m.id === e.message.id)) return prev;
                     return [...prev, { ...e.message, is_mine: e.message.sender.id === currentUser.id }];
                 });
                 scrollToBottom();
 
                 // Auto mark as read if received in active conversation
-                axios.post(route('chat.read', activeChannel.id), { message_id: e.message.id }).catch(() => {});
+                axios.post(route('chat.read', currentActiveChannel.id), { message_id: e.message.id }).catch(() => {});
             }
         });
 
@@ -211,7 +277,7 @@ export default function DepartmentChat({
             }
         });
 
-        // 2. Subscribe to department presence channel
+        // 2. Subscribe to presence channel if available
         let presenceChannel: any = null;
         if (presenceChannelName) {
             presenceChannel = echo.join(presenceChannelName);
@@ -233,18 +299,18 @@ export default function DepartmentChat({
                 echo.leave(presenceChannelName);
             }
         };
-    }, [activeChannel?.id, currentUser.id]);
+    }, [currentActiveChannel?.id, currentUser.id, initiatingColleague]);
 
     // Handle Infinite Scrolling up for older messages
     const handleScroll = () => {
-        if (!messagesContainerRef.current || loadingMore || !hasMore) return;
+        if (!messagesContainerRef.current || loadingMore || !hasMore || initiatingColleague) return;
 
         if (messagesContainerRef.current.scrollTop === 0) {
             const currentScrollHeight = messagesContainerRef.current.scrollHeight;
             setLoadingMore(true);
 
             axios
-                .get(route('chat.messages', activeChannel.id), {
+                .get(route('chat.messages', currentActiveChannel.id), {
                     params: { page: page + 1 },
                 })
                 .then((res) => {
@@ -254,7 +320,6 @@ export default function DepartmentChat({
                         setPage((p) => p + 1);
                         setHasMore(res.data.has_more);
 
-                        // Maintain scroll position after prepending
                         requestAnimationFrame(() => {
                             if (messagesContainerRef.current) {
                                 const newScrollHeight = messagesContainerRef.current.scrollHeight;
@@ -270,7 +335,7 @@ export default function DepartmentChat({
         }
     };
 
-    // Send Message
+    // Send Message (Channel or Direct)
     const handleSendMessage = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         const trimmed = inputText.trim();
@@ -281,13 +346,50 @@ export default function DepartmentChat({
         const formData = new FormData();
         if (trimmed) formData.append('body', trimmed);
         if (replyTo) formData.append('reply_to_id', String(replyTo.id));
-
         selectedFiles.forEach((file) => {
             formData.append('files[]', file);
         });
 
+        // 1. If currently in 1-to-1 initiation mode:
+        if (initiatingColleague) {
+            try {
+                const res = await axios.post(
+                    route('chat.direct.start', initiatingColleague.id),
+                    formData,
+                    { headers: { 'Content-Type': 'multipart/form-data' } }
+                );
+
+                if (res.data.success && res.data.conversation) {
+                    const newConv = res.data.conversation;
+                    const newMsg = res.data.message;
+
+                    setDirects((prev) => [newConv, ...prev.filter((d) => d.id !== newConv.id)]);
+                    setCurrentActiveChannel(newConv);
+                    setMessages([newMsg]);
+                    setInitiatingColleague(null);
+                    setInputText('');
+                    setSelectedFiles([]);
+                    setReplyTo(null);
+                    scrollToBottom();
+
+                    // Update URL without full reload
+                    window.history.pushState(null, '', route('chat.show', newConv.id));
+                    toast.success(`Direct chat started with ${initiatingColleague.name}`);
+
+                    // Fetch fresh vault
+                    axios.get(route('chat.vault', newConv.id)).then((vRes) => setVaultData(vRes.data));
+                }
+            } catch (err: any) {
+                toast.error(err.response?.data?.message || 'Failed to start direct conversation.');
+            } finally {
+                setIsSending(false);
+            }
+            return;
+        }
+
+        // 2. Normal message in active conversation
         try {
-            const res = await axios.post(route('chat.send', activeChannel.id), formData, {
+            const res = await axios.post(route('chat.send', currentActiveChannel.id), formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 
@@ -298,9 +400,8 @@ export default function DepartmentChat({
                 setReplyTo(null);
                 scrollToBottom();
 
-                // Refresh vault data if files were attached
                 if (selectedFiles.length > 0) {
-                    axios.get(route('chat.vault', activeChannel.id)).then((vRes) => setVaultData(vRes.data));
+                    axios.get(route('chat.vault', currentActiveChannel.id)).then((vRes) => setVaultData(vRes.data));
                 }
             }
         } catch (err: any) {
@@ -327,7 +428,7 @@ export default function DepartmentChat({
     // Toggle Pin Message
     const handleTogglePin = async (messageId: number) => {
         try {
-            const res = await axios.post(route('chat.pin', { conversation: activeChannel.id, messageId }));
+            const res = await axios.post(route('chat.pin', { conversation: currentActiveChannel.id, messageId }));
             if (res.data.success) {
                 setPinnedMessage(res.data.pinned);
                 toast.success(res.data.pinned ? 'Message pinned to channel top' : 'Message unpinned');
@@ -337,11 +438,62 @@ export default function DepartmentChat({
         }
     };
 
-    // Filter Channels List
+    // Colleague selection from Search or Vault
+    const handleSelectColleague = (colleague: SearchedColleague | any) => {
+        // If it's myself, do nothing
+        if (Number(colleague.id) === Number(currentUser.id)) return;
+
+        // Check if we already have an active direct conversation in state
+        const existing = directs.find(
+            (d) => Number(d.colleague?.id) === Number(colleague.id) || Number(d.id) === Number(colleague.conversation_id)
+        );
+
+        if (existing) {
+            setInitiatingColleague(null);
+            setChannelSearch('');
+            setSearchedColleagues([]);
+            if (existing.id === currentActiveChannel.id) {
+                return;
+            }
+            router.visit(route('chat.show', existing.id));
+            return;
+        }
+
+        // If no existing conversation: activate initiation prompt state in center pane
+        setInitiatingColleague({
+            id: colleague.id,
+            employee_id: colleague.employee_id || 0,
+            name: colleague.name,
+            role: colleague.role || 'Employee',
+            position: colleague.position || 'Staff Member',
+            department: colleague.department || 'Staff',
+            phone: colleague.phone || '—',
+            initials: colleague.initials || colleague.name.slice(0, 2).toUpperCase(),
+            profile_photo_url: colleague.profile_photo_url || null,
+            has_conversation: false,
+            conversation_id: null,
+        });
+        setChannelSearch('');
+        setSearchedColleagues([]);
+        setInputText('');
+        setSelectedFiles([]);
+        setReplyTo(null);
+    };
+
+    // Filter Channels & Directs List
     const filteredChannels = channels.filter((c) =>
         c.name.toLowerCase().includes(channelSearch.toLowerCase()) ||
         c.department_name.toLowerCase().includes(channelSearch.toLowerCase())
     );
+
+    const filteredDirects = directs.filter((d) =>
+        d.name.toLowerCase().includes(channelSearch.toLowerCase()) ||
+        (d.colleague?.position && d.colleague.position.toLowerCase().includes(channelSearch.toLowerCase()))
+    );
+
+    const isColleagueOnline = currentActiveChannel.colleague
+        ? onlineUserIds.includes(currentActiveChannel.colleague.id)
+        : false;
 
     const formatBytes = (bytes: number) => {
         if (!bytes || bytes === 0) return '0 B';
@@ -365,29 +517,29 @@ export default function DepartmentChat({
     return (
         <AuthenticatedLayout
             title="Department Chat & Communications"
-            subtitle="Official secure intra-department messaging and shared engineering vault"
+            subtitle="Official secure intra-department messaging, 1-to-1 direct chats, and engineering vault"
             fullHeight
         >
-            <Head title={`${activeChannel.name} - Department Chat`} />
+            <Head title={`${initiatingColleague ? initiatingColleague.name : currentActiveChannel.name} - Chat`} />
 
             <div className="flex flex-1 min-h-0 h-full w-full bg-white dark:bg-[#121214] overflow-hidden border border-gray-200 dark:border-neutral-800 rounded-2xl shadow-sm">
                 {/* ─────────────────────────────────────────────────────────── */}
-                {/* 1. LEFT PANE: Channel Switcher & Department Rooms           */}
+                {/* 1. LEFT PANE: Workspaces, Direct Messages & Search          */}
                 {/* ─────────────────────────────────────────────────────────── */}
                 <aside className="w-72 lg:w-80 border-r border-gray-200 dark:border-neutral-800 bg-gray-50/70 dark:bg-[#18181b]/70 flex flex-col shrink-0">
                     {/* Header & Search */}
-                    <div className="p-3.5 border-b border-gray-200 dark:border-neutral-800">
-                        <div className="flex items-center justify-between mb-3">
+                    <div className="p-3 border-b border-gray-200 dark:border-neutral-800">
+                        <div className="flex items-center justify-between mb-2.5">
                             <div className="flex items-center gap-2">
                                 <div className="w-7 h-7 rounded-lg bg-[#0066cc] text-white flex items-center justify-center font-bold text-xs shadow-xs">
                                     <MessageSquare className="w-4 h-4" />
                                 </div>
                                 <h2 className="text-sm font-semibold text-gray-900 dark:text-white tracking-tight">
-                                    Workspaces
+                                    Communications
                                 </h2>
                             </div>
                             <span className="text-[11px] font-medium text-gray-400 bg-gray-200/60 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
-                                {channels.length} {channels.length === 1 ? 'room' : 'rooms'}
+                                {channels.length + directs.length} active
                             </span>
                         </div>
 
@@ -395,132 +547,357 @@ export default function DepartmentChat({
                             <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Search department rooms..."
+                                placeholder="Search channels or colleagues..."
                                 value={channelSearch}
                                 onChange={(e) => setChannelSearch(e.target.value)}
                                 className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 focus:outline-none focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc] dark:text-white transition"
                             />
+                            {channelSearch && (
+                                <button
+                                    onClick={() => setChannelSearch('')}
+                                    className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                >
+                                    <X className="w-3.5 h-3.5" />
+                                </button>
+                            )}
                         </div>
                     </div>
 
-                    {/* Channels List */}
-                    <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                        {filteredChannels.map((channel) => {
-                            const isActive = channel.id === activeChannel.id;
-                            return (
-                                <Link
-                                    key={channel.id}
-                                    href={route('chat.show', channel.id)}
-                                    className={`group flex items-start gap-3 p-2.5 rounded-xl transition text-left relative ${
-                                        isActive
-                                            ? 'bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/40 text-blue-950 dark:text-blue-100 shadow-xs'
-                                            : 'hover:bg-gray-100/80 dark:hover:bg-neutral-800/50 text-gray-700 dark:text-gray-300'
-                                    }`}
-                                >
-                                    <div
-                                        className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 font-semibold text-xs transition ${
-                                            isActive
-                                                ? 'bg-[#0066cc] text-white shadow-sm'
-                                                : 'bg-white dark:bg-neutral-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-neutral-700 group-hover:border-gray-300'
-                                        }`}
-                                    >
-                                        {channel.is_all_company ? (
-                                            <Users className="w-4 h-4" />
-                                        ) : (
-                                            <Hash className="w-4 h-4" />
+                    {/* Scrollable Channels & Direct Messages List */}
+                    <div className="flex-1 overflow-y-auto p-2 space-y-3">
+                        {/* ─── Search Results View (when typing in search) ─── */}
+                        {channelSearch.trim().length > 0 ? (
+                            <div className="space-y-3">
+                                {/* Matched Workspaces */}
+                                {filteredChannels.length > 0 && (
+                                    <div>
+                                        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase px-2 mb-1 tracking-wider">
+                                            Workspaces
+                                        </p>
+                                        <div className="space-y-1">
+                                            {filteredChannels.map((channel) => (
+                                                <Link
+                                                    key={channel.id}
+                                                    href={route('chat.show', channel.id)}
+                                                    className="flex items-center gap-2.5 p-2 rounded-xl text-xs hover:bg-gray-100 dark:hover:bg-neutral-800 transition"
+                                                >
+                                                    <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-[#0066cc] flex items-center justify-center shrink-0">
+                                                        {channel.is_all_company ? <Users className="w-3.5 h-3.5" /> : <Hash className="w-3.5 h-3.5" />}
+                                                    </div>
+                                                    <span className="truncate font-medium text-gray-800 dark:text-gray-200">{channel.name}</span>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Matched Direct Chats */}
+                                {filteredDirects.length > 0 && (
+                                    <div>
+                                        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase px-2 mb-1 tracking-wider">
+                                            Existing Direct Chats
+                                        </p>
+                                        <div className="space-y-1">
+                                            {filteredDirects.map((d) => (
+                                                <Link
+                                                    key={d.id}
+                                                    href={route('chat.show', d.id)}
+                                                    className="flex items-center gap-2.5 p-2 rounded-xl text-xs hover:bg-gray-100 dark:hover:bg-neutral-800 transition"
+                                                >
+                                                    <EmployeeAvatar
+                                                        name={d.name}
+                                                        src={d.colleague?.profile_photo_url}
+                                                        size="xs"
+                                                        className="shrink-0"
+                                                    />
+                                                    <div className="min-w-0">
+                                                        <p className="truncate font-medium text-gray-800 dark:text-gray-200">{d.name}</p>
+                                                        <p className="truncate text-[10px] text-gray-400">{d.colleague?.position}</p>
+                                                    </div>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Matched Staff Colleagues to Start 1-to-1 Chat */}
+                                <div>
+                                    <div className="flex items-center justify-between px-2 mb-1">
+                                        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                                            Colleagues (Start Chat)
+                                        </p>
+                                        {isSearchingColleagues && (
+                                            <div className="w-3 h-3 border border-[#0066cc] border-t-transparent rounded-full animate-spin" />
                                         )}
                                     </div>
 
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between">
-                                            <p
-                                                className={`text-xs font-semibold truncate ${
-                                                    isActive ? 'text-[#0066cc] dark:text-blue-400' : 'text-gray-900 dark:text-white'
-                                                }`}
-                                            >
-                                                {channel.name}
-                                            </p>
-                                            {channel.unread_count > 0 && (
-                                                <span className="w-4 h-4 rounded-full bg-[#0066cc] text-white text-[10px] font-bold flex items-center justify-center shrink-0 animate-pulse">
-                                                    {channel.unread_count}
-                                                </span>
-                                            )}
+                                    {searchedColleagues.length === 0 && !isSearchingColleagues ? (
+                                        <p className="text-[11px] text-gray-400 px-2 py-1">No colleagues found.</p>
+                                    ) : (
+                                        <div className="space-y-1">
+                                            {searchedColleagues.map((colleague) => (
+                                                <button
+                                                    key={colleague.id}
+                                                    onClick={() => handleSelectColleague(colleague)}
+                                                    className="w-full text-left flex items-center justify-between p-2 rounded-xl text-xs hover:bg-blue-50/70 dark:hover:bg-neutral-800 transition group border border-transparent hover:border-blue-200/50"
+                                                >
+                                                    <div className="flex items-center gap-2.5 min-w-0">
+                                                        <EmployeeAvatar
+                                                            name={colleague.name}
+                                                            src={colleague.profile_photo_url}
+                                                            size="xs"
+                                                            className="shrink-0"
+                                                        />
+                                                        <div className="min-w-0">
+                                                            <p className="font-semibold text-gray-900 dark:text-white truncate">
+                                                                {colleague.name}
+                                                            </p>
+                                                            <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
+                                                                {colleague.position} • {colleague.department}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-[10px] font-semibold text-[#0066cc] dark:text-blue-400 shrink-0 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-full group-hover:bg-[#0066cc] group-hover:text-white transition">
+                                                        {colleague.has_conversation ? 'Open' : '+ Chat'}
+                                                    </span>
+                                                </button>
+                                            ))}
                                         </div>
-
-                                        <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                                            {channel.last_message
-                                                ? `${channel.last_message.sender_name}: ${channel.last_message.body}`
-                                                : channel.department_name}
-                                        </p>
-
-                                        <div className="flex items-center gap-1.5 mt-1 text-[10px] text-gray-400 dark:text-gray-500">
-                                            <span>{channel.member_count} staff</span>
-                                            {channel.is_read_only && (
-                                                <>
-                                                    <span>•</span>
-                                                    <span className="text-amber-600 dark:text-amber-400">Broadcast Only</span>
-                                                </>
-                                            )}
-                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            /* ─── Default Sidebar View (Workspaces + Direct Messages) ─── */
+                            <>
+                                {/* Section A: Workspaces */}
+                                <div>
+                                    <div className="px-2 mb-1.5 flex items-center justify-between">
+                                        <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                                            Workspaces
+                                        </span>
+                                        <span className="text-[10px] text-gray-400 font-medium">
+                                            {channels.length}
+                                        </span>
                                     </div>
-                                </Link>
-                            );
-                        })}
+
+                                    <div className="space-y-1">
+                                        {channels.map((channel) => {
+                                            const isActive = !initiatingColleague && channel.id === currentActiveChannel.id;
+                                            return (
+                                                <Link
+                                                    key={channel.id}
+                                                    href={route('chat.show', channel.id)}
+                                                    className={`group flex items-start gap-2.5 p-2 rounded-xl transition text-left relative ${
+                                                        isActive
+                                                            ? 'bg-blue-50/90 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/40 text-blue-950 dark:text-blue-100 shadow-xs'
+                                                            : 'hover:bg-gray-100/80 dark:hover:bg-neutral-800/50 text-gray-700 dark:text-gray-300'
+                                                    }`}
+                                                >
+                                                    <div
+                                                        className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-semibold text-xs transition ${
+                                                            isActive
+                                                                ? 'bg-[#0066cc] text-white shadow-xs'
+                                                                : 'bg-white dark:bg-neutral-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-neutral-700'
+                                                        }`}
+                                                    >
+                                                        {channel.is_all_company ? (
+                                                            <Users className="w-3.5 h-3.5" />
+                                                        ) : (
+                                                            <Hash className="w-3.5 h-3.5" />
+                                                        )}
+                                                    </div>
+
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center justify-between">
+                                                            <p className={`text-xs font-semibold truncate ${isActive ? 'text-[#0066cc] dark:text-blue-400' : 'text-gray-900 dark:text-white'}`}>
+                                                                {channel.name}
+                                                            </p>
+                                                            {channel.unread_count > 0 && (
+                                                                <span className="w-4 h-4 rounded-full bg-[#0066cc] text-white text-[10px] font-bold flex items-center justify-center shrink-0 animate-pulse">
+                                                                    {channel.unread_count}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                                                            {channel.last_message ? channel.last_message.body : channel.department_name}
+                                                        </p>
+                                                    </div>
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Section B: Direct Messages */}
+                                <div className="pt-2 border-t border-gray-200/60 dark:border-neutral-800">
+                                    <div className="px-2 mb-1.5 flex items-center justify-between">
+                                        <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                                            Direct Messages
+                                        </span>
+                                        <span className="text-[10px] text-gray-400 font-medium">
+                                            {directs.length}
+                                        </span>
+                                    </div>
+
+                                    {directs.length === 0 ? (
+                                        <div className="px-3 py-3 text-center rounded-xl bg-gray-100/50 dark:bg-neutral-900/30 border border-dashed border-gray-200 dark:border-neutral-800">
+                                            <MessageSquarePlus className="w-5 h-5 mx-auto mb-1 text-gray-400" />
+                                            <p className="text-[11px] font-medium text-gray-600 dark:text-gray-300">No direct chats yet</p>
+                                            <p className="text-[10px] text-gray-400 mt-0.5">Click any colleague in the Staff Vault to start chatting.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-1">
+                                            {directs.map((direct) => {
+                                                const isActive = !initiatingColleague && direct.id === currentActiveChannel.id;
+                                                const isOnline = direct.colleague ? onlineUserIds.includes(direct.colleague.id) : false;
+
+                                                return (
+                                                    <Link
+                                                        key={direct.id}
+                                                        href={route('chat.show', direct.id)}
+                                                        className={`group flex items-start gap-2.5 p-2 rounded-xl transition text-left relative ${
+                                                            isActive
+                                                                ? 'bg-blue-50/90 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/40 text-blue-950 dark:text-blue-100 shadow-xs'
+                                                                : 'hover:bg-gray-100/80 dark:hover:bg-neutral-800/50 text-gray-700 dark:text-gray-300'
+                                                        }`}
+                                                    >
+                                                        <div className="relative shrink-0">
+                                                            <EmployeeAvatar
+                                                                name={direct.name}
+                                                                src={direct.colleague?.profile_photo_url}
+                                                                size="sm"
+                                                            />
+                                                            {isOnline && (
+                                                                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-neutral-900" />
+                                                            )}
+                                                        </div>
+
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center justify-between">
+                                                                <p className={`text-xs font-semibold truncate ${isActive ? 'text-[#0066cc] dark:text-blue-400' : 'text-gray-900 dark:text-white'}`}>
+                                                                    {direct.name}
+                                                                </p>
+                                                                {direct.unread_count > 0 && (
+                                                                    <span className="w-4 h-4 rounded-full bg-[#0066cc] text-white text-[10px] font-bold flex items-center justify-center shrink-0 animate-pulse">
+                                                                        {direct.unread_count}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                                                                {direct.last_message ? direct.last_message.body : direct.description}
+                                                            </p>
+                                                        </div>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            </>
+                        )}
                     </div>
                 </aside>
 
                 {/* ─────────────────────────────────────────────────────────── */}
-                {/* 2. CENTER PANE: Active Conversation Stream & Composer       */}
+                {/* 2. CENTER PANE: Conversation Stream & Composer              */}
                 {/* ─────────────────────────────────────────────────────────── */}
                 <main className="flex-1 flex flex-col h-full min-w-0 bg-white dark:bg-[#121214]">
-                    {/* Channel Top Bar */}
+                    {/* Channel / Colleague Top Bar */}
                     <div className="px-5 py-3 border-b border-gray-200 dark:border-neutral-800 flex items-center justify-between bg-white dark:bg-[#121214] shrink-0">
-                        <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#0066cc] dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center font-bold text-sm shrink-0">
-                                {activeChannel.is_all_company ? <Users className="w-4 h-4" /> : <Hash className="w-4 h-4" />}
-                            </div>
-                            <div className="min-w-0">
-                                <h1 className="text-sm font-semibold text-gray-900 dark:text-white truncate flex items-center gap-2">
-                                    <span>{activeChannel.name}</span>
-                                    {activeChannel.is_all_company && (
-                                        <span className="text-[10px] font-medium bg-blue-100 dark:bg-blue-950/60 text-[#0066cc] dark:text-blue-300 px-2 py-0.5 rounded-full">
-                                            All Company
-                                        </span>
-                                    )}
-                                </h1>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate flex items-center gap-2">
-                                    <span>{activeChannel.member_count} members</span>
-                                    <span>•</span>
-                                    <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                        {onlineUserIds.length > 0 ? `${onlineUserIds.length} online now` : 'Active'}
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
+                        {initiatingColleague ? (
+                            /* Top Bar: 1-to-1 Initiation State */
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <EmployeeAvatar
+                                        name={initiatingColleague.name}
+                                        src={initiatingColleague.profile_photo_url}
+                                        size="sm"
+                                        className="shrink-0"
+                                    />
+                                    <div className="min-w-0">
+                                        <h1 className="text-sm font-semibold text-gray-900 dark:text-white truncate flex items-center gap-1.5">
+                                            <span>Chat with {initiatingColleague.name}</span>
+                                            {['HRAdmin', 'SysAdmin', 'SuperAdmin'].includes(initiatingColleague.role) && (
+                                                <Shield className="w-3.5 h-3.5 text-[#0066cc]" />
+                                            )}
+                                        </h1>
+                                        <p className="text-xs text-[#0066cc] dark:text-blue-400 truncate font-medium">
+                                            {initiatingColleague.position} • {initiatingColleague.department}
+                                        </p>
+                                    </div>
+                                </div>
 
-                        {/* Top Action Buttons */}
-                        <div className="flex items-center gap-2 shrink-0">
-                            <button
-                                onClick={() => setIsVaultOpen(!isVaultOpen)}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition flex items-center gap-1.5 ${
-                                    isVaultOpen
-                                        ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-sm'
-                                        : 'bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-neutral-700 hover:bg-gray-100'
-                                }`}
-                                title="Open Shared Media & Documents Vault"
-                            >
-                                <FolderArchive className="w-3.5 h-3.5" />
-                                <span className="hidden sm:inline">Shared Vault</span>
-                                <span className="text-[10px] opacity-80">
-                                    ({(vaultData?.files?.length || 0) + (vaultData?.media?.length || 0)})
-                                </span>
-                            </button>
-                        </div>
+                                <button
+                                    onClick={() => setInitiatingColleague(null)}
+                                    className="px-2.5 py-1 text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 transition flex items-center gap-1 shrink-0"
+                                    title="Cancel and return to channel"
+                                >
+                                    <X className="w-3.5 h-3.5" />
+                                    <span>Cancel</span>
+                                </button>
+                            </div>
+                        ) : (
+                            /* Top Bar: Standard Active Channel / Active Direct Chat */
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    {currentActiveChannel.type === 'direct' ? (
+                                        <div className="relative shrink-0">
+                                            <EmployeeAvatar
+                                                name={currentActiveChannel.name}
+                                                src={currentActiveChannel.colleague?.profile_photo_url}
+                                                size="sm"
+                                            />
+                                            {isColleagueOnline && (
+                                                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-neutral-900" />
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#0066cc] dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center font-bold text-sm shrink-0">
+                                            {currentActiveChannel.is_all_company ? <Users className="w-4 h-4" /> : <Hash className="w-4 h-4" />}
+                                        </div>
+                                    )}
+
+                                    <div className="min-w-0">
+                                        <h1 className="text-sm font-semibold text-gray-900 dark:text-white truncate flex items-center gap-2">
+                                            <span>{currentActiveChannel.name}</span>
+                                            {currentActiveChannel.type === 'direct' ? (
+                                                <span className="text-[10px] font-medium bg-blue-100 dark:bg-blue-950/60 text-[#0066cc] dark:text-blue-300 px-2 py-0.5 rounded-full">
+                                                    Direct 1-on-1
+                                                </span>
+                                            ) : currentActiveChannel.is_all_company && (
+                                                <span className="text-[10px] font-medium bg-blue-100 dark:bg-blue-950/60 text-[#0066cc] dark:text-blue-300 px-2 py-0.5 rounded-full">
+                                                    All Company
+                                                </span>
+                                            )}
+                                        </h1>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate flex items-center gap-2">
+                                            {currentActiveChannel.type === 'direct' ? (
+                                                <>
+                                                    <span>{currentActiveChannel.colleague?.position || 'Colleague'}</span>
+                                                    <span>•</span>
+                                                    <span className={isColleagueOnline ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-gray-400'}>
+                                                        {isColleagueOnline ? 'Online now' : currentActiveChannel.colleague?.department || 'Staff'}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span>{currentActiveChannel.member_count} members</span>
+                                                    <span>•</span>
+                                                    <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                        {onlineUserIds.length > 0 ? `${onlineUserIds.length} online now` : 'Active'}
+                                                    </span>
+                                                </>
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Pinned Announcement Bar (if present) */}
-                    {pinnedMessage && (
+                    {pinnedMessage && !initiatingColleague && (
                         <div className="px-5 py-2 bg-blue-50/70 dark:bg-blue-950/30 border-b border-blue-100 dark:border-blue-900/40 flex items-center justify-between gap-3 text-xs">
                             <div className="flex items-center gap-2 min-w-0">
                                 <Pin className="w-3.5 h-3.5 text-[#0066cc] shrink-0 fill-current" />
@@ -559,16 +936,44 @@ export default function DepartmentChat({
                             </div>
                         )}
 
-                        {messages.length === 0 ? (
+                        {/* ─── Initiation View (if user clicked colleague who has not conversed yet) ─── */}
+                        {initiatingColleague ? (
+                            <div className="h-full flex flex-col items-center justify-center text-center p-8">
+                                <EmployeeAvatar
+                                    name={initiatingColleague.name}
+                                    src={initiatingColleague.profile_photo_url}
+                                    size="hero"
+                                    className="mb-3 shadow-lg ring-4 ring-blue-50 dark:ring-blue-950/40"
+                                />
+                                <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                                    Start a conversation with {initiatingColleague.name}
+                                </h3>
+                                <p className="text-xs text-[#0066cc] dark:text-blue-400 font-semibold mt-1">
+                                    {initiatingColleague.position} • {initiatingColleague.department}
+                                </p>
+
+                                <div className="max-w-md mt-5 p-4 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/70 dark:border-blue-900/40 text-xs text-gray-700 dark:text-gray-300 space-y-2">
+                                    <p className="font-medium flex items-center justify-center gap-1.5 text-blue-950 dark:text-blue-200">
+                                        <Sparkles className="w-4 h-4 text-[#0066cc]" />
+                                        <span>No previous messages found</span>
+                                    </p>
+                                    <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                                        Send a message below to begin this private 1-on-1 direct conversation. Files, CAD drawings, and documents sent here will be confidential between the two of you.
+                                    </p>
+                                </div>
+                            </div>
+                        ) : messages.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-center p-8 text-gray-400 dark:text-gray-500">
                                 <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-[#0066cc] flex items-center justify-center mb-3">
                                     <MessageSquare className="w-6 h-6" />
                                 </div>
                                 <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                    Welcome to {activeChannel.name}
+                                    Welcome to {currentActiveChannel.name}
                                 </h3>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mt-1">
-                                    This is the official departmental communication channel. Share site logs, CAD drawings, spreadsheets, or collaborate with colleagues.
+                                    {currentActiveChannel.type === 'direct'
+                                        ? 'This is the start of your direct messaging stream. Send messages and share engineering files.'
+                                        : 'This is the official departmental communication channel. Share site logs, CAD drawings, spreadsheets, or collaborate with colleagues.'}
                                 </p>
                             </div>
                         ) : (
@@ -583,16 +988,16 @@ export default function DepartmentChat({
                                         onMouseLeave={() => setHoveredMessageId(null)}
                                         className={`group relative flex gap-3 ${isMine ? 'justify-end' : 'justify-start'}`}
                                     >
-                                        {/* Colleague Avatar */}
                                         {!isMine && (
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-medium text-xs flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-                                                {message.sender.initials}
-                                            </div>
+                                            <EmployeeAvatar
+                                                name={message.sender.name}
+                                                src={message.sender.profile_photo_url}
+                                                size="sm"
+                                                className="mt-0.5 shrink-0"
+                                            />
                                         )}
 
-                                        {/* Message Bubble Container */}
                                         <div className={`max-w-[85%] sm:max-w-md lg:max-w-lg flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
-                                            {/* Sender Name & Role */}
                                             {!isMine && (
                                                 <div className="flex items-center gap-2 mb-1 px-1">
                                                     <span className="text-xs font-semibold text-gray-900 dark:text-gray-200">
@@ -604,7 +1009,6 @@ export default function DepartmentChat({
                                                 </div>
                                             )}
 
-                                            {/* Bubble */}
                                             <div
                                                 className={`rounded-2xl px-4 py-2.5 shadow-xs transition-all relative ${
                                                     isMine
@@ -612,7 +1016,6 @@ export default function DepartmentChat({
                                                         : 'bg-gray-100/90 dark:bg-neutral-800/90 text-gray-900 dark:text-gray-100 rounded-bl-xs border border-gray-200/60 dark:border-neutral-700/60'
                                                 }`}
                                             >
-                                                {/* Quoted Reply Snippet */}
                                                 {message.reply_to && (
                                                     <div
                                                         className={`mb-2 p-2 rounded-lg text-xs border-l-2 ${
@@ -630,14 +1033,12 @@ export default function DepartmentChat({
                                                     </div>
                                                 )}
 
-                                                {/* Message Text Body */}
                                                 {message.body && (
                                                     <p className="text-xs sm:text-sm whitespace-pre-wrap break-words leading-relaxed">
                                                         {message.body}
                                                     </p>
                                                 )}
 
-                                                {/* Attachments Section */}
                                                 {message.attachments && message.attachments.length > 0 && (
                                                     <div className="mt-2 space-y-1.5">
                                                         {message.attachments.map((att) => (
@@ -652,24 +1053,15 @@ export default function DepartmentChat({
                                                                 <div className="flex items-center gap-2 min-w-0">
                                                                     {getFileIcon(att.file_name)}
                                                                     <div className="min-w-0">
-                                                                        <p className="font-medium truncate max-w-44" title={att.file_name}>
-                                                                            {att.file_name}
-                                                                        </p>
-                                                                        <span className="text-[10px] opacity-80">
-                                                                            {formatBytes(att.file_size)}
-                                                                        </span>
+                                                                        <p className="truncate font-medium">{att.file_name}</p>
+                                                                        <span className="text-[10px] opacity-80">{formatBytes(att.file_size)}</span>
                                                                     </div>
                                                                 </div>
                                                                 <a
                                                                     href={att.url}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
-                                                                    className={`p-1.5 rounded-lg transition shrink-0 ${
-                                                                        isMine
-                                                                            ? 'hover:bg-blue-600 text-white'
-                                                                            : 'hover:bg-gray-100 dark:hover:bg-neutral-800 text-[#0066cc]'
-                                                                    }`}
-                                                                    title="Download file"
+                                                                    className="p-1 rounded-lg hover:bg-black/10 transition shrink-0"
                                                                 >
                                                                     <Download className="w-3.5 h-3.5" />
                                                                 </a>
@@ -678,74 +1070,58 @@ export default function DepartmentChat({
                                                     </div>
                                                 )}
 
-                                                {/* Timestamp & Telegram Read Receipts */}
-                                                <div
-                                                    className={`flex items-center gap-1.5 justify-end mt-1 text-[10px] select-none ${
-                                                        isMine ? 'text-blue-200' : 'text-gray-400 dark:text-gray-500'
-                                                    }`}
-                                                >
+                                                {/* Timestamp & Telegram Checkmarks */}
+                                                <div className={`flex items-center gap-1.5 mt-1 text-[10px] ${isMine ? 'justify-end text-blue-100' : 'justify-start text-gray-400'}`}>
                                                     <span>{message.created_at_formatted}</span>
-
-                                                    {/* Telegram Read Receipt Indicators */}
-                                                    {isMine && (
+                                                    {isMine && message.read_status && (
                                                         <button
                                                             onClick={() => setReceiptsMessageId(message.id)}
-                                                            className="hover:opacity-80 transition flex items-center gap-0.5"
-                                                            title={
-                                                                message.read_status === 'read'
-                                                                    ? `Seen by ${message.seen_count} colleagues (Click to view roster)`
-                                                                    : 'Sent (Delivered to department)'
-                                                            }
+                                                            className="hover:scale-110 transition flex items-center gap-0.5"
+                                                            title={message.read_status === 'read' ? 'Seen by colleagues' : 'Delivered'}
                                                         >
                                                             {message.read_status === 'read' ? (
-                                                                <CheckCheck className="w-3.5 h-3.5 text-cyan-300 stroke-[2.5]" />
+                                                                <CheckCheck className="w-3.5 h-3.5 text-blue-200" />
                                                             ) : (
-                                                                <Check className="w-3.5 h-3.5 text-blue-200 stroke-[2]" />
+                                                                <Check className="w-3.5 h-3.5 text-blue-200/70" />
                                                             )}
                                                         </button>
                                                     )}
                                                 </div>
                                             </div>
 
-                                            {/* Reactions Row below Bubble */}
+                                            {/* Reactions Display */}
                                             {message.reactions && message.reactions.length > 0 && (
-                                                <div className="flex flex-wrap gap-1 mt-1 px-1">
-                                                    {message.reactions.map((r, i) => (
+                                                <div className="flex flex-wrap gap-1 mt-1">
+                                                    {message.reactions.map((r) => (
                                                         <button
-                                                            key={i}
+                                                            key={r.emoji}
                                                             onClick={() => handleToggleReaction(message.id, r.emoji)}
-                                                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border transition-all ${
+                                                            className={`px-2 py-0.5 text-xs rounded-full border transition flex items-center gap-1 ${
                                                                 r.has_reacted
-                                                                    ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-300 dark:border-blue-700 text-[#0066cc] dark:text-blue-300'
-                                                                    : 'bg-gray-100 dark:bg-neutral-800 border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
+                                                                    ? 'bg-blue-50 border-[#0066cc] text-[#0066cc] dark:bg-blue-950/60'
+                                                                    : 'bg-white dark:bg-neutral-800 border-gray-200 dark:border-neutral-700 text-gray-600'
                                                             }`}
                                                         >
                                                             <span>{r.emoji}</span>
-                                                            <span className="text-[10px]">{r.count}</span>
+                                                            <span className="text-[10px] font-bold">{r.count}</span>
                                                         </button>
                                                     ))}
                                                 </div>
                                             )}
                                         </div>
 
-                                        {/* Hover Floating Action Bar */}
+                                        {/* Hover Actions: Reply, Quick Emojis, Pin */}
                                         {isHovered && (
-                                            <div
-                                                className={`absolute -top-3 z-10 flex items-center gap-1 p-1 bg-white dark:bg-neutral-800 rounded-xl shadow-md border border-gray-200 dark:border-neutral-700 animate-in fade-in duration-100 ${
-                                                    isMine ? 'right-2' : 'left-10'
-                                                }`}
-                                            >
-                                                {/* Reply */}
+                                            <div className={`absolute top-0 flex items-center gap-1 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl p-1 shadow-md z-10 ${isMine ? 'right-full mr-2' : 'left-full ml-2'}`}>
                                                 <button
                                                     onClick={() => setReplyTo(message)}
-                                                    className="p-1 rounded-lg text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 transition"
+                                                    className="p-1 rounded-lg text-gray-500 hover:text-[#0066cc] hover:bg-gray-100 dark:hover:bg-neutral-700 transition"
                                                     title="Reply"
                                                 >
                                                     <Reply className="w-3.5 h-3.5" />
                                                 </button>
 
-                                                {/* Quick Emoji Reactions */}
-                                                <div className="flex items-center gap-0.5 px-1 border-x border-gray-100 dark:border-neutral-700">
+                                                <div className="flex items-center border-l border-gray-200 dark:border-neutral-700 pl-1 ml-0.5">
                                                     {QUICK_EMOJIS.map((emoji) => (
                                                         <button
                                                             key={emoji}
@@ -757,11 +1133,10 @@ export default function DepartmentChat({
                                                     ))}
                                                 </div>
 
-                                                {/* Pin Message */}
                                                 <button
                                                     onClick={() => handleTogglePin(message.id)}
                                                     className="p-1 rounded-lg text-gray-500 hover:text-[#0066cc] hover:bg-gray-100 dark:hover:bg-neutral-700 transition"
-                                                    title="Pin to channel"
+                                                    title="Pin message"
                                                 >
                                                     <Pin className="w-3.5 h-3.5" />
                                                 </button>
@@ -778,7 +1153,6 @@ export default function DepartmentChat({
                     {/* Message Composer & File Attachment Controls                 */}
                     {/* ─────────────────────────────────────────────────────────── */}
                     <div className="p-3 border-t border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#121214] shrink-0">
-                        {/* Replying Banner (if active) */}
                         {replyTo && (
                             <div className="mb-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 rounded-xl flex items-center justify-between text-xs">
                                 <div className="flex items-center gap-2 min-w-0">
@@ -793,14 +1167,12 @@ export default function DepartmentChat({
                                 <button
                                     onClick={() => setReplyTo(null)}
                                     className="p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition"
-                                    title="Cancel reply"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
                         )}
 
-                        {/* Selected Files Preview Chips */}
                         {selectedFiles.length > 0 && (
                             <div className="mb-2 flex flex-wrap gap-2">
                                 {selectedFiles.map((file, idx) => (
@@ -827,9 +1199,7 @@ export default function DepartmentChat({
                             </div>
                         )}
 
-                        {/* Input Box & Action Row */}
                         <form onSubmit={handleSendMessage} className="flex items-end gap-2">
-                            {/* Hidden File Input */}
                             <input
                                 ref={fileInputRef}
                                 type="file"
@@ -843,7 +1213,6 @@ export default function DepartmentChat({
                                 accept=".pdf,.doc,.docx,.xls,.xlsx,.dwg,.dxf,.png,.jpg,.jpeg,.zip"
                             />
 
-                            {/* Attach File Button */}
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
@@ -853,7 +1222,6 @@ export default function DepartmentChat({
                                 <Paperclip className="w-4 h-4" />
                             </button>
 
-                            {/* Text Input */}
                             <div className="flex-1 relative">
                                 <textarea
                                     value={inputText}
@@ -865,17 +1233,20 @@ export default function DepartmentChat({
                                         }
                                     }}
                                     placeholder={
-                                        activeChannel.is_read_only && !['HRAdmin', 'SysAdmin', 'Manager'].includes(currentUser.role)
+                                        initiatingColleague
+                                            ? `Message ${initiatingColleague.name}... (Press Enter to start chat)`
+                                            : currentActiveChannel.is_read_only && !['HRAdmin', 'SysAdmin', 'Manager'].includes(currentUser.role)
                                             ? 'This channel is broadcast-only for department heads...'
-                                            : `Message #${activeChannel.name}... (Press Enter to send)`
+                                            : currentActiveChannel.type === 'direct'
+                                            ? `Message ${currentActiveChannel.name}... (Press Enter to send)`
+                                            : `Message #${currentActiveChannel.name}... (Press Enter to send)`
                                     }
-                                    disabled={activeChannel.is_read_only && !['HRAdmin', 'SysAdmin', 'Manager'].includes(currentUser.role)}
+                                    disabled={!initiatingColleague && currentActiveChannel.is_read_only && !['HRAdmin', 'SysAdmin', 'Manager'].includes(currentUser.role)}
                                     rows={1}
                                     className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-gray-200 dark:border-neutral-700 bg-gray-50/50 dark:bg-neutral-900 focus:outline-none focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc] dark:text-white resize-none transition max-h-32 disabled:opacity-50"
                                 />
                             </div>
 
-                            {/* Send Button */}
                             <button
                                 type="submit"
                                 disabled={(!inputText.trim() && selectedFiles.length === 0) || isSending}
@@ -893,14 +1264,16 @@ export default function DepartmentChat({
                 </main>
 
                 {/* ─────────────────────────────────────────────────────────── */}
-                {/* 3. RIGHT PANE: Telegram Shared Media & Files Vault Drawer   */}
+                {/* 3. RIGHT PANE: Permanent Shared Media & Files Vault         */}
                 {/* ─────────────────────────────────────────────────────────── */}
                 <ChatVaultDrawer
-                    isOpen={isVaultOpen}
-                    onClose={() => setIsVaultOpen(false)}
-                    channelName={activeChannel.name}
-                    vaultData={vaultData}
+                    channelName={initiatingColleague ? initiatingColleague.name : currentActiveChannel.name}
+                    vaultData={initiatingColleague ? { media: [], files: [], members: [], pinned: null } : vaultData}
                     onlineUserIds={onlineUserIds}
+                    isDirect={initiatingColleague ? true : currentActiveChannel.type === 'direct'}
+                    colleague={initiatingColleague || currentActiveChannel.colleague}
+                    currentUser={currentUser}
+                    onSelectColleague={handleSelectColleague}
                 />
             </div>
 

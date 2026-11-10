@@ -238,4 +238,72 @@ class DepartmentChatTest extends TestCase
             'readers',
         ]);
     }
+
+    public function test_employee_can_search_colleagues_for_chat(): void
+    {
+        $dept = Department::first();
+        $user1 = User::factory()->create(['name' => 'Sara Jenkins', 'role' => 'Employee']);
+        Employee::factory()->create([
+            'user_id' => $user1->id,
+            'full_name' => 'Sara Jenkins',
+            'department_id' => $dept->id,
+            'status' => 'Permanent',
+        ]);
+
+        $user2 = User::factory()->create(['name' => 'Dawit Bekele', 'role' => 'Employee']);
+        Employee::factory()->create([
+            'user_id' => $user2->id,
+            'full_name' => 'Dawit Bekele',
+            'position' => 'Senior Site Engineer',
+            'department_id' => $dept->id,
+            'status' => 'Permanent',
+        ]);
+
+        $response = $this->actingAs($user1->fresh())->getJson(route('chat.colleagues', ['search' => 'Dawit']));
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure(['colleagues']);
+        $this->assertCount(1, $response->json('colleagues'));
+        $this->assertEquals('Dawit Bekele', $response->json('colleagues.0.name'));
+        $this->assertFalse($response->json('colleagues.0.has_conversation'));
+    }
+
+    public function test_employee_can_initiate_1_on_1_direct_chat_with_colleague(): void
+    {
+        $dept = Department::first();
+        $user1 = User::factory()->create(['name' => 'Sara Jenkins', 'role' => 'Employee']);
+        Employee::factory()->create([
+            'user_id' => $user1->id,
+            'full_name' => 'Sara Jenkins',
+            'department_id' => $dept->id,
+            'status' => 'Permanent',
+        ]);
+
+        $user2 = User::factory()->create(['name' => 'Dawit Bekele', 'role' => 'Employee']);
+        Employee::factory()->create([
+            'user_id' => $user2->id,
+            'full_name' => 'Dawit Bekele',
+            'position' => 'Senior Site Engineer',
+            'department_id' => $dept->id,
+            'status' => 'Permanent',
+        ]);
+
+        $response = $this->actingAs($user1->fresh())->postJson(route('chat.direct.start', $user2->id), [
+            'body' => 'Hello Dawit, do you have the geotechnical survey drawings?',
+        ]);
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('success', true);
+        $response->assertJsonPath('message.body', 'Hello Dawit, do you have the geotechnical survey drawings?');
+        $response->assertJsonPath('conversation.type', 'direct');
+        $response->assertJsonPath('conversation.colleague.id', $user2->id);
+
+        // Verify index now includes this direct conversation in directConversations
+        $indexResponse = $this->actingAs($user1->fresh())->get(route('chat.index'));
+        $indexResponse->assertStatus(200);
+        $indexResponse->assertInertia(fn ($page) => $page
+            ->component('Chat/DepartmentChat')
+            ->has('directConversations', 1)
+        );
+    }
 }

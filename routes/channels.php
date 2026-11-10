@@ -26,8 +26,8 @@ Broadcast::channel('presence.department.{departmentId}', function (User $user, $
         return false;
     }
 
-    // HRAdmin/SuperAdmin can monitor all rooms
-    if (in_array($user->role, ['HRAdmin', 'SuperAdmin'])) {
+    // SysAdmin technical maintenance override
+    if ($user->role === 'SysAdmin') {
         return [
             'id' => $user->id,
             'name' => $user->name,
@@ -62,7 +62,7 @@ Broadcast::channel('chat.conversation.{conversationId}', function (User $user, $
         return false;
     }
 
-    if (in_array($user->role, ['HRAdmin', 'SuperAdmin'])) {
+    if ($user->role === 'SysAdmin') {
         return true;
     }
 

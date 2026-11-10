@@ -9,6 +9,7 @@ use App\Events\ChatPinnedMessageUpdated;
 use App\Models\ChatAttachment;
 use App\Models\ChatChannelMetadata;
 use App\Models\ChatPinnedMessage;
+use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -88,12 +89,221 @@ class DepartmentChatService
     }
 
     /**
+     * Get all active direct (1-to-1) conversations for the current user.
+     */
+    public function getDirectConversations(User $user): array
+    {
+        $employee = $user->employee;
+        if (! $employee || $employee->status === 'Separated') {
+            return [];
+        }
+
+        $conversations = Conversation::where('direct_message', 1)
+            ->whereHas('participants', function ($q) use ($user) {
+                $q->where('messageable_id', $user->id)
+                    ->where('messageable_type', $user->getMorphClass());
+            })
+            ->with([
+                'participants.messageable.employee.department',
+                'last_message.participation.messageable',
+            ])
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        return $conversations->map(fn ($conv) => $this->formatDirectConversation($user, $conv))
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Format a direct conversation as a uniform channel item for frontend consumption.
+     */
+    public function formatDirectConversation(User $user, Conversation $conv): ?array
+    {
+        $conv->loadMissing([
+            'participants.messageable.employee.department',
+            'last_message.participation.messageable',
+        ]);
+
+        $otherParticipant = $conv->participants
+            ->first(function ($p) use ($user) {
+                return (int) $p->messageable_id !== (int) $user->id;
+            })?->messageable;
+
+        if (! $otherParticipant) {
+            return null;
+        }
+
+        $otherEmployee = $otherParticipant->employee;
+
+        $unreadCount = MessageNotification::where('conversation_id', $conv->id)
+            ->where('messageable_id', $user->id)
+            ->where('is_seen', 0)
+            ->count();
+
+        $lastMsg = $conv->last_message;
+        $lastMsgData = null;
+        if ($lastMsg) {
+            $lastSender = $lastMsg->participation?->messageable;
+            $lastMsgData = [
+                'body' => $lastMsg->body,
+                'type' => $lastMsg->type,
+                'created_at' => $lastMsg->created_at?->diffForHumans() ?? '',
+                'sender_name' => $lastSender?->name ?? 'Colleague',
+            ];
+        }
+
+        return [
+            'id' => $conv->id,
+            'type' => 'direct',
+            'slug' => 'direct-'.$conv->id,
+            'name' => $otherParticipant->name,
+            'description' => $otherEmployee?->position ?? 'Staff Member',
+            'department_id' => $otherEmployee?->department_id,
+            'department_name' => $otherEmployee?->department?->name ?? 'Elhadar Staff',
+            'is_read_only' => false,
+            'is_all_company' => false,
+            'member_count' => 2,
+            'unread_count' => $unreadCount,
+            'last_message' => $lastMsgData,
+            'colleague' => [
+                'id' => $otherParticipant->id,
+                'employee_id' => $otherEmployee?->id,
+                'name' => $otherParticipant->name,
+                'role' => $otherParticipant->role,
+                'position' => $otherEmployee?->position ?? 'Staff Member',
+                'department' => $otherEmployee?->department?->name ?? 'Elhadar Staff',
+                'phone' => $otherParticipant->phone ?? '—',
+                'initials' => strtoupper(substr($otherParticipant->name, 0, 2)),
+                'profile_photo_url' => $otherEmployee?->profile_photo_url,
+            ],
+        ];
+    }
+
+    /**
+     * Search colleagues across the company to initiate 1-to-1 conversations.
+     */
+    public function searchColleagues(User $user, string $query): array
+    {
+        $term = trim($query);
+        if (empty($term)) {
+            return [];
+        }
+
+        $employees = Employee::where('status', '!=', 'Separated')
+            ->whereNotNull('user_id')
+            ->where('user_id', '!=', $user->id)
+            ->where(function ($q) use ($term) {
+                $q->where('full_name', 'like', "%{$term}%")
+                    ->orWhere('position', 'like', "%{$term}%")
+                    ->orWhereHas('user', function ($uq) use ($term) {
+                        $uq->where('name', 'like', "%{$term}%")
+                            ->orWhere('email', 'like', "%{$term}%");
+                    })
+                    ->orWhereHas('department', function ($dq) use ($term) {
+                        $dq->where('name', 'like', "%{$term}%");
+                    });
+            })
+            ->with(['user', 'department'])
+            ->limit(15)
+            ->get();
+
+        $colleagueUserIds = $employees->pluck('user_id')->filter()->all();
+
+        $existingDirects = Conversation::where('direct_message', 1)
+            ->whereHas('participants', function ($q) use ($user) {
+                $q->where('messageable_id', $user->id)
+                    ->where('messageable_type', $user->getMorphClass());
+            })
+            ->whereHas('participants', function ($q) use ($colleagueUserIds) {
+                $q->whereIn('messageable_id', $colleagueUserIds);
+            })
+            ->with('participants')
+            ->get();
+
+        $conversationByUserId = [];
+        foreach ($existingDirects as $c) {
+            foreach ($c->participants as $p) {
+                if ((int) $p->messageable_id !== (int) $user->id) {
+                    $conversationByUserId[$p->messageable_id] = $c->id;
+                }
+            }
+        }
+
+        return $employees->map(function ($emp) use ($conversationByUserId) {
+            $u = $emp->user;
+            $userId = $u ? $u->id : $emp->user_id;
+            $convId = $conversationByUserId[$userId] ?? null;
+
+            return [
+                'id' => $userId,
+                'employee_id' => $emp->id,
+                'name' => $u?->name ?? $emp->full_name,
+                'role' => $u?->role ?? 'Employee',
+                'position' => $emp->position ?? 'Staff Member',
+                'department' => $emp->department?->name ?? 'Elhadar Staff',
+                'phone' => $u?->phone ?? $emp->phone ?? '—',
+                'initials' => strtoupper(substr($u?->name ?? $emp->full_name ?? '??', 0, 2)),
+                'profile_photo_url' => $emp->profile_photo_url,
+                'has_conversation' => $convId !== null,
+                'conversation_id' => $convId,
+            ];
+        })->values()->all();
+    }
+
+    /**
+     * Start or continue a 1-to-1 conversation and send the message.
+     */
+    public function startDirectConversation(
+        User $user,
+        User $targetUser,
+        string $body,
+        ?int $replyToId = null,
+        array $files = []
+    ): array {
+        if ((int) $user->id === (int) $targetUser->id) {
+            throw new \InvalidArgumentException('You cannot initiate a direct conversation with yourself.');
+        }
+
+        // 1. Look for existing direct conversation
+        $conversation = Conversation::where('direct_message', 1)
+            ->whereHas('participants', function ($q) use ($user) {
+                $q->where('messageable_id', $user->id)
+                    ->where('messageable_type', $user->getMorphClass());
+            })
+            ->whereHas('participants', function ($q) use ($targetUser) {
+                $q->where('messageable_id', $targetUser->id)
+                    ->where('messageable_type', $targetUser->getMorphClass());
+            })
+            ->first();
+
+        // 2. If not, create new direct conversation
+        if (! $conversation) {
+            $conversation = Chat::makeDirect()->createConversation(
+                [$user, $targetUser],
+                ['type' => 'direct'],
+                $targetUser->name
+            );
+        }
+
+        // 3. Send message
+        $message = $this->sendMessage($user, $conversation, $body, $replyToId, $files);
+        $formattedConv = $this->formatDirectConversation($user, $conversation);
+
+        return [
+            'conversation' => $formattedConv,
+            'message' => $message,
+        ];
+    }
+
+    /**
      * Get paginated messages for a conversation formatted for the React frontend.
      */
     public function getConversationMessages(User $user, Conversation $conversation, int $page = 1, int $perPage = 30): array
     {
         $messagesQuery = $conversation->messages()
-            ->with(['participation.messageable'])
+            ->with(['participation.messageable.employee'])
             ->orderBy('id', 'desc');
 
         $paginated = $messagesQuery->paginate($perPage, ['*'], 'page', $page);
@@ -184,6 +394,7 @@ class DepartmentChatService
                     'name' => $sender?->name ?? 'Colleague',
                     'role' => $sender?->role ?? 'Employee',
                     'initials' => strtoupper(substr($sender?->name ?? '??', 0, 2)),
+                    'profile_photo_url' => $sender?->profile_photo_url,
                 ],
                 'reply_to' => $msgData['reply_to'] ?? null,
                 'attachments' => $msgAttachments->values()->all(),
@@ -259,6 +470,7 @@ class DepartmentChatService
                 'name' => $user->name,
                 'role' => $user->role,
                 'initials' => strtoupper(substr($user->name, 0, 2)),
+                'profile_photo_url' => $user->profile_photo_url,
             ],
             'reply_to' => $payloadData['reply_to'] ?? null,
             'attachments' => $savedAttachments,
@@ -345,6 +557,7 @@ class DepartmentChatService
                 'name' => $colleague?->name ?? 'Colleague',
                 'position' => $colleague?->employee?->position ?? 'Staff',
                 'initials' => strtoupper(substr($colleague?->name ?? '??', 0, 2)),
+                'profile_photo_url' => $colleague?->profile_photo_url,
                 'read_at' => $notif->updated_at ? $notif->updated_at->format('g:i A, M d') : 'Recently',
             ];
         })->values()->all();
@@ -486,7 +699,7 @@ class DepartmentChatService
         // 3. Members roster
         $members = $conversation->participants()
             ->with(['messageable' => function ($q) {
-                $q->with('employee:id,user_id,position,phone,department_id');
+                $q->with('employee.department');
             }])
             ->get()
             ->map(function ($p) {
@@ -497,8 +710,11 @@ class DepartmentChatService
                     'name' => $u?->name ?? 'Colleague',
                     'role' => $u?->role ?? 'Employee',
                     'position' => $u?->employee?->position ?? 'Staff Member',
+                    'department' => $u?->employee?->department?->name ?? 'Elhadar Staff',
                     'phone' => $u?->phone ?? '—',
+                    'email' => $u?->email ?? '—',
                     'initials' => strtoupper(substr($u?->name ?? '??', 0, 2)),
+                    'profile_photo_url' => $u?->profile_photo_url,
                 ];
             });
 

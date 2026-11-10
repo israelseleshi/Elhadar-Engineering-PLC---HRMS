@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import InteractiveTour, { TourStep } from '@/Components/InteractiveTour';
 import { Button } from '@/Components/ui/button';
 import {
     Card,
@@ -20,6 +21,7 @@ import { toast } from 'sonner';
 import {
     ArrowLeft,
     CalendarClock,
+    Compass,
     FileText,
     Megaphone,
     Pin,
@@ -71,6 +73,105 @@ interface FormData {
 
 const today = (): string => new Date().toISOString().split('T')[0];
 
+const announcementCreateTourSteps: TourStep[] = [
+    {
+        target: '[data-tour="create-back-btn"]',
+        title: 'Navigation & Breadcrumbs',
+        content: 'Return safely to the Company Notice Board anytime without publishing an incomplete circular.',
+        badge: 'Navigation',
+        placement: 'bottom',
+        tip: 'Unsaved form changes will be discarded if you navigate away.',
+    },
+    {
+        target: '[data-tour="create-tour-btn"]',
+        title: 'Publishing Walkthrough',
+        content: 'Revisit this guided tour to understand audience targeting, bilingual support, and statutory compliance switches.',
+        badge: 'Tour Guide',
+        placement: 'bottom',
+        tip: 'Click this button whenever you need a quick refresher on broadcast policies.',
+    },
+    {
+        target: '[data-tour="create-lang-tabs"]',
+        title: 'Bilingual Localization Toggle',
+        content: 'Author circulars in English and Amharic (አማርኛ) to guarantee comprehensive communication across site and office staff.',
+        badge: 'Bilingual Engine',
+        placement: 'bottom',
+        tip: 'Switch tabs to supply Amharic titles and directives for bilingual staff members.',
+    },
+    {
+        target: '[data-tour="create-title-input"]',
+        title: 'Official Circular Title',
+        content: 'Provide a crisp, authoritative headline summarizing the directive, safety requirement, or policy notice.',
+        badge: 'Directive Title',
+        placement: 'bottom',
+        tip: 'Keep titles concise (under 80 characters) for optimal visibility on employee notification cards.',
+    },
+    {
+        target: '[data-tour="create-content-input"]',
+        title: 'Executive Body Content',
+        content: 'Draft the full memorandum with key operative clauses, effective dates, procedures, and accountable departments.',
+        badge: 'Body & Clauses',
+        placement: 'bottom',
+        tip: 'Break content into clear numbered points or paragraphs for effortless reading in the reader modal.',
+    },
+    {
+        target: '[data-tour="create-attachment-upload"]',
+        title: 'Official Signed Attachment',
+        content: 'Drag and drop or upload signed PDF circulars, official seal memos, or engineering policy handbooks up to 10 MB.',
+        badge: 'Document Vault',
+        placement: 'top',
+        tip: 'Supported formats include PDF, DOCX, JPG, and PNG.',
+    },
+    {
+        target: '[data-tour="create-audience-selector"]',
+        title: 'Target Audience Segmentation',
+        content: 'Broadcast to All Staff or segment by Department, Project Site, Employee Level, Contract Type, or Specific Individuals.',
+        badge: 'Audience Targeting',
+        placement: 'top',
+        tip: 'Selecting a segment reveals targeted checkboxes for granular distribution control.',
+    },
+    {
+        target: '[data-tour="create-priority-selector"]',
+        title: 'Urgency & Severity Tier',
+        content: 'Select Standard, Important, or Critical. Critical bulletins display red warning borders and immediate alert styling.',
+        badge: 'Severity Triage',
+        placement: 'left',
+        tip: 'Use Critical strictly for urgent health & safety directives or mandatory operational changes.',
+    },
+    {
+        target: '[data-tour="create-category-select"]',
+        title: 'Regulatory Category',
+        content: 'Categorize under General News, Policy, Safety & HSE, Payroll, Public Holiday, or Corporate Event for structured archiving.',
+        badge: 'Taxonomy',
+        placement: 'left',
+        tip: 'Category filters on the notice board help employees find archived directives easily.',
+    },
+    {
+        target: '[data-tour="create-esign-switch"]',
+        title: 'Mandatory E-Sign Compliance',
+        content: 'Require targeted employees to digitally acknowledge receipt and acceptance, establishing an audited compliance trail.',
+        badge: 'Statutory E-Sign',
+        placement: 'left',
+        tip: 'The Delivery Audit drawer records each employee’s confirmation timestamp for HR audits.',
+    },
+    {
+        target: '[data-tour="create-governance-options"]',
+        title: 'Engagement & Hero Pinning',
+        content: 'Toggle emoji reactions, hero-pin the circular to the top of employee dashboards, or dispatch simulated SMS alerts.',
+        badge: 'Governance & Reach',
+        placement: 'left',
+        tip: 'Hero pinning ensures the announcement remains permanently visible until manually unpinned.',
+    },
+    {
+        target: '[data-tour="create-submit-btn"]',
+        title: 'Broadcast & Publish',
+        content: 'Review your settings and dispatch the announcement. Targeted personnel will receive immediate portal notifications.',
+        badge: 'Final Broadcast',
+        placement: 'top',
+        tip: 'Once published, you can monitor live delivery and read rates from the Delivery Audit drawer.',
+    },
+];
+
 export default function AnnouncementsCreate({
     departments,
     work_places,
@@ -81,6 +182,20 @@ export default function AnnouncementsCreate({
     const [langTab, setLangTab] = useState<'en' | 'am'>('en');
     const [publishImmediately, setPublishImmediately] = useState(true);
     const [hasExpiry, setHasExpiry] = useState(false);
+    const [isTourOpen, setIsTourOpen] = useState(false);
+
+    useEffect(() => {
+        const handleOpenTour = () => setIsTourOpen(true);
+        window.addEventListener('open-announcement-create-tour', handleOpenTour);
+
+        if (typeof window !== 'undefined' && window.location.search.includes('tour=true')) {
+            setIsTourOpen(true);
+        }
+
+        return () => {
+            window.removeEventListener('open-announcement-create-tour', handleOpenTour);
+        };
+    }, []);
 
     const { data, setData, post, processing, errors } = useForm<FormData>({
         title: '',
@@ -175,11 +290,23 @@ export default function AnnouncementsCreate({
             <Head title="Publish Announcement - Elhadar Engineering HRMS" />
 
             <div className="mb-6 flex items-center justify-between">
-                <Button asChild variant="ghost" size="sm" className="-ml-2 gap-1.5 text-muted-foreground hover:text-foreground">
+                <Button asChild variant="ghost" size="sm" data-tour="create-back-btn" className="-ml-2 gap-1.5 text-muted-foreground hover:text-foreground">
                     <Link href={route('announcements.index')}>
                         <ArrowLeft className="w-4 h-4" />
                         <span>Back to Notice Board</span>
                     </Link>
+                </Button>
+
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsTourOpen(true)}
+                    data-tour="create-tour-btn"
+                    className="rounded-xl border-border text-xs h-9 font-medium gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer shadow-2xs"
+                >
+                    <Compass className="w-3.5 h-3.5 text-primary" />
+                    <span>Tour Form</span>
                 </Button>
             </div>
 
@@ -199,7 +326,7 @@ export default function AnnouncementsCreate({
                                 </div>
 
                                 {/* Bilingual Tabs */}
-                                <div className="inline-flex items-center rounded-lg border border-border bg-background p-0.5 text-xs">
+                                <div data-tour="create-lang-tabs" className="inline-flex items-center rounded-lg border border-border bg-background p-0.5 text-xs">
                                     <button
                                         type="button"
                                         onClick={() => setLangTab('en')}
@@ -228,7 +355,7 @@ export default function AnnouncementsCreate({
                             <CardContent className="p-6 space-y-5">
                                 {langTab === 'en' ? (
                                     <>
-                                        <div className="space-y-2">
+                                        <div data-tour="create-title-input" className="space-y-2">
                                             <Label htmlFor="title" className="text-xs font-semibold text-foreground">
                                                 Announcement Title (English) <span className="text-destructive">*</span>
                                             </Label>
@@ -243,7 +370,7 @@ export default function AnnouncementsCreate({
                                             {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div data-tour="create-content-input" className="space-y-2">
                                             <Label htmlFor="content" className="text-xs font-semibold text-foreground">
                                                 Body Content (English) <span className="text-destructive">*</span>
                                             </Label>
@@ -261,7 +388,7 @@ export default function AnnouncementsCreate({
                                     </>
                                 ) : (
                                     <>
-                                        <div className="space-y-2">
+                                        <div data-tour="create-title-input" className="space-y-2">
                                             <Label htmlFor="title_am" className="text-xs font-semibold text-foreground">
                                                 የማስታወቂያው ርዕስ (አማርኛ)
                                             </Label>
@@ -274,7 +401,7 @@ export default function AnnouncementsCreate({
                                             />
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div data-tour="create-content-input" className="space-y-2">
                                             <Label htmlFor="content_am" className="text-xs font-semibold text-foreground">
                                                 ዝርዝር መግለጫ (አማርኛ)
                                             </Label>
@@ -291,7 +418,7 @@ export default function AnnouncementsCreate({
                                 )}
 
                                 {/* Official Document Attachment Upload */}
-                                <div className="pt-2 border-t border-border/60">
+                                <div data-tour="create-attachment-upload" className="pt-2 border-t border-border/60">
                                     <Label className="text-xs font-semibold text-foreground block mb-2">
                                         Official Signed Circular Attachment (PDF, Image, Word)
                                     </Label>
@@ -340,7 +467,7 @@ export default function AnnouncementsCreate({
                         </Card>
 
                         {/* Audience Targeting Selector */}
-                        <Card className="rounded-2xl border border-border/80 shadow-xs bg-card">
+                        <Card data-tour="create-audience-selector" className="rounded-2xl border border-border/80 shadow-xs bg-card">
                             <CardHeader className="p-6 pb-3">
                                 <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
                                     <Users className="w-4 h-4 text-primary" />
@@ -509,7 +636,7 @@ export default function AnnouncementsCreate({
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-5 pt-0 space-y-4">
-                                <div>
+                                <div data-tour="create-priority-selector">
                                     <Label className="text-xs font-semibold text-foreground block mb-1.5">
                                         Urgency Level
                                     </Label>
@@ -523,7 +650,7 @@ export default function AnnouncementsCreate({
                                                 type="button"
                                                 key={p.id}
                                                 onClick={() => setData('priority', p.id as any)}
-                                                className={`py-1.5 text-xs font-semibold rounded-lg border text-center transition-all ${
+                                                className={`py-1.5 text-xs font-semibold rounded-lg border text-center transition-all cursor-pointer ${
                                                     data.priority === p.id ? p.color + ' shadow-xs' : 'border-border text-muted-foreground'
                                                 }`}
                                             >
@@ -533,7 +660,7 @@ export default function AnnouncementsCreate({
                                     </div>
                                 </div>
 
-                                <div>
+                                <div data-tour="create-category-select">
                                     <Label className="text-xs font-semibold text-foreground block mb-1.5">
                                         Circular Category
                                     </Label>
@@ -558,14 +685,14 @@ export default function AnnouncementsCreate({
                         </Card>
 
                         {/* Compliance, E-Sign & Social Settings */}
-                        <Card className="rounded-2xl border border-border/80 shadow-xs bg-card">
+                        <Card data-tour="create-governance-options" className="rounded-2xl border border-border/80 shadow-xs bg-card">
                             <CardHeader className="p-5 pb-3">
                                 <CardTitle className="text-sm font-semibold text-foreground">
                                     Governance &amp; Actions
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-5 pt-0 space-y-4 text-xs">
-                                <div className="flex items-center justify-between gap-3">
+                                <div data-tour="create-esign-switch" className="flex items-center justify-between gap-3">
                                     <div>
                                         <p className="font-semibold text-foreground flex items-center gap-1">
                                             <Shield className="w-3.5 h-3.5 text-primary" /> Require Acknowledgment
@@ -669,7 +796,8 @@ export default function AnnouncementsCreate({
                         <Button
                             type="submit"
                             disabled={processing}
-                            className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-2xl shadow-sm gap-2 text-sm"
+                            data-tour="create-submit-btn"
+                            className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-2xl shadow-sm gap-2 text-sm cursor-pointer"
                         >
                             <Send className="w-4 h-4" />
                             <span>{processing ? 'Publishing Circular...' : 'Publish Announcement'}</span>
@@ -677,6 +805,14 @@ export default function AnnouncementsCreate({
                     </div>
                 </div>
             </form>
+
+            {/* Guided Tour Spotlight */}
+            <InteractiveTour
+                steps={announcementCreateTourSteps}
+                isOpen={isTourOpen}
+                onClose={() => setIsTourOpen(false)}
+                tourTitle="Publish announcement tour"
+            />
         </AuthenticatedLayout>
     );
 }

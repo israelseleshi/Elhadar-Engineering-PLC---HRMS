@@ -23,6 +23,7 @@ import WebPushBanner from '@/Components/WebPushBanner';
 import { PageProps } from '@/types';
 import { getNavItems, NAV_CATEGORIES, NavCategoryConfig, NavItemConfig } from '@/Components/Navigation/navConfig';
 import SystemSettingsSidebar from '@/Components/Navigation/SystemSettingsSidebar';
+import EmployeeAvatar from '@/Components/EmployeeAvatar';
 
 interface Props {
     header?: ReactNode;
@@ -272,6 +273,18 @@ export default function AuthenticatedLayout({
                                                     window.dispatchEvent(
                                                         new CustomEvent('open-portal-tour')
                                                     );
+                                                else if (path.includes('/announcements/create'))
+                                                    window.dispatchEvent(
+                                                        new CustomEvent('open-announcement-create-tour')
+                                                    );
+                                                else if (path.match(/\/announcements\/\d+\/edit/))
+                                                    window.dispatchEvent(
+                                                        new CustomEvent('open-announcement-edit-tour')
+                                                    );
+                                                else if (path.includes('/announcements'))
+                                                    window.dispatchEvent(
+                                                        new CustomEvent('open-announcements-index-tour')
+                                                    );
                                                 else if (
                                                     path.includes('/dashboard') ||
                                                     path === '/'
@@ -400,9 +413,7 @@ export default function AuthenticatedLayout({
 
                                 <div className="pt-4 border-t border-border">
                                     <div className="flex items-center gap-2.5 mb-3">
-                                        <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-semibold uppercase shrink-0">
-                                            {user.name.charAt(0)}
-                                        </div>
+                                        <EmployeeAvatar name={user.name} src={(user as any).profile_photo_url} size="sm" />
                                         <div className="overflow-hidden">
                                             <p className="text-sm font-semibold text-foreground truncate leading-none">
                                                 {user.name}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { CheckCheck, Clock, Users, X } from 'lucide-react';
-import { Avatar } from '@/Components/boardui';
+import EmployeeAvatar from '@/Components/EmployeeAvatar';
 
 interface Reader {
     user_id: number;
@@ -9,6 +9,7 @@ interface Reader {
     position: string;
     initials: string;
     read_at: string;
+    profile_photo_url?: string | null;
 }
 
 interface Props {

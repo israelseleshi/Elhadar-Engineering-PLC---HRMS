@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChatAttachment;
+use App\Models\User;
 use App\Services\DepartmentChatService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,23 +27,30 @@ class ChatController extends Controller
     {
         $user = $request->user();
         $channels = $this->chatService->getAccessibleChannels($user);
+        $directConversations = $this->chatService->getDirectConversations($user);
 
-        if (empty($channels)) {
+        if (empty($channels) && empty($directConversations)) {
             abort(403, 'Your account is not assigned to an active department channel.');
         }
 
         // Determine active conversation
         $activeChannel = null;
         if ($conversationId) {
-            $activeChannel = collect($channels)->firstWhere('id', (int) $conversationId);
+            $activeChannel = collect($channels)->firstWhere('id', (int) $conversationId)
+                ?? collect($directConversations)->firstWhere('id', (int) $conversationId);
+
             if (! $activeChannel) {
                 $requestedConversation = Conversation::findOrFail($conversationId);
                 Gate::authorize('view', $requestedConversation);
+
+                if ($requestedConversation->direct_message) {
+                    $activeChannel = $this->chatService->formatDirectConversation($user, $requestedConversation);
+                }
             }
         }
 
         if (! $activeChannel) {
-            $activeChannel = $channels[0];
+            $activeChannel = ! empty($channels) ? $channels[0] : $directConversations[0];
         }
 
         $activeConversation = Conversation::findOrFail($activeChannel['id']);
@@ -57,6 +65,7 @@ class ChatController extends Controller
 
         return Inertia::render('Chat/DepartmentChat', [
             'channels' => $channels,
+            'directConversations' => $directConversations,
             'activeChannel' => $activeChannel,
             'initialMessages' => $messagesData['messages'],
             'hasMoreMessages' => $messagesData['has_more'],
@@ -68,6 +77,7 @@ class ChatController extends Controller
                 'department_id' => $user->employee?->department_id,
                 'position' => $user->employee?->position ?? 'Staff',
                 'initials' => strtoupper(substr($user->name, 0, 2)),
+                'profile_photo_url' => $user->profile_photo_url,
             ],
         ]);
     }
@@ -187,6 +197,63 @@ class ChatController extends Controller
         $data = $this->chatService->getVaultData($request->user(), $conversation);
 
         return response()->json($data);
+    }
+
+    /**
+     * Search colleagues across the company for 1-to-1 chat initiation.
+     */
+    public function searchColleagues(Request $request): JsonResponse
+    {
+        $query = (string) $request->input('search', '');
+        $colleagues = $this->chatService->searchColleagues($request->user(), $query);
+
+        return response()->json(['colleagues' => $colleagues]);
+    }
+
+    /**
+     * Initiate or continue a 1-to-1 direct conversation with a colleague and send the message.
+     */
+    public function startDirect(Request $request, User $targetUser): JsonResponse
+    {
+        $user = $request->user();
+
+        if ((int) $user->id === (int) $targetUser->id) {
+            return response()->json(['message' => 'You cannot initiate a direct conversation with yourself.'], 422);
+        }
+
+        if ($targetUser->employee?->status === 'Separated') {
+            return response()->json(['message' => 'This employee is no longer with the organization.'], 403);
+        }
+
+        $request->validate([
+            'body' => ['nullable', 'string', 'max:5000'],
+            'reply_to_id' => ['nullable', 'integer'],
+            'files' => ['nullable', 'array', 'max:10'],
+            'files.*' => ['file', 'max:25600'],
+        ]);
+
+        $body = (string) $request->input('body', '');
+        $files = $request->file('files', []);
+
+        if (empty(trim($body)) && empty($files)) {
+            return response()->json(['message' => 'Message body or file attachment is required.'], 422);
+        }
+
+        $replyToId = $request->input('reply_to_id') ? (int) $request->input('reply_to_id') : null;
+
+        $result = $this->chatService->startDirectConversation(
+            user: $user,
+            targetUser: $targetUser,
+            body: $body,
+            replyToId: $replyToId,
+            files: $files
+        );
+
+        return response()->json([
+            'success' => true,
+            'conversation' => $result['conversation'],
+            'message' => $result['message'],
+        ], 201);
     }
 
     /**

@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import {
     Download,
-    ExternalLink,
     FileCode,
     FileSpreadsheet,
     FileText,
     FolderArchive,
     Image as ImageIcon,
-    Link as LinkIcon,
+    Mail,
+    MessageSquare,
     Paperclip,
+    Phone,
     Search,
     Shield,
+    User as UserIcon,
     Users,
     X,
 } from 'lucide-react';
-import { Badge, Button, IconButton } from '@/Components/boardui';
+import EmployeeAvatar from '@/Components/EmployeeAvatar';
 
 interface MediaItem {
     id: number;
@@ -38,8 +40,11 @@ interface MemberItem {
     name: string;
     role: string;
     position: string;
+    department?: string;
     phone: string;
+    email?: string;
     initials: string;
+    profile_photo_url?: string | null;
 }
 
 interface VaultData {
@@ -50,21 +55,36 @@ interface VaultData {
 }
 
 interface Props {
-    isOpen: boolean;
-    onClose: () => void;
     channelName: string;
     vaultData: VaultData;
     onlineUserIds: number[];
+    isDirect?: boolean;
+    colleague?: any;
+    currentUser: {
+        id: number;
+        name: string;
+        role: string;
+        department_id: number | null;
+        position: string;
+        initials: string;
+    };
+    onSelectColleague: (member: MemberItem | any) => void;
 }
 
-type TabType = 'media' | 'files' | 'members';
+type TabType = 'files' | 'media' | 'members';
 
-export default function ChatVaultDrawer({ isOpen, onClose, channelName, vaultData, onlineUserIds }: Props) {
-    const [activeTab, setActiveTab] = useState<TabType>('files');
+export default function ChatVaultDrawer({
+    channelName,
+    vaultData,
+    onlineUserIds,
+    isDirect = false,
+    colleague = null,
+    currentUser,
+    onSelectColleague,
+}: Props) {
+    const [activeTab, setActiveTab] = useState<TabType>(isDirect ? 'members' : 'files');
     const [searchQuery, setSearchQuery] = useState('');
     const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-    if (!isOpen) return null;
 
     const formatBytes = (bytes: number) => {
         if (!bytes || bytes === 0) return '0 B';
@@ -88,91 +108,94 @@ export default function ChatVaultDrawer({ isOpen, onClose, channelName, vaultDat
         return <FileText className="w-5 h-5 text-[#0066cc]" />;
     };
 
-    const filteredFiles = (vaultData.files || []).filter((f) =>
+    const filteredFiles = (vaultData?.files || []).filter((f) =>
         f.file_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const filteredMembers = (vaultData.members || []).filter((m) =>
+    const filteredMembers = (vaultData?.members || []).filter((m) =>
         m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.position.toLowerCase().includes(searchQuery.toLowerCase())
+        m.position.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (m.department && m.department.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
+    const isColleagueOnline = colleague ? onlineUserIds.includes(colleague.id) : false;
+
     return (
-        <aside className="w-80 md:w-96 border-l border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#18181b] flex flex-col h-full shrink-0 shadow-lg z-20 transition-all duration-200">
-            {/* Drawer Header */}
-            <div className="p-4 border-b border-gray-100 dark:border-neutral-800 flex items-center justify-between bg-gray-50/50 dark:bg-neutral-900/50">
-                <div className="min-w-0">
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                        Shared Vault & Roster
-                    </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                        {channelName}
-                    </p>
+        <aside className="w-72 lg:w-80 border-l border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#18181b] flex flex-col h-full shrink-0 select-none">
+            {/* Panel Header - Permanent, No Close Button */}
+            <div className="p-3.5 border-b border-gray-200 dark:border-neutral-800 bg-gray-50/70 dark:bg-neutral-900/50">
+                <div className="flex items-center justify-between">
+                    <div className="min-w-0">
+                        <h3 className="text-xs font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                            {isDirect ? 'Direct Dossier' : 'Shared Vault & Staff'}
+                        </h3>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                            {channelName}
+                        </p>
+                    </div>
+                    <span className="text-[10px] font-medium text-[#0066cc] dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-full border border-blue-200/60 dark:border-blue-900/60">
+                        {isDirect ? '1-to-1' : 'Workspace'}
+                    </span>
                 </div>
-                <button
-                    onClick={onClose}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-800 transition"
-                    title="Close Vault"
-                >
-                    <X className="w-5 h-5" />
-                </button>
             </div>
 
             {/* Segmented Pill Tabs */}
-            <div className="px-4 py-3 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-[#18181b]">
+            <div className="px-3 py-2.5 border-b border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#18181b]">
                 <div className="flex p-1 bg-gray-100 dark:bg-neutral-800/80 rounded-xl gap-1">
                     <button
                         onClick={() => setActiveTab('files')}
                         className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                             activeTab === 'files'
-                                ? 'bg-white dark:bg-neutral-700 text-[#0066cc] dark:text-blue-400 shadow-sm'
+                                ? 'bg-white dark:bg-neutral-700 text-[#0066cc] dark:text-blue-400 shadow-xs'
                                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                         }`}
                     >
                         <Paperclip className="w-3.5 h-3.5" />
-                        Files ({vaultData.files?.length || 0})
+                        Files ({vaultData?.files?.length || 0})
                     </button>
                     <button
                         onClick={() => setActiveTab('media')}
                         className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                             activeTab === 'media'
-                                ? 'bg-white dark:bg-neutral-700 text-[#0066cc] dark:text-blue-400 shadow-sm'
+                                ? 'bg-white dark:bg-neutral-700 text-[#0066cc] dark:text-blue-400 shadow-xs'
                                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                         }`}
                     >
                         <ImageIcon className="w-3.5 h-3.5" />
-                        Media ({vaultData.media?.length || 0})
+                        Media ({vaultData?.media?.length || 0})
                     </button>
                     <button
                         onClick={() => setActiveTab('members')}
                         className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                             activeTab === 'members'
-                                ? 'bg-white dark:bg-neutral-700 text-[#0066cc] dark:text-blue-400 shadow-sm'
+                                ? 'bg-white dark:bg-neutral-700 text-[#0066cc] dark:text-blue-400 shadow-xs'
                                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                         }`}
                     >
                         <Users className="w-3.5 h-3.5" />
-                        Staff ({vaultData.members?.length || 0})
+                        {isDirect ? 'Profile' : `Staff (${vaultData?.members?.length || 0})`}
                     </button>
                 </div>
 
                 {/* Search Bar within Vault */}
-                <div className="mt-3 relative">
-                    <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
-                    <input
-                        type="text"
-                        placeholder={
-                            activeTab === 'files'
-                                ? 'Search shared files...'
-                                : activeTab === 'members'
-                                ? 'Search staff by name/role...'
-                                : 'Filter media...'
-                        }
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-gray-200 dark:border-neutral-700 bg-gray-50/50 dark:bg-neutral-900 focus:outline-none focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc] dark:text-white transition"
-                    />
-                </div>
+                {(!isDirect || activeTab !== 'members') && (
+                    <div className="mt-2.5 relative">
+                        <Search className="w-3.5 h-3.5 absolute left-3 top-2 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder={
+                                activeTab === 'files'
+                                    ? 'Filter documents...'
+                                    : activeTab === 'members'
+                                    ? 'Find colleague in room...'
+                                    : 'Filter photos...'
+                            }
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-8 pr-3 py-1 text-xs rounded-xl border border-gray-200 dark:border-neutral-700 bg-gray-50/50 dark:bg-neutral-900 focus:outline-none focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc] dark:text-white transition"
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Tab Contents */}
@@ -182,18 +205,18 @@ export default function ChatVaultDrawer({ isOpen, onClose, channelName, vaultDat
                     filteredFiles.length === 0 ? (
                         <div className="py-12 text-center text-gray-400 dark:text-gray-500">
                             <Paperclip className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-neutral-700" />
-                            <p className="text-xs font-medium">No shared documents yet</p>
-                            <p className="text-[11px] text-gray-400 mt-0.5">Attach drawings, spreadsheets, or PDFs in chat.</p>
+                            <p className="text-xs font-medium">No documents shared yet</p>
+                            <p className="text-[11px] text-gray-400 mt-0.5">PDFs, CAD drawings, and spreadsheets sent here will be vaulted.</p>
                         </div>
                     ) : (
                         <div className="space-y-2 pt-1">
                             {filteredFiles.map((file) => (
                                 <div
                                     key={file.id}
-                                    className="group p-2.5 rounded-xl border border-gray-100 dark:border-neutral-800 hover:border-blue-200 dark:hover:border-blue-900/50 bg-gray-50/60 dark:bg-neutral-900/40 hover:bg-blue-50/30 dark:hover:bg-neutral-800/60 transition flex items-center justify-between gap-3"
+                                    className="group p-2.5 rounded-xl border border-gray-100 dark:border-neutral-800 hover:border-blue-200 dark:hover:border-blue-900/50 bg-gray-50/60 dark:bg-neutral-900/40 hover:bg-blue-50/30 dark:hover:bg-neutral-800/60 transition flex items-center justify-between gap-2.5"
                                 >
-                                    <div className="flex items-center gap-2.5 min-w-0">
-                                        <div className="w-9 h-9 rounded-lg bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 flex items-center justify-center shrink-0 shadow-xs">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className="w-8 h-8 rounded-lg bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 flex items-center justify-center shrink-0 shadow-xs">
                                             {getFileIcon(file.file_name)}
                                         </div>
                                         <div className="min-w-0">
@@ -224,11 +247,11 @@ export default function ChatVaultDrawer({ isOpen, onClose, channelName, vaultDat
 
                 {/* 2. Media Tab */}
                 {activeTab === 'media' && (
-                    (vaultData.media || []).length === 0 ? (
+                    (vaultData?.media || []).length === 0 ? (
                         <div className="py-12 text-center text-gray-400 dark:text-gray-500">
                             <ImageIcon className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-neutral-700" />
-                            <p className="text-xs font-medium">No media shared yet</p>
-                            <p className="text-[11px] text-gray-400 mt-0.5">Images and photos posted to this channel will appear here.</p>
+                            <p className="text-xs font-medium">No photos or media yet</p>
+                            <p className="text-[11px] text-gray-400 mt-0.5">Photos uploaded in chat are saved here.</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-3 gap-2 pt-1">
@@ -244,7 +267,7 @@ export default function ChatVaultDrawer({ isOpen, onClose, channelName, vaultDat
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                                     />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <Download className="w-5 h-5 text-white" />
+                                        <Download className="w-4 h-4 text-white" />
                                     </div>
                                 </div>
                             ))}
@@ -252,58 +275,127 @@ export default function ChatVaultDrawer({ isOpen, onClose, channelName, vaultDat
                     )
                 )}
 
-                {/* 3. Members Tab */}
+                {/* 3. Members / Colleague Profile Tab */}
                 {activeTab === 'members' && (
-                    filteredMembers.length === 0 ? (
-                        <div className="py-12 text-center text-gray-400 dark:text-gray-500">
-                            <Users className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-neutral-700" />
-                            <p className="text-xs font-medium">No members match search</p>
+                    isDirect && colleague ? (
+                        /* Direct Colleague Profile Dossier */
+                        <div className="pt-2 space-y-4">
+                            <div className="p-4 rounded-2xl bg-gray-50/80 dark:bg-neutral-900/50 border border-gray-200/80 dark:border-neutral-800 text-center">
+                                <div className="relative inline-block mx-auto mb-2.5">
+                                    <EmployeeAvatar
+                                        name={colleague.name}
+                                        src={colleague.profile_photo_url}
+                                        size="lg"
+                                        className="shadow-sm"
+                                    />
+                                    {isColleagueOnline && (
+                                        <span className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-neutral-900" />
+                                    )}
+                                </div>
+                                <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center justify-center gap-1.5">
+                                    <span>{colleague.name}</span>
+                                    {['HRAdmin', 'SysAdmin', 'SuperAdmin'].includes(colleague.role) && (
+                                        <Shield className="w-3.5 h-3.5 text-[#0066cc]" />
+                                    )}
+                                </h4>
+                                <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
+                                    {colleague.position}
+                                </p>
+                                <span className="inline-block mt-2 text-[10px] font-medium bg-blue-100 dark:bg-blue-950/60 text-[#0066cc] dark:text-blue-300 px-2.5 py-0.5 rounded-full">
+                                    {colleague.department}
+                                </span>
+                            </div>
+
+                            <div className="space-y-2 text-xs">
+                                <div className="p-2.5 rounded-xl border border-gray-100 dark:border-neutral-800 flex items-center gap-3">
+                                    <Phone className="w-4 h-4 text-gray-400 shrink-0" />
+                                    <div className="min-w-0">
+                                        <span className="text-[10px] text-gray-400 block">Phone</span>
+                                        <span className="font-medium text-gray-800 dark:text-gray-200 truncate">
+                                            {colleague.phone || '—'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="p-2.5 rounded-xl border border-gray-100 dark:border-neutral-800 flex items-center gap-3">
+                                    <Shield className="w-4 h-4 text-gray-400 shrink-0" />
+                                    <div className="min-w-0">
+                                        <span className="text-[10px] text-gray-400 block">Role Assignment</span>
+                                        <span className="font-medium text-gray-800 dark:text-gray-200">
+                                            {colleague.role}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-3 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 text-[11px] text-blue-900 dark:text-blue-200">
+                                <p className="leading-relaxed">
+                                    🔒 Direct conversations and attached engineering files are confidential and end-to-end isolated to you and {colleague.name}.
+                                </p>
+                            </div>
                         </div>
                     ) : (
-                        <div className="space-y-1.5 pt-1">
-                            {filteredMembers.map((member) => {
-                                const isOnline = onlineUserIds.includes(member.id);
-                                return (
-                                    <div
-                                        key={member.id}
-                                        className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-800/60 transition"
-                                    >
-                                        <div className="flex items-center gap-2.5 min-w-0">
-                                            <div className="relative">
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-medium text-xs flex items-center justify-center shrink-0">
-                                                    {member.initials}
-                                                </div>
-                                                {isOnline && (
-                                                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-neutral-900" />
-                                                )}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate flex items-center gap-1.5">
-                                                    <span>{member.name}</span>
-                                                    {['HRAdmin', 'SysAdmin', 'SuperAdmin'].includes(member.role) && (
-                                                        <span title="Administrator">
-                                                            <Shield className="w-3 h-3 text-[#0066cc] shrink-0" />
-                                                        </span>
+                        /* Workspace Department Staff List with 1-to-1 Chat Buttons */
+                        filteredMembers.length === 0 ? (
+                            <div className="py-12 text-center text-gray-400 dark:text-gray-500">
+                                <Users className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-neutral-700" />
+                                <p className="text-xs font-medium">No staff members match search</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-1.5 pt-1">
+                                {filteredMembers.map((member) => {
+                                    const isOnline = onlineUserIds.includes(member.id);
+                                    const isMe = Number(member.id) === Number(currentUser.id);
+
+                                    return (
+                                        <div
+                                            key={member.id}
+                                            className="group flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-800/60 transition border border-transparent hover:border-gray-200/60 dark:hover:border-neutral-700/60"
+                                        >
+                                            <div className="flex items-center gap-2.5 min-w-0">
+                                                <div className="relative shrink-0">
+                                                    <EmployeeAvatar
+                                                        name={member.name}
+                                                        src={member.profile_photo_url}
+                                                        size="sm"
+                                                    />
+                                                    {isOnline && (
+                                                        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-neutral-900" />
                                                     )}
-                                                </p>
-                                                <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
-                                                    {member.position}
-                                                </p>
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate flex items-center gap-1.5">
+                                                        <span>{member.name}</span>
+                                                        {isMe && (
+                                                            <span className="text-[10px] text-gray-400 font-normal">
+                                                                (You)
+                                                            </span>
+                                                        )}
+                                                        {['HRAdmin', 'SysAdmin', 'SuperAdmin'].includes(member.role) && (
+                                                            <Shield className="w-3 h-3 text-[#0066cc] shrink-0" />
+                                                        )}
+                                                    </p>
+                                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
+                                                        {member.position}
+                                                    </p>
+                                                </div>
                                             </div>
+
+                                            {/* Action Button: 1-to-1 Direct Chat */}
+                                            {!isMe && (
+                                                <button
+                                                    onClick={() => onSelectColleague(member)}
+                                                    className="p-1.5 rounded-lg text-gray-400 group-hover:text-[#0066cc] dark:group-hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition shrink-0"
+                                                    title={`Start 1-to-1 chat with ${member.name}`}
+                                                >
+                                                    <MessageSquare className="w-4 h-4" />
+                                                </button>
+                                            )}
                                         </div>
-                                        <div className="shrink-0 text-right">
-                                            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${
-                                                isOnline
-                                                    ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
-                                                    : 'text-gray-400 dark:text-gray-500'
-                                            }`}>
-                                                {isOnline ? 'Online' : member.phone || 'Staff'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                    );
+                                })}
+                            </div>
+                        )
                     )
                 )}
             </div>

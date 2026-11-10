@@ -37,6 +37,7 @@ class User extends Authenticatable
         'phone',
         'is_managerial',
         'can_approve_leave',
+        'profile_photo_url',
     ];
 
     protected function casts(): array
@@ -77,6 +78,14 @@ class User extends Authenticatable
         }
 
         return ! empty($digits) ? '+251'.$digits : null;
+    }
+
+    /**
+     * Get the user's linked employee profile photo URL.
+     */
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        return $this->employee?->profile_photo_url;
     }
 
     public function isSysAdmin(): bool
