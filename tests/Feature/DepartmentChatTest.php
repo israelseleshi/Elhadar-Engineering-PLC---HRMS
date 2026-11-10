@@ -66,6 +66,48 @@ class DepartmentChatTest extends TestCase
         $response->assertStatus(403);
     }
 
+    public function test_hr_admin_cannot_access_other_department_conversation_for_privacy(): void
+    {
+        $dept1 = Department::first();
+        $dept2 = Department::skip(1)->first();
+
+        // HRAdmin user in dept1
+        $hrUser = User::factory()->create(['role' => 'HRAdmin']);
+        $hrEmployee = Employee::factory()->create([
+            'user_id' => $hrUser->id,
+            'department_id' => $dept1->id,
+            'status' => 'Permanent',
+        ]);
+
+        $channel2 = ChatChannelMetadata::where('department_id', $dept2->id)->firstOrFail();
+
+        // Attempt to view dept2 conversation should be rejected with 403 Forbidden
+        $response = $this->actingAs($hrUser->fresh())->get(route('chat.show', $channel2->conversation_id));
+
+        $response->assertStatus(403);
+    }
+
+    public function test_hr_admin_only_sees_own_department_and_company_wide_channels(): void
+    {
+        $dept1 = Department::first();
+
+        // HRAdmin user in dept1
+        $hrUser = User::factory()->create(['role' => 'HRAdmin']);
+        Employee::factory()->create([
+            'user_id' => $hrUser->id,
+            'department_id' => $dept1->id,
+            'status' => 'Permanent',
+        ]);
+
+        $response = $this->actingAs($hrUser->fresh())->get(route('chat.index'));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Chat/DepartmentChat')
+            ->has('channels', 2) // Dept1 + All-Company channel only
+        );
+    }
+
     public function test_separated_employee_is_denied_access_to_chat(): void
     {
         $dept = Department::first();

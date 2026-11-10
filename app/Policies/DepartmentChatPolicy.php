@@ -20,8 +20,9 @@ class DepartmentChatPolicy
             return false;
         }
 
-        // HRAdmin and SuperAdmin have executive read access across all departments
-        if (in_array($user->role, ['HRAdmin', 'SuperAdmin'])) {
+        // SysAdmin technical maintenance override.
+        // HRAdmin and Managers are strictly department-scoped for employee confidentiality.
+        if ($user->role === 'SysAdmin') {
             return true;
         }
 
@@ -80,11 +81,15 @@ class DepartmentChatPolicy
      */
     public function pinMessage(User $user, Conversation $conversation): bool
     {
-        if (in_array($user->role, ['HRAdmin', 'SuperAdmin', 'Manager'])) {
+        if (! $this->view($user, $conversation)) {
+            return false;
+        }
+
+        if (in_array($user->role, ['SysAdmin', 'HRAdmin', 'Manager'])) {
             return true;
         }
 
-        return $this->view($user, $conversation);
+        return false;
     }
 
     /**
@@ -92,7 +97,7 @@ class DepartmentChatPolicy
      */
     public function deleteMessage(User $user, Message $message): bool
     {
-        if (in_array($user->role, ['HRAdmin', 'SuperAdmin'])) {
+        if ($user->role === 'SysAdmin') {
             return true;
         }
 

@@ -33,8 +33,9 @@ class DepartmentChatService
 
         $query = ChatChannelMetadata::with(['conversation.last_message.participation.messageable', 'department']);
 
-        // Standard employees only see their department room + all-company
-        if (! in_array($user->role, ['HRAdmin', 'SuperAdmin', 'Manager'])) {
+        // Only SysAdmin maintains global visibility for system maintenance.
+        // All staff (including HRAdmin and Managers) are strictly isolated to their own department + company-wide room for privacy.
+        if ($user->role !== 'SysAdmin') {
             $query->where(function ($q) use ($employee) {
                 $q->where('department_id', $employee->department_id)
                     ->orWhereNull('department_id');
