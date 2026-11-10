@@ -12,6 +12,7 @@ import {
     Activity,
     UserCheck,
     CalendarCheck,
+    MessageSquare,
     LucideProps,
 } from 'lucide-react';
 
@@ -99,6 +100,21 @@ export const getNavItems = (): NavItemConfig[] => {
             squircleColor: {
                 bg: 'bg-amber-500 text-white',
                 text: 'text-amber-500',
+            },
+        },
+        {
+            id: 'chat',
+            name: 'Department Chat',
+            shortName: 'Team Chat',
+            href: route('chat.index'),
+            routeName: 'chat.*',
+            icon: MessageSquare,
+            category: 'overview',
+            description: 'Intra-department workspace, secure file sharing & vault',
+            activeBg: 'bg-[#0066cc]',
+            squircleColor: {
+                bg: 'bg-[#0066cc] text-white',
+                text: 'text-[#0066cc]',
             },
         },
 

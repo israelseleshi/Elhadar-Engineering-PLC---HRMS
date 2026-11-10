@@ -12,6 +12,7 @@
         "laravel/framework": "^13.17",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
+        "musonza/chat": "^6.15",
         "phpoffice/phpspreadsheet": "^5.10",
         "tightenco/ziggy": "^2.0"
     },

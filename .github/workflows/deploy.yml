@@ -182,6 +182,9 @@ jobs:
             # Ingest annual leave ledger
             \$PHP artisan hrms:import-annual-leave --no-interaction || true
 
+            # Provision department chat channels & enroll staff
+            \$PHP artisan db:seed --class=DepartmentChatSeeder --force || true
+
             # Ensure storage symlink exists
             [ -L public/storage ] || \$PHP artisan storage:link || true
 

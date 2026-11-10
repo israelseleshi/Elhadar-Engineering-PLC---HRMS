@@ -61,5 +61,8 @@ class DatabaseSeeder extends Seeder
 
         // 4. Sample announcements
         Announcement::factory()->count(5)->create();
+
+        // 5. Department Chat & Communications channels
+        $this->call(DepartmentChatSeeder::class);
     }
 }

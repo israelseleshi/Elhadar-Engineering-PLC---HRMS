@@ -2,47 +2,53 @@ import { useState, useEffect } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import InteractiveTour, { TourStep } from '@/Components/InteractiveTour';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Textarea } from '@/Components/ui/textarea';
-import { Checkbox } from '@/Components/ui/checkbox';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { toast } from 'sonner';
+import { useViewMode } from '@/Components/ViewToggle';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter,
-} from '@/Components/ui/dialog';
-import ViewToggle, { useViewMode } from '@/Components/ViewToggle';
-import { 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableHead, 
-    TableHeader, 
-    TableRow 
-} from '@/Components/ui/table';
-import { 
-    Search, 
-    Eye, 
-    MinusCircle, 
-    Compass,
-    CalendarCheck,
-    CheckCircle2,
-    XCircle,
-    AlertCircle,
-    Clock,
-    History,
-    Paperclip,
-    ShieldCheck,
-    Check,
-    Calendar
-} from 'lucide-react';
+    Avatar,
+    Button,
+    IconButton,
+    Chip,
+    StatusDot,
+    Modal,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+    NumberField,
+    Input,
+    Textarea,
+    Checkbox,
+    SearchField,
+    PillTabList,
+    PillTab,
+    SegmentedControl,
+    SegmentedControlItem,
+    Pagination,
+    Table,
+    TableHeader,
+    TableColumn,
+    TableBody,
+    TableRow,
+    TableCell,
+    cx,
+} from '@/Components/boardui';
+import {
+    RiCompass3Line,
+    RiTimeLine,
+    RiHistoryLine,
+    RiUserLine,
+    RiSubtractLine,
+    RiShieldCheckLine,
+    RiCheckboxCircleLine,
+    RiCloseCircleLine,
+    RiAttachment2,
+    RiTableLine,
+    RiLayoutGridLine,
+    RiCalendarLine,
+    RiInformationLine,
+    RiPhoneLine,
+    RiArrowRightLine,
+} from '@remixicon/react';
 
 const leaveTourSteps: TourStep[] = [
     {
@@ -148,16 +154,53 @@ interface Props {
     pendingCount?: number;
 }
 
+function getInitials(name: string): string {
+    if (!name) return '??';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+function BalanceHealthBadge({ remaining, entitled }: { remaining: number; entitled: number }) {
+    const isExhausted = remaining <= 3;
+    const isLow = remaining > 3 && remaining <= 8;
+
+    const color = isExhausted ? 'rose' : isLow ? 'yellow' : 'lime';
+    const dotColor = isExhausted ? 'yellow' : isLow ? 'yellow' : 'green';
+    const total = Math.max(entitled, remaining, 16);
+    const pct = Math.min(100, Math.max(0, Math.round((remaining / total) * 100)));
+
+    return (
+        <div className="flex flex-col items-center justify-center gap-1.5 min-w-[90px]">
+            <Chip color={color} variant="bold" className="gap-1.5 px-2 py-0.5 text-caption-1-semibold">
+                <StatusDot color={dotColor} />
+                <span>{remaining} Days</span>
+            </Chip>
+            <div className="w-16 h-1 rounded-full bg-background-tertiary-default overflow-hidden">
+                <div
+                    className={cx(
+                        'h-full rounded-full transition-all duration-300',
+                        isExhausted ? 'bg-red-500' : isLow ? 'bg-amber-500' : 'bg-emerald-500'
+                    )}
+                    style={{ width: `${pct}%` }}
+                />
+            </div>
+        </div>
+    );
+}
+
 export default function Index({
     employees,
     filters,
-    stats,
     currentYear,
     pendingRequests = [],
     recentRequests = [],
     pendingCount = 0,
 }: Props) {
     const [search, setSearch] = useState(filters.search || '');
+    const [activeTab, setActiveTab] = useState<'balances' | 'queue' | 'history'>(
+        pendingCount > 0 ? 'queue' : 'balances'
+    );
     const [selectedStaff, setSelectedStaff] = useState<StaffLeave | null>(null);
     const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
     const [viewMode, setViewMode] = useViewMode('leave');
@@ -251,802 +294,905 @@ export default function Index({
             onSuccess: () => {
                 setSelectedStaff(null);
                 reset();
+                toast.success('Leave deducted successfully.');
             },
         });
-    };
-
-    const getBalanceClass = (remaining: number) => {
-        if (remaining <= 3) {
-            return 'bg-destructive/10 text-destructive border border-destructive/25';
-        }
-        if (remaining <= 8) {
-            return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25';
-        }
-
-        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20';
     };
 
     return (
         <AuthenticatedLayout
             title="Leave Ledger"
-            subtitle="Automated leave administration under Ethiopian Labour Proclamation 1156/2019 (Art. 77: 16 days + 1 day per 2 years of service)."
+            subtitle="Statutory annual leave tracking under Ethiopian Labour Proclamation 1156/2019 (Art. 77: 16 base days + 1 day per 2 years of service)."
         >
             <Head title="Leave Ledger - Elhadar Engineering HRMS" />
 
-            {/* Primary Ledger Navigation Tabs */}
-            <Tabs defaultValue={pendingCount > 0 ? 'queue' : 'balances'} className="w-full">
-                <TabsList className="grid w-full sm:w-auto grid-cols-3 p-0 gap-0 mb-6 h-auto overflow-hidden rounded-lg border border-border bg-card divide-x divide-border">
-                    <TabsTrigger
-                        value="balances"
-                        className="group relative flex w-full items-center justify-center gap-2 rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-3.5 text-xs sm:text-sm font-medium text-muted-foreground shadow-none transition-colors data-[state=inactive]:hover:bg-muted/30 data-[state=inactive]:hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold"
+            {/* Top Navigation Pill Tabs */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-2 border-b border-separator-border">
+                <PillTabList className="p-1 rounded-full bg-background-secondary-default border border-border-button-default">
+                    <PillTab
+                        variant="blue"
+                        isSelected={activeTab === 'balances'}
+                        onSelect={() => setActiveTab('balances')}
+                        icon={RiUserLine}
                     >
                         <span>Staff Balances</span>
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="queue"
-                        className="group relative flex w-full items-center justify-center gap-2 rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-3.5 text-xs sm:text-sm font-medium text-muted-foreground shadow-none transition-colors data-[state=inactive]:hover:bg-muted/30 data-[state=inactive]:hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold"
+                        <span className="ms-1.5 px-2 py-0.5 rounded-full text-caption-1-medium bg-background-tertiary-default text-text-secondary">
+                            {employees.total}
+                        </span>
+                    </PillTab>
+                    <PillTab
+                        variant="blue"
+                        isSelected={activeTab === 'queue'}
+                        onSelect={() => setActiveTab('queue')}
+                        icon={RiTimeLine}
                     >
                         <span>Pending Requests</span>
-                        {pendingCount > 0 && (
-                            <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-destructive text-destructive-foreground font-bold animate-pulse">
+                        {pendingCount > 0 ? (
+                            <span className="ms-1.5 px-2 py-0.5 rounded-full text-caption-1-semibold bg-status-rose-background text-status-rose-text animate-pulse">
                                 {pendingCount}
                             </span>
-                        )}
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="history"
-                        className="group relative flex w-full items-center justify-center gap-1.5 rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-3.5 text-xs sm:text-sm font-medium text-muted-foreground shadow-none transition-colors data-[state=inactive]:hover:bg-muted/30 data-[state=inactive]:hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:font-semibold"
+                        ) : null}
+                    </PillTab>
+                    <PillTab
+                        variant="blue"
+                        isSelected={activeTab === 'history'}
+                        onSelect={() => setActiveTab('history')}
+                        icon={RiHistoryLine}
                     >
-                        <History className="w-3.5 h-3.5 text-muted-foreground transition-colors group-data-[state=active]:text-primary-foreground" />
                         <span>Decisions History</span>
-                    </TabsTrigger>
-                </TabsList>
+                        {recentRequests.length > 0 ? (
+                            <span className="ms-1.5 px-2 py-0.5 rounded-full text-caption-1-medium bg-background-tertiary-default text-text-secondary">
+                                {recentRequests.length}
+                            </span>
+                        ) : null}
+                    </PillTab>
+                </PillTabList>
 
-                {/* TAB 1: STAFF LEAVE BALANCES LEDGER */}
-                <TabsContent value="balances" className="space-y-6 focus-visible:outline-none">
-                    {/* Filter and Search Bar */}
-                    <Card data-tour="leave-search" className="border-border bg-card">
-                <CardContent className="p-4">
-                    <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-                        <div className="relative w-full sm:w-80">
-                            <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
-                            <Input
-                                placeholder="Search by name, file no..."
+                {/* Subtitle pill informing statutory cycle */}
+                <div className="hidden lg:flex items-center gap-2 text-caption-1-medium text-text-secondary bg-background-secondary-default px-3 py-1.5 rounded-full border border-border-button-default">
+                    <RiCalendarLine className="size-3.5 text-accent-500" />
+                    <span>Statutory Cycle: <strong className="text-text-primary font-mono">{currentYear} G.C.</strong></span>
+                </div>
+            </div>
+
+            {/* TAB 1: STAFF LEAVE BALANCES */}
+            {activeTab === 'balances' && (
+                <div className="space-y-4">
+                    {/* Controls & Filter Toolbar */}
+                    <div
+                        data-tour="leave-search"
+                        className="rounded-2xl border border-border-button-default bg-background-primary-default p-3 sm:p-4 shadow-xs flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between"
+                    >
+                        <div className="w-full lg:w-96">
+                            <SearchField
+                                aria-label="Search personnel records"
+                                placeholder="Search by name, file no, position..."
                                 value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') handleFilter({ search });
-                                }}
-                                className="pl-9 bg-muted/50 border-border text-xs h-10"
+                                onChange={(val) => setSearch(val)}
+                                onSubmit={() => handleFilter({ search })}
+                                shape="pill"
+                                size="medium"
+                                className="w-full"
                             />
                         </div>
 
-                        <div className="flex items-center gap-3">
-                            <div className="text-xs text-muted-foreground">
-                                Active Statutory Leave Cycle: <strong className="text-foreground">{currentYear}</strong> G.C.
+                        <div className="flex flex-wrap items-center justify-between lg:justify-end gap-2.5">
+                            <div className="text-caption-1-medium text-text-tertiary sm:me-1">
+                                Cycle: <span className="font-semibold text-text-primary">{currentYear} G.C.</span>
                             </div>
+
                             <Button
                                 type="button"
+                                variant="secondary"
+                                size="small"
+                                leadingIcon={RiCompass3Line}
                                 onClick={() => setIsTourOpen(true)}
-                                variant="outline"
-                                size="sm"
-                                className="border-border bg-card text-foreground hover:bg-muted font-medium text-xs gap-1.5 rounded-md"
+                                className="rounded-full text-caption-1-medium"
                             >
-                                <Compass className="w-3.5 h-3.5 text-primary" />
-                                <span>Tour Leave Ledger</span>
+                                Tour Ledger
                             </Button>
-                            <ViewToggle value={viewMode} onChange={setViewMode} />
+
+                            <SegmentedControl
+                                variant="solid"
+                                aria-label="Display mode"
+                                selectedKeys={[viewMode]}
+                                onSelectionChange={(keys) => {
+                                    const next = Array.from(keys)[0] as 'table' | 'grid';
+                                    if (next) setViewMode(next);
+                                }}
+                            >
+                                <SegmentedControlItem id="table" aria-label="Table view">
+                                    <RiTableLine className="size-4 me-1" />
+                                    <span>Table</span>
+                                </SegmentedControlItem>
+                                <SegmentedControlItem id="grid" aria-label="Grid view">
+                                    <RiLayoutGridLine className="size-4 me-1" />
+                                    <span>Grid</span>
+                                </SegmentedControlItem>
+                            </SegmentedControl>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
 
-            {/* Leave Ledger Table */}
-            <Card data-tour="leave-table" className="border-border bg-card shadow-xs overflow-hidden shadow-sm">
-                {viewMode === 'table' ? (
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-24">File no</TableHead>
-                            <TableHead>Staff name</TableHead>
-                            <TableHead>Department</TableHead>
-                            <TableHead>Employment date (E.C)</TableHead>
-                            <TableHead className="text-center" data-tour="col-entitlement">Statutory entitlement</TableHead>
-                            <TableHead className="text-center">Days taken</TableHead>
-                            <TableHead className="text-center">Remaining balance</TableHead>
-                            <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {employees.data.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                                    No personnel records found matching your query.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            employees.data.map((emp, index) => (
-                                <TableRow key={emp.id} className="hover:bg-muted/40/50">
-                                    <TableCell className="font-bold text-primary text-xs">
-                                        {emp.file_no}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="font-bold text-foreground text-sm">{emp.full_name}</div>
-                                        <div className="text-xs text-muted-foreground">{emp.position}</div>
-                                    </TableCell>
-                                    <TableCell className="text-xs text-foreground/90">
-                                        {emp.department?.name || 'General Operations'}
-                                    </TableCell>
-                                    <TableCell className="text-xs text-muted-foreground">
-                                        {emp.employment_date_ec}
-                                    </TableCell>
-                                    <TableCell className="text-center font-bold text-foreground text-xs">
-                                        {emp.statutory_entitlement} Days
-                                    </TableCell>
-                                    <TableCell className="text-center text-xs text-muted-foreground">
-                                        {emp.display_taken} Days
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <span 
-                                            data-tour={index === 0 ? "balance-badge" : undefined}
-                                            className={`inline-flex items-center px-2 py-0.5 rounded-xs text-xs font-bold ${
-                                                emp.display_remaining <= 3 ? 'bg-destructive/10 text-destructive border border-destructive/25' :
-                                                emp.display_remaining <= 8 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25' :
-                                                'bg-muted/40 text-primary'
-                                            }`}
-                                        >
-                                            {emp.display_remaining} Days
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex flex-wrap items-center justify-end gap-2">
-                                            <Button
-                                                data-tour={index === 0 ? "first-deduct-btn" : undefined}
-                                                onClick={() => openAdjustModal(emp)}
-                                                size="sm"
-                                                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs font-bold text-xs h-8 px-2.5 rounded-xs"
-                                            >
-                                                <MinusCircle className="w-3.5 h-3.5 mr-1" />
-                                                Deduct Leave
-                                            </Button>
-                                            <Link href={route('employees.show', emp.id)}>
-                                                <Button 
-                                                    data-tour={index === 0 ? "first-profile-btn" : undefined}
-                                                    variant="outline" 
-                                                    size="sm"
-                                                    className="border-border bg-card hover:bg-muted text-primary font-semibold text-xs h-8 px-2.5 rounded-xs"
-                                                >
-                                                    <Eye className="w-3.5 h-3.5 mr-1" />
-                                                    Profile
-                                                </Button>
-                                            </Link>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-                ) : (
-                    <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
-                        {employees.data.length === 0 ? (
-                            <div className="col-span-full py-12 text-center text-xs text-muted-foreground">
-                                No personnel records found matching your query.
-                            </div>
-                        ) : (
-                            employees.data.map((emp, index) => (
-                                <div
-                                    key={emp.id}
-                                    className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:shadow-xs"
-                                >
-                                    <div className="flex items-start justify-between gap-2">
-                                        <div className="min-w-0">
-                                            <p className="truncate text-sm font-bold text-foreground">{emp.full_name}</p>
-                                            <p className="text-[11px] font-semibold text-primary">{emp.file_no}</p>
-                                            <p className="truncate text-[11px] text-muted-foreground">
-                                                {emp.position} Â· {emp.department?.name || 'General Operations'}
+                    {/* Table View */}
+                    {viewMode === 'table' ? (
+                        <div
+                            data-tour="leave-table"
+                            className="rounded-2xl border border-border-button-default bg-background-primary-default shadow-xs overflow-hidden"
+                        >
+                            <Table aria-label="Staff Leave Balances" size="md">
+                                <TableHeader>
+                                    <TableColumn id="file_no" isRowHeader className="w-24">
+                                        File No
+                                    </TableColumn>
+                                    <TableColumn id="staff">Staff Member</TableColumn>
+                                    <TableColumn id="department">Department</TableColumn>
+                                    <TableColumn id="employed">Employment (E.C)</TableColumn>
+                                    <TableColumn id="entitlement" className="text-center">
+                                        Statutory Entitlement
+                                    </TableColumn>
+                                    <TableColumn id="taken" className="text-center">
+                                        Days Taken
+                                    </TableColumn>
+                                    <TableColumn id="remaining" className="text-center">
+                                        Remaining Balance
+                                    </TableColumn>
+                                    <TableColumn id="actions" className="text-end">
+                                        <span className="sr-only">Actions</span>
+                                    </TableColumn>
+                                </TableHeader>
+                                <TableBody
+                                    renderEmptyState={() => (
+                                        <div className="flex h-44 flex-col items-center justify-center text-center p-6 text-text-tertiary">
+                                            <RiUserLine className="size-8 text-foreground-icon-quaternary mb-2" />
+                                            <p className="text-body-medium font-medium text-text-secondary">
+                                                No personnel records found
+                                            </p>
+                                            <p className="text-caption-1-regular text-text-tertiary mt-0.5">
+                                                Try adjusting your search query or clear filters.
                                             </p>
                                         </div>
-                                        <span
-                                            data-tour={index === 0 ? 'balance-badge' : undefined}
-                                            className={`inline-flex shrink-0 items-center rounded-md px-2 py-0.5 text-[11px] font-bold ${getBalanceClass(emp.display_remaining)}`}
+                                    )}
+                                >
+                                    {employees.data.map((emp, index) => (
+                                        <TableRow
+                                            key={emp.id}
+                                            id={emp.id}
+                                            className="hover:bg-background-secondary-default/60 transition-colors"
                                         >
-                                            {emp.display_remaining} Days
-                                        </span>
-                                    </div>
-
-                                    <div className="mt-3 grid grid-cols-3 gap-2 border-t border-border/60 pt-3 text-center">
-                                        <div>
-                                            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Entitled</p>
-                                            <p className="text-sm font-bold text-foreground">{emp.statutory_entitlement}</p>
-                                        </div>
-                                        <div className="border-x border-border/60">
-                                            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Taken</p>
-                                            <p className="text-sm font-bold text-foreground/90">{emp.display_taken}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Remaining</p>
-                                            <p className="text-sm font-bold text-foreground">{emp.display_remaining}</p>
-                                        </div>
-                                    </div>
-
-                                    <p className="mt-2 text-[11px] text-muted-foreground">
-                                        Employed: {emp.employment_date_ec} E.C.
-                                    </p>
-
-                                    <div className="mt-3 flex gap-2">
-                                        <Button
-                                            data-tour={index === 0 ? 'first-deduct-btn' : undefined}
-                                            onClick={() => openAdjustModal(emp)}
-                                            size="sm"
-                                            className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs font-bold text-xs h-8 gap-1.5 rounded-xs"
-                                        >
-                                            <MinusCircle className="w-3.5 h-3.5" />
-                                            Deduct Leave
-                                        </Button>
-                                        <Link href={route('employees.show', emp.id)}>
-                                            <Button
-                                                data-tour={index === 0 ? 'first-profile-btn' : undefined}
-                                                variant="outline"
-                                                size="sm"
-                                                className="border-border bg-card hover:bg-muted text-primary font-semibold text-xs h-8 gap-1.5 rounded-xs"
-                                            >
-                                                <Eye className="w-3.5 h-3.5" />
-                                                Profile
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                )}
-
-                {/* Pagination */}
-                {employees.last_page > 1 && (
-                    <div data-tour="leave-pagination" className="p-4 border-t border-border/60 bg-muted/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-muted-foreground">
-                        <div>
-                            Showing <strong>{employees.from || 0}</strong> to <strong>{employees.to || 0}</strong> of <strong>{employees.total}</strong> records
-                        </div>
-                        <div className="flex gap-1">
-                            {employees.links.map((link, idx) => (
-                                <Link
-                                    key={idx}
-                                    href={link.url || '#'}
-                                    preserveState
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                                        link.active
-                                            ? 'bg-primary text-primary-foreground border-primary font-semibold shadow-xs'
-                                            : link.url
-                                            ? 'bg-card text-foreground border-border hover:bg-muted'
-                                            : 'bg-muted/40 text-muted-foreground/40 border-border/40 cursor-not-allowed'
-                                    }`}
-                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </Card>
-        </TabsContent>
-
-        {/* TAB 2: PENDING LEAVE REQUESTS QUEUE */}
-        <TabsContent value="queue" className="space-y-6 focus-visible:outline-none">
-            <Card className="border-border bg-card shadow-xs overflow-hidden">
-                <CardHeader className="py-4 px-6 border-b border-border/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div>
-                        <CardTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
-                            <CalendarCheck className="w-5 h-5 text-primary" />
-                            <span>Pending Leave Requests Queue</span>
-                        </CardTitle>
-                        <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                            Review staff leave applications, evaluate remaining balance, and approve with deduction or as excused leave
-                        </CardDescription>
-                    </div>
-                    <Badge variant="outline" className="text-xs font-mono self-start sm:self-auto">
-                        {pendingRequests.length} Waiting Review
-                    </Badge>
-                </CardHeader>
-
-                <CardContent className="p-0">
-                    {pendingRequests.length === 0 ? (
-                        <div className="py-16 flex flex-col items-center justify-center text-center px-4">
-                            <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 mb-3">
-                                <CheckCircle2 className="w-6 h-6" />
-                            </div>
-                            <h4 className="text-sm font-semibold text-foreground">All Caught Up!</h4>
-                            <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-                                There are no pending employee leave requests waiting for administrative review.
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader className="bg-muted/40">
-                                    <TableRow>
-                                        <TableHead>Staff Member</TableHead>
-                                        <TableHead>Leave Type</TableHead>
-                                        <TableHead>Duration &amp; Dates</TableHead>
-                                        <TableHead>Handover &amp; Contact</TableHead>
-                                        <TableHead className="text-center">Current Balance</TableHead>
-                                        <TableHead>Reason</TableHead>
-                                        <TableHead className="text-right">Action</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody className="divide-y divide-border/60">
-                                    {pendingRequests.map((req) => (
-                                        <TableRow key={req.id} className="hover:bg-muted/30">
                                             <TableCell>
-                                                <div className="font-bold text-foreground text-sm">
-                                                    {req.employee?.full_name || 'Staff Member'}
-                                                </div>
-                                                <div className="text-xs font-semibold text-primary">
-                                                    {req.employee?.file_no}
-                                                </div>
-                                                <div className="text-[11px] text-muted-foreground">
-                                                    {req.employee?.department?.name || 'Operations'} · {req.employee?.position}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline" className="text-xs font-semibold bg-primary/5 text-primary border-primary/20">
-                                                    {req.leave_type} Leave
-                                                </Badge>
-                                                {req.attachment_path && (
-                                                    <div className="mt-1">
-                                                        <a
-                                                            href={`/storage/${req.attachment_path}`}
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-medium"
-                                                        >
-                                                            <Paperclip className="w-3 h-3" />
-                                                            <span>Attachment</span>
-                                                        </a>
-                                                    </div>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="font-mono font-bold text-foreground text-xs">
-                                                    {req.requested_days} Working Day{req.requested_days > 1 ? 's' : ''}
-                                                </div>
-                                                <div className="text-xs font-mono text-muted-foreground">
-                                                    {req.start_date_ec} – {req.end_date_ec}
-                                                </div>
-                                                <div className="text-[10px] text-muted-foreground">
-                                                    ({req.start_date} to {req.end_date})
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="text-xs font-medium text-foreground">
-                                                    {req.handover_employee?.full_name || 'None'}
-                                                </div>
-                                                <div className="text-[11px] font-mono text-muted-foreground">
-                                                    {req.contact_phone || '—'}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold font-mono bg-muted text-primary">
-                                                    {req.employee?.current_leave_balance?.remaining_days ?? 16} Days
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-caption-1-semibold font-mono bg-background-tertiary-default text-accent-600 border border-border-button-default">
+                                                    {emp.file_no}
                                                 </span>
                                             </TableCell>
-                                            <TableCell className="max-w-xs">
-                                                <p className="text-xs text-foreground/90 line-clamp-2" title={req.reason}>
-                                                    {req.reason}
-                                                </p>
-                                                <p className="text-[10px] text-muted-foreground mt-1">
-                                                    Applied: {new Date(req.created_at).toLocaleDateString()}
-                                                </p>
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar
+                                                        size="md"
+                                                        color="blue"
+                                                        initials={getInitials(emp.full_name)}
+                                                    />
+                                                    <div className="min-w-0">
+                                                        <div className="font-semibold text-text-primary text-body-medium truncate">
+                                                            {emp.full_name}
+                                                        </div>
+                                                        <div className="text-caption-1-regular text-text-tertiary truncate">
+                                                            {emp.position}
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </TableCell>
-                                            <TableCell className="text-right">
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() => openReviewModal(req)}
-                                                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-8 px-3 rounded-lg shadow-xs"
+                                            <TableCell>
+                                                <Chip
+                                                    color="neutral"
+                                                    variant="caption"
+                                                    className="font-normal text-text-secondary"
                                                 >
-                                                    Review &amp; Decide
-                                                </Button>
+                                                    {emp.department?.name || 'General Operations'}
+                                                </Chip>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="font-mono text-caption-1-medium text-text-secondary">
+                                                    {emp.employment_date_ec}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <span className="font-semibold text-text-primary text-body-medium font-mono">
+                                                    {emp.statutory_entitlement}
+                                                </span>
+                                                <span className="text-caption-1-regular text-text-tertiary ms-1">Days</span>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <span className="font-medium text-text-secondary text-body-medium font-mono">
+                                                    {emp.display_taken}
+                                                </span>
+                                                <span className="text-caption-1-regular text-text-tertiary ms-1">Days</span>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <div data-tour={index === 0 ? 'balance-badge' : undefined}>
+                                                    <BalanceHealthBadge
+                                                        remaining={emp.display_remaining}
+                                                        entitled={emp.statutory_entitlement}
+                                                    />
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-end">
+                                                <div className="flex items-center justify-end gap-1.5">
+                                                    <Button
+                                                        size="small"
+                                                        variant="primary"
+                                                        leadingIcon={RiSubtractLine}
+                                                        onClick={() => openAdjustModal(emp)}
+                                                        data-tour={index === 0 ? 'first-deduct-btn' : undefined}
+                                                        className="rounded-full shadow-xs text-caption-1-semibold"
+                                                    >
+                                                        Deduct
+                                                    </Button>
+                                                    <Link href={route('employees.show', emp.id)}>
+                                                        <IconButton
+                                                            size="small"
+                                                            icon={RiUserLine}
+                                                            aria-label={`View profile for ${emp.full_name}`}
+                                                            title="View Profile"
+                                                            data-tour={index === 0 ? 'first-profile-btn' : undefined}
+                                                            className="rounded-full hover:text-accent-500"
+                                                        />
+                                                    </Link>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
                             </Table>
+
+                            {/* BoardUI Pagination */}
+                            {employees.last_page > 1 && (
+                                <div
+                                    data-tour="leave-pagination"
+                                    className="p-3.5 border-t border-separator-border bg-background-secondary-default/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-caption-1-medium text-text-secondary"
+                                >
+                                    <div>
+                                        Showing <strong className="text-text-primary font-mono">{employees.from || 0}</strong> to <strong className="text-text-primary font-mono">{employees.to || 0}</strong> of <strong className="text-text-primary font-mono">{employees.total}</strong> personnel
+                                    </div>
+                                    <Pagination
+                                        page={employees.current_page}
+                                        totalPages={employees.last_page}
+                                        onChange={(newPage) => {
+                                            router.get(
+                                                route('leave.index'),
+                                                { search, page: newPage },
+                                                { preserveState: true, replace: true }
+                                            );
+                                        }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        /* Card Grid View */
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                {employees.data.length === 0 ? (
+                                    <div className="col-span-full rounded-2xl border border-border-button-default bg-background-primary-default py-16 text-center text-text-tertiary">
+                                        <RiUserLine className="size-8 mx-auto mb-2 text-foreground-icon-quaternary" />
+                                        <p className="text-body-medium font-medium text-text-secondary">
+                                            No personnel records found
+                                        </p>
+                                    </div>
+                                ) : (
+                                    employees.data.map((emp, index) => (
+                                        <div
+                                            key={emp.id}
+                                            className="rounded-2xl border border-border-button-default bg-background-primary-default p-4 transition-all duration-200 hover:border-accent-500/40 hover:shadow-xs flex flex-col justify-between"
+                                        >
+                                            <div>
+                                                <div className="flex items-start justify-between gap-2.5">
+                                                    <div className="flex items-center gap-2.5 min-w-0">
+                                                        <Avatar
+                                                            size="md"
+                                                            color="blue"
+                                                            initials={getInitials(emp.full_name)}
+                                                        />
+                                                        <div className="min-w-0">
+                                                            <p className="truncate text-body-medium font-semibold text-text-primary">
+                                                                {emp.full_name}
+                                                            </p>
+                                                            <p className="truncate text-caption-1-regular text-text-tertiary">
+                                                                {emp.position}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <span className="shrink-0 font-mono text-caption-1-semibold px-2 py-0.5 rounded-full bg-background-tertiary-default text-accent-600 border border-border-button-default">
+                                                        {emp.file_no}
+                                                    </span>
+                                                </div>
+
+                                                <div className="mt-2.5 flex items-center justify-between text-caption-1-regular text-text-secondary">
+                                                    <Chip color="neutral" variant="caption">
+                                                        {emp.department?.name || 'General Operations'}
+                                                    </Chip>
+                                                    <span className="font-mono text-text-tertiary text-caption-1-regular">
+                                                        E.C. {emp.employment_date_ec}
+                                                    </span>
+                                                </div>
+
+                                                {/* Metrics 3-box */}
+                                                <div className="mt-3.5 grid grid-cols-3 gap-2 border-t border-separator-border pt-3 text-center">
+                                                    <div className="bg-background-secondary-default/50 rounded-xl py-2">
+                                                        <p className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">
+                                                            Entitled
+                                                        </p>
+                                                        <p className="text-headline-semibold text-text-primary font-mono mt-0.5">
+                                                            {emp.statutory_entitlement}
+                                                        </p>
+                                                    </div>
+                                                    <div className="bg-background-secondary-default/50 rounded-xl py-2">
+                                                        <p className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">
+                                                            Taken
+                                                        </p>
+                                                        <p className="text-headline-semibold text-text-secondary font-mono mt-0.5">
+                                                            {emp.display_taken}
+                                                        </p>
+                                                    </div>
+                                                    <div className="bg-background-secondary-default/50 rounded-xl py-2 flex flex-col items-center justify-center">
+                                                        <p className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">
+                                                            Remaining
+                                                        </p>
+                                                        <div className="mt-0.5" data-tour={index === 0 ? 'balance-badge' : undefined}>
+                                                            <BalanceHealthBadge
+                                                                remaining={emp.display_remaining}
+                                                                entitled={emp.statutory_entitlement}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-4 flex gap-2 pt-3 border-t border-separator-border">
+                                                <Button
+                                                    data-tour={index === 0 ? 'first-deduct-btn' : undefined}
+                                                    onClick={() => openAdjustModal(emp)}
+                                                    size="small"
+                                                    variant="primary"
+                                                    leadingIcon={RiSubtractLine}
+                                                    className="flex-1 rounded-full text-caption-1-semibold"
+                                                >
+                                                    Deduct
+                                                </Button>
+                                                <Link href={route('employees.show', emp.id)} className="flex-1">
+                                                    <Button
+                                                        data-tour={index === 0 ? 'first-profile-btn' : undefined}
+                                                        variant="secondary"
+                                                        size="small"
+                                                        leadingIcon={RiUserLine}
+                                                        className="w-full rounded-full text-caption-1-semibold"
+                                                    >
+                                                        Profile
+                                                    </Button>
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            {/* Grid View Pagination */}
+                            {employees.last_page > 1 && (
+                                <div className="p-3.5 rounded-2xl border border-border-button-default bg-background-primary-default flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-caption-1-medium text-text-secondary">
+                                    <div>
+                                        Showing <strong className="text-text-primary font-mono">{employees.from || 0}</strong> to <strong className="text-text-primary font-mono">{employees.to || 0}</strong> of <strong className="text-text-primary font-mono">{employees.total}</strong> personnel
+                                    </div>
+                                    <Pagination
+                                        page={employees.current_page}
+                                        totalPages={employees.last_page}
+                                        onChange={(newPage) => {
+                                            router.get(
+                                                route('leave.index'),
+                                                { search, page: newPage },
+                                                { preserveState: true, replace: true }
+                                            );
+                                        }}
+                                    />
+                                </div>
+                            )}
                         </div>
                     )}
-                </CardContent>
-            </Card>
-        </TabsContent>
+                </div>
+            )}
 
-        {/* TAB 3: DECISIONS AUDIT HISTORY */}
-        <TabsContent value="history" className="space-y-6 focus-visible:outline-none">
-            <Card className="border-border bg-card shadow-xs overflow-hidden">
-                <CardHeader className="py-4 px-6 border-b border-border/70">
-                    <CardTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
-                        <History className="w-5 h-5 text-primary" />
-                        <span>Recent Leave Decisions History</span>
-                    </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                        Audit trail of approved, rejected, and cancelled leave applications
-                    </CardDescription>
-                </CardHeader>
+            {/* TAB 2: PENDING LEAVE REQUESTS QUEUE */}
+            {activeTab === 'queue' && (
+                <div className="rounded-2xl border border-border-button-default bg-background-primary-default shadow-xs overflow-hidden">
+                    <div className="py-4 px-6 border-b border-separator-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-background-secondary-default/40">
+                        <div>
+                            <h3 className="text-title-3-semibold text-text-primary flex items-center gap-2">
+                                <RiShieldCheckLine className="size-5 text-accent-500" />
+                                <span>Pending Leave Requests Queue</span>
+                            </h3>
+                            <p className="text-body-regular text-text-secondary mt-0.5">
+                                Review staff leave applications, evaluate balance liability, and approve with deduction or grant statutory excused leave.
+                            </p>
+                        </div>
+                        <Chip color={pendingRequests.length > 0 ? 'rose' : 'lime'} variant="bold" className="self-start sm:self-auto font-mono">
+                            {pendingRequests.length} Waiting Review
+                        </Chip>
+                    </div>
 
-                <CardContent className="p-0">
+                    {pendingRequests.length === 0 ? (
+                        <div className="py-20 flex flex-col items-center justify-center text-center px-4">
+                            <div className="size-14 rounded-full bg-status-lime-background flex items-center justify-center text-green-600 mb-3 shadow-xs">
+                                <RiCheckboxCircleLine className="size-8" />
+                            </div>
+                            <h4 className="text-title-3-semibold text-text-primary">All Caught Up!</h4>
+                            <p className="text-body-regular text-text-secondary mt-1 max-w-md">
+                                There are no pending employee leave applications awaiting administrative HR review.
+                            </p>
+                        </div>
+                    ) : (
+                        <Table aria-label="Pending Leave Requests" size="md">
+                            <TableHeader>
+                                <TableColumn id="staff" isRowHeader>Staff Member</TableColumn>
+                                <TableColumn id="type">Leave Type</TableColumn>
+                                <TableColumn id="dates">Duration &amp; Dates</TableColumn>
+                                <TableColumn id="handover">Handover &amp; Contact</TableColumn>
+                                <TableColumn id="balance" className="text-center">Current Balance</TableColumn>
+                                <TableColumn id="reason">Reason</TableColumn>
+                                <TableColumn id="action" className="text-end">Action</TableColumn>
+                            </TableHeader>
+                            <TableBody>
+                                {pendingRequests.map((req) => (
+                                    <TableRow key={req.id} id={req.id} className="hover:bg-background-secondary-default/60">
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <Avatar
+                                                    size="md"
+                                                    color="blue"
+                                                    initials={getInitials(req.employee?.full_name || 'Staff')}
+                                                />
+                                                <div className="min-w-0">
+                                                    <div className="font-semibold text-text-primary text-body-medium">
+                                                        {req.employee?.full_name || 'Staff Member'}
+                                                    </div>
+                                                    <div className="text-caption-1-medium text-accent-600 font-mono">
+                                                        {req.employee?.file_no}
+                                                    </div>
+                                                    <div className="text-[11px] text-text-tertiary">
+                                                        {req.employee?.department?.name || 'Operations'} · {req.employee?.position}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip color="blue" variant="bold">
+                                                {req.leave_type} Leave
+                                            </Chip>
+                                            {req.attachment_path && (
+                                                <div className="mt-1">
+                                                    <a
+                                                        href={`/storage/${req.attachment_path}`}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="inline-flex items-center gap-1 text-[11px] text-accent-600 hover:underline font-semibold"
+                                                    >
+                                                        <RiAttachment2 className="size-3" />
+                                                        <span>Attachment</span>
+                                                    </a>
+                                                </div>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="font-mono font-bold text-text-primary text-caption-1-semibold">
+                                                {req.requested_days} Working Day{req.requested_days > 1 ? 's' : ''}
+                                            </div>
+                                            <div className="text-caption-1-regular font-mono text-text-secondary">
+                                                {req.start_date_ec} – {req.end_date_ec} (E.C.)
+                                            </div>
+                                            <div className="text-[10px] text-text-tertiary font-mono">
+                                                {req.start_date} to {req.end_date}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="text-caption-1-medium text-text-primary">
+                                                {req.handover_employee?.full_name || 'None designated'}
+                                            </div>
+                                            <div className="text-[11px] font-mono text-text-tertiary flex items-center gap-1 mt-0.5">
+                                                <RiPhoneLine className="size-3" />
+                                                <span>{req.contact_phone || '—'}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <Chip color="lime" variant="bold" className="font-mono">
+                                                {req.employee?.current_leave_balance?.remaining_days ?? 16} Days
+                                            </Chip>
+                                        </TableCell>
+                                        <TableCell className="max-w-xs">
+                                            <p className="text-caption-1-regular text-text-primary line-clamp-2" title={req.reason}>
+                                                {req.reason}
+                                            </p>
+                                            <p className="text-[10px] text-text-tertiary mt-1 font-mono">
+                                                Applied: {new Date(req.created_at).toLocaleDateString()}
+                                            </p>
+                                        </TableCell>
+                                        <TableCell className="text-end">
+                                            <Button
+                                                size="small"
+                                                variant="primary"
+                                                leadingIcon={RiShieldCheckLine}
+                                                onClick={() => openReviewModal(req)}
+                                                className="rounded-full shadow-xs text-caption-1-semibold"
+                                            >
+                                                Review &amp; Decide
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
+                </div>
+            )}
+
+            {/* TAB 3: DECISIONS HISTORY */}
+            {activeTab === 'history' && (
+                <div className="rounded-2xl border border-border-button-default bg-background-primary-default shadow-xs overflow-hidden">
+                    <div className="py-4 px-6 border-b border-separator-border bg-background-secondary-default/40">
+                        <h3 className="text-title-3-semibold text-text-primary flex items-center gap-2">
+                            <RiHistoryLine className="size-5 text-accent-500" />
+                            <span>Recent Leave Decisions Audit History</span>
+                        </h3>
+                        <p className="text-body-regular text-text-secondary mt-0.5">
+                            Comprehensive audit trail of reviewed, approved, and rejected personnel leave applications.
+                        </p>
+                    </div>
+
                     {recentRequests.length === 0 ? (
-                        <div className="py-16 text-center text-xs text-muted-foreground">
+                        <div className="py-16 text-center text-body-regular text-text-tertiary">
                             No historic leave decisions recorded yet.
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader className="bg-muted/40">
-                                    <TableRow>
-                                        <TableHead>Staff Member</TableHead>
-                                        <TableHead>Type &amp; Period</TableHead>
-                                        <TableHead>Balance Impact</TableHead>
-                                        <TableHead>Decision</TableHead>
-                                        <TableHead>Reviewed By</TableHead>
-                                        <TableHead>Notes</TableHead>
+                        <Table aria-label="Decisions History" size="md">
+                            <TableHeader>
+                                <TableColumn id="staff" isRowHeader>Staff Member</TableColumn>
+                                <TableColumn id="type">Type &amp; Period</TableColumn>
+                                <TableColumn id="impact">Balance Impact</TableColumn>
+                                <TableColumn id="decision">Decision</TableColumn>
+                                <TableColumn id="reviewer">Reviewed By</TableColumn>
+                                <TableColumn id="notes">Notes</TableColumn>
+                            </TableHeader>
+                            <TableBody>
+                                {recentRequests.map((req) => (
+                                    <TableRow key={req.id} id={req.id} className="hover:bg-background-secondary-default/60">
+                                        <TableCell>
+                                            <div className="font-semibold text-text-primary text-body-medium">
+                                                {req.employee?.full_name || 'Staff Member'}
+                                            </div>
+                                            <div className="text-caption-1-semibold text-accent-600 font-mono">
+                                                {req.employee?.file_no}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="text-caption-1-semibold text-text-primary">
+                                                {req.leave_type} ({req.requested_days} Days)
+                                            </div>
+                                            <div className="text-[11px] font-mono text-text-tertiary">
+                                                {req.start_date_ec} to {req.end_date_ec} (E.C.)
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            {req.status === 'Approved' ? (
+                                                req.is_deducted ? (
+                                                    <Chip color="yellow" variant="bold" className="font-mono">
+                                                        -{req.days_deducted} days
+                                                    </Chip>
+                                                ) : (
+                                                    <Chip color="lime" variant="bold">
+                                                        Excused (0 Deduction)
+                                                    </Chip>
+                                                )
+                                            ) : (
+                                                <span className="text-caption-1-regular text-text-tertiary">—</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                color={req.status === 'Approved' ? 'lime' : req.status === 'Rejected' ? 'rose' : 'neutral'}
+                                                variant="bold"
+                                            >
+                                                {req.status}
+                                            </Chip>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="text-caption-1-medium text-text-primary">
+                                                {req.reviewer?.name || 'HR Administrator'}
+                                            </div>
+                                            <div className="text-[10px] text-text-tertiary font-mono">
+                                                {req.reviewed_at ? new Date(req.reviewed_at).toLocaleDateString() : '—'}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="max-w-xs">
+                                            <p className="text-caption-1-regular text-text-secondary truncate" title={req.reviewer_notes || req.reason}>
+                                                {req.reviewer_notes || req.reason || '—'}
+                                            </p>
+                                        </TableCell>
                                     </TableRow>
-                                </TableHeader>
-                                <TableBody className="divide-y divide-border/60">
-                                    {recentRequests.map((req) => (
-                                                <TableRow key={req.id} className="hover:bg-muted/30">
-                                                    <TableCell>
-                                                        <div className="font-bold text-foreground text-sm">
-                                                            {req.employee?.full_name || 'Staff Member'}
-                                                        </div>
-                                                        <div className="text-xs font-semibold text-primary">
-                                                            {req.employee?.file_no}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="text-xs font-semibold text-foreground">
-                                                            {req.leave_type} ({req.requested_days} Days)
-                                                        </div>
-                                                        <div className="text-[11px] font-mono text-muted-foreground">
-                                                            {req.start_date_ec} to {req.end_date_ec}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {req.status === 'Approved' ? (
-                                                            req.is_deducted ? (
-                                                                <Badge variant="outline" className="text-xs font-mono bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20">
-                                                                    -{req.days_deducted} days
-                                                                </Badge>
-                                                            ) : (
-                                                                <Badge variant="outline" className="text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
-                                                                    Excused (0 Deduction)
-                                                                </Badge>
-                                                            )
-                                                        ) : (
-                                                            <span className="text-xs text-muted-foreground">—</span>
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Badge
-                                                            variant={
-                                                                req.status === 'Approved'
-                                                                    ? 'secondary'
-                                                                    : req.status === 'Rejected'
-                                                                    ? 'destructive'
-                                                                    : 'outline'
-                                                            }
-                                                            className={`text-xs px-2.5 py-0.5 font-semibold ${
-                                                                req.status === 'Approved'
-                                                                    ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20'
-                                                                    : req.status === 'Rejected'
-                                                                    ? 'bg-destructive/10 text-destructive border-destructive/25'
-                                                                    : ''
-                                                            }`}
-                                                        >
-                                                            {req.status}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="text-xs font-medium text-foreground">
-                                                            {req.reviewer?.name || 'HR Administrator'}
-                                                        </div>
-                                                        <div className="text-[10px] text-muted-foreground font-mono">
-                                                            {req.reviewed_at ? new Date(req.reviewed_at).toLocaleDateString() : '—'}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="max-w-xs">
-                                                        <p className="text-xs text-muted-foreground truncate" title={req.reviewer_notes || req.reason}>
-                                                            {req.reviewer_notes || req.reason || '—'}
-                                                        </p>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                            </Table>
-                        </div>
+                                ))}
+                            </TableBody>
+                        </Table>
                     )}
-                </CardContent>
-            </Card>
-        </TabsContent>
-    </Tabs>
-
-    {/* HR Review Decision Modal (Shadcn UI Dialog) */}
-    <Dialog open={Boolean(selectedRequest)} onOpenChange={(open) => !open && setSelectedRequest(null)}>
-        <DialogContent className="max-w-lg bg-card border-border text-card-foreground p-6 max-h-[90vh] overflow-y-auto rounded-2xl shadow-lg">
-            <DialogHeader>
-                <DialogTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-primary" />
-                    <span>Review Employee Leave Application</span>
-                </DialogTitle>
-                <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                    Determine statutory eligibility, choose deduction treatment, or record rejection reason.
-                </DialogDescription>
-            </DialogHeader>
-
-            {selectedRequest && (
-                <form onSubmit={handleReviewSubmit} className="space-y-4 pt-3">
-                    {/* Staff Dossier Summary Banner */}
-                    <div className="p-3.5 bg-muted/40 border border-border/80 rounded-xl space-y-2">
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <p className="font-bold text-foreground text-sm">{selectedRequest.employee?.full_name}</p>
-                                <p className="text-xs font-semibold text-primary">{selectedRequest.employee?.file_no} · {selectedRequest.employee?.position}</p>
-                                <p className="text-[11px] text-muted-foreground">{selectedRequest.employee?.department?.name || 'General Operations'}</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase">Current Balance</p>
-                                <p className="text-sm font-extrabold text-primary font-mono">
-                                    {selectedRequest.employee?.current_leave_balance?.remaining_days ?? 16} Working Days
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="pt-2 border-t border-border/60 grid grid-cols-2 gap-2 text-xs">
-                            <div>
-                                <span className="text-muted-foreground">Type: </span>
-                                <strong className="text-foreground">{selectedRequest.leave_type} Leave</strong>
-                            </div>
-                            <div>
-                                <span className="text-muted-foreground">Duration: </span>
-                                <strong className="text-foreground">{selectedRequest.requested_days} Days</strong>
-                            </div>
-                            <div>
-                                <span className="text-muted-foreground">Dates (E.C.): </span>
-                                <span className="font-mono text-foreground font-medium">{selectedRequest.start_date_ec} – {selectedRequest.end_date_ec}</span>
-                            </div>
-                            <div>
-                                <span className="text-muted-foreground">Dates (G.C.): </span>
-                                <span className="font-mono text-muted-foreground">{selectedRequest.start_date} to {selectedRequest.end_date}</span>
-                            </div>
-                            {selectedRequest.handover_employee && (
-                                <div className="col-span-2">
-                                    <span className="text-muted-foreground">Handover: </span>
-                                    <span className="text-foreground font-medium">{selectedRequest.handover_employee.full_name} ({selectedRequest.handover_employee.position})</span>
-                                </div>
-                            )}
-                            {selectedRequest.contact_phone && (
-                                <div className="col-span-2">
-                                    <span className="text-muted-foreground">Contact Phone: </span>
-                                    <span className="text-foreground font-mono">{selectedRequest.contact_phone}</span>
-                                </div>
-                            )}
-                            <div className="col-span-2 pt-1">
-                                <span className="text-muted-foreground">Reason: </span>
-                                <span className="text-foreground">{selectedRequest.reason}</span>
-                            </div>
-                            {selectedRequest.attachment_path && (
-                                <div className="col-span-2 pt-1">
-                                    <a
-                                        href={`/storage/${selectedRequest.attachment_path}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-semibold"
-                                    >
-                                        <Paperclip className="w-3.5 h-3.5" />
-                                        <span>View Attached Supporting Document</span>
-                                    </a>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Decision Choice */}
-                    <div>
-                        <label className="block text-xs font-bold text-foreground mb-2">
-                            Administrative Decision <span className="text-destructive">*</span>
-                        </label>
-                        <div className="grid grid-cols-2 gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setReviewData('decision', 'approve')}
-                                className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
-                                    reviewData.decision === 'approve'
-                                        ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-400 shadow-xs'
-                                        : 'border-border bg-card text-muted-foreground hover:bg-muted'
-                                }`}
-                            >
-                                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                                <span>Approve Request</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setReviewData('decision', 'reject')}
-                                className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
-                                    reviewData.decision === 'reject'
-                                        ? 'bg-destructive/15 border-destructive/40 text-destructive shadow-xs'
-                                        : 'border-border bg-card text-muted-foreground hover:bg-muted'
-                                }`}
-                            >
-                                <XCircle className="w-4 h-4 text-destructive" />
-                                <span>Reject Request</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* When Approved: Deduction Option */}
-                    {reviewData.decision === 'approve' && (
-                        <div className="space-y-3 p-3.5 rounded-xl border border-border/80 bg-muted/20">
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="deduct_balance"
-                                    checked={reviewData.deduct_balance}
-                                    onCheckedChange={(checked) => setReviewData('deduct_balance', Boolean(checked))}
-                                />
-                                <label
-                                    htmlFor="deduct_balance"
-                                    className="text-xs font-bold text-foreground cursor-pointer select-none"
-                                >
-                                    Deduct from Annual Leave Balance
-                                </label>
-                            </div>
-
-                            {reviewData.deduct_balance ? (
-                                <div>
-                                    <label className="block text-xs font-semibold text-foreground mb-1">
-                                        Days to Deduct from Annual Balance
-                                    </label>
-                                    <Input
-                                        type="number"
-                                        step="0.5"
-                                        min="0.5"
-                                        max="60"
-                                        value={reviewData.days_to_deduct}
-                                        onChange={(e) => setReviewData('days_to_deduct', e.target.value)}
-                                        className="bg-background border-border text-foreground text-xs h-9 rounded-xl font-mono"
-                                    />
-                                </div>
-                            ) : (
-                                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-xs text-blue-700 dark:text-blue-300">
-                                    <strong className="block font-semibold mb-0.5">Approved as Excused / Special Leave</strong>
-                                    Zero days will be deducted from the employee&apos;s annual leave balance (Compassionate, statutory special leave, or extreme circumstance).
-                                </div>
-                            )}
-
-                            <div>
-                                <label className="block text-xs font-semibold text-foreground mb-1">
-                                    Reviewer Notes (Optional)
-                                </label>
-                                <Input
-                                    value={reviewData.reviewer_notes}
-                                    onChange={(e) => setReviewData('reviewer_notes', e.target.value)}
-                                    placeholder="e.g. Approved per medical note / Art. 81"
-                                    className="bg-background border-border text-foreground text-xs h-9 rounded-xl"
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* When Rejected: Mandatory Reason */}
-                    {reviewData.decision === 'reject' && (
-                        <div className="space-y-2 p-3.5 rounded-xl border border-destructive/20 bg-destructive/5">
-                            <label className="block text-xs font-bold text-destructive">
-                                Rejection Reason <span className="text-destructive">*</span>
-                            </label>
-                            <Textarea
-                                required
-                                rows={3}
-                                value={reviewData.reviewer_notes}
-                                onChange={(e) => setReviewData('reviewer_notes', e.target.value)}
-                                placeholder="Explain to the employee why this leave request cannot be approved at this time..."
-                                className="w-full rounded-xl border border-destructive/30 bg-background text-foreground p-3 text-xs leading-relaxed focus-visible:ring-1 focus-visible:ring-destructive"
-                            />
-                            {reviewErrors.reviewer_notes && (
-                                <p className="text-xs text-destructive font-medium">{reviewErrors.reviewer_notes}</p>
-                            )}
-                        </div>
-                    )}
-
-                    <DialogFooter className="flex justify-end gap-2 pt-3 border-t border-border/70">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setSelectedRequest(null)}
-                            className="text-xs border-border rounded-xl h-9"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            disabled={reviewProcessing}
-                            className={`text-xs font-semibold rounded-xl h-9 shadow-xs text-white ${
-                                reviewData.decision === 'approve'
-                                    ? 'bg-emerald-600 hover:bg-emerald-700'
-                                    : 'bg-destructive hover:bg-destructive/90'
-                            }`}
-                        >
-                            {reviewProcessing ? 'Saving Decision...' : reviewData.decision === 'approve' ? 'Confirm Approval' : 'Confirm Rejection'}
-                        </Button>
-                    </DialogFooter>
-                </form>
+                </div>
             )}
-        </DialogContent>
-    </Dialog>
 
-            {/* Deduct Leave Modal (Shadcn Dialog) */}
-            <Dialog open={Boolean(selectedStaff)} onOpenChange={(open) => !open && setSelectedStaff(null)}>
-                <DialogContent className="max-w-md bg-card border-border text-card-foreground p-6 max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
-                            <MinusCircle className="w-4 h-4 text-primary" />
-                            Record Taken Annual Leave
-                        </DialogTitle>
-                        <DialogDescription className="text-xs text-primary font-semibold">
-                            {selectedStaff?.full_name} ({selectedStaff?.file_no})
-                        </DialogDescription>
-                    </DialogHeader>
+            {/* HR Review Decision Modal (BoardUI Modal) */}
+            <Modal
+                isOpen={Boolean(selectedRequest)}
+                onOpenChange={(isOpen) => !isOpen && setSelectedRequest(null)}
+                size="lg"
+            >
+                {({ close }) => (
+                    <>
+                        <ModalHeader
+                            title="Review Employee Leave Application"
+                            description="Evaluate remaining statutory balance, decide deduction treatment, or record formal justification."
+                            icon={RiShieldCheckLine}
+                        />
 
-                    <form onSubmit={handleDeductSubmit} className="space-y-4 pt-2">
-                        <div className="p-3 bg-muted/40 border border-border rounded-xs text-xs flex justify-between">
-                            <span className="text-muted-foreground">Current Remaining Balance:</span>
-                            <span className="font-bold text-primary">{selectedStaff?.display_remaining} Working Days</span>
-                        </div>
+                        {selectedRequest && (
+                            <form onSubmit={handleReviewSubmit}>
+                                <ModalBody className="space-y-4 py-2">
+                                    {/* Staff Dossier Summary Banner */}
+                                    <div className="p-4 bg-background-secondary-default/70 border border-border-button-default rounded-2xl space-y-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="flex items-center gap-3">
+                                                <Avatar
+                                                    size="lg"
+                                                    color="blue"
+                                                    initials={getInitials(selectedRequest.employee?.full_name || 'Staff')}
+                                                />
+                                                <div>
+                                                    <p className="font-semibold text-text-primary text-title-3-semibold">
+                                                        {selectedRequest.employee?.full_name}
+                                                    </p>
+                                                    <p className="text-caption-1-semibold text-accent-600 font-mono">
+                                                        {selectedRequest.employee?.file_no} · {selectedRequest.employee?.position}
+                                                    </p>
+                                                    <p className="text-caption-1-regular text-text-tertiary">
+                                                        {selectedRequest.employee?.department?.name || 'General Operations'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="text-end">
+                                                <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider">
+                                                    Current Balance
+                                                </p>
+                                                <p className="text-headline-semibold text-accent-600 font-mono mt-0.5">
+                                                    {selectedRequest.employee?.current_leave_balance?.remaining_days ?? 16} Days
+                                                </p>
+                                            </div>
+                                        </div>
 
-                        <div>
-                            <label className="block text-xs font-bold text-foreground mb-1">
-                                Number of Days Deducted <span className="text-[#de2828]">*</span>
-                            </label>
-                            <Input
-                                type="number"
-                                step="0.5"
-                                min="0.5"
-                                max="60"
-                                required
-                                value={data.days_deducted}
-                                onChange={(e) => setData('days_deducted', e.target.value)}
-                                className="bg-background border-input text-foreground text-xs h-10"
-                            />
-                            {errors.days_deducted && (
-                                <p className="text-xs text-[#de2828] mt-1">{errors.days_deducted}</p>
-                            )}
-                        </div>
+                                        <div className="pt-3 border-t border-separator-border grid grid-cols-2 gap-2.5 text-caption-1-regular">
+                                            <div>
+                                                <span className="text-text-tertiary">Leave Type: </span>
+                                                <strong className="text-text-primary font-semibold">{selectedRequest.leave_type} Leave</strong>
+                                            </div>
+                                            <div>
+                                                <span className="text-text-tertiary">Duration: </span>
+                                                <strong className="text-text-primary font-mono font-semibold">{selectedRequest.requested_days} Working Days</strong>
+                                            </div>
+                                            <div>
+                                                <span className="text-text-tertiary">Dates (E.C.): </span>
+                                                <span className="font-mono text-text-primary">{selectedRequest.start_date_ec} – {selectedRequest.end_date_ec}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-text-tertiary">Dates (G.C.): </span>
+                                                <span className="font-mono text-text-secondary">{selectedRequest.start_date} to {selectedRequest.end_date}</span>
+                                            </div>
+                                            {selectedRequest.handover_employee && (
+                                                <div className="col-span-2">
+                                                    <span className="text-text-tertiary">Handover: </span>
+                                                    <span className="text-text-primary font-medium">{selectedRequest.handover_employee.full_name} ({selectedRequest.handover_employee.position})</span>
+                                                </div>
+                                            )}
+                                            {selectedRequest.contact_phone && (
+                                                <div className="col-span-2">
+                                                    <span className="text-text-tertiary">Contact: </span>
+                                                    <span className="text-text-primary font-mono">{selectedRequest.contact_phone}</span>
+                                                </div>
+                                            )}
+                                            <div className="col-span-2 pt-1">
+                                                <span className="text-text-tertiary">Reason: </span>
+                                                <span className="text-text-primary italic">&quot;{selectedRequest.reason}&quot;</span>
+                                            </div>
+                                            {selectedRequest.attachment_path && (
+                                                <div className="col-span-2 pt-1">
+                                                    <a
+                                                        href={`/storage/${selectedRequest.attachment_path}`}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="inline-flex items-center gap-1.5 text-caption-1-semibold text-accent-600 hover:underline"
+                                                    >
+                                                        <RiAttachment2 className="size-3.5" />
+                                                        <span>View Attached Document</span>
+                                                    </a>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
 
-                        <div>
-                            <label className="block text-xs font-bold text-foreground mb-1">
-                                Leave Reason / Description
-                            </label>
-                            <Input
-                                value={data.reason}
-                                onChange={(e) => setData('reason', e.target.value)}
-                                placeholder="e.g. Annual Vacation, Family Affairs"
-                                className="bg-background border-input text-foreground text-xs h-10"
-                            />
-                        </div>
+                                    {/* Decision Switcher */}
+                                    <div className="space-y-1.5">
+                                        <label className="block text-caption-1-semibold text-text-primary">
+                                            Administrative Review Decision <span className="text-red-500">*</span>
+                                        </label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setReviewData('decision', 'approve')}
+                                                className={cx(
+                                                    'p-3.5 rounded-2xl border text-body-medium font-semibold flex items-center justify-center gap-2.5 cursor-pointer transition-all',
+                                                    reviewData.decision === 'approve'
+                                                        ? 'bg-status-lime-background border-green-500 text-status-lime-text shadow-xs ring-2 ring-green-500/20'
+                                                        : 'border-border-button-default bg-background-primary-default text-text-secondary hover:bg-background-secondary-default'
+                                                )}
+                                            >
+                                                <RiCheckboxCircleLine className="size-5 text-green-600" />
+                                                <span>Approve Request</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setReviewData('decision', 'reject')}
+                                                className={cx(
+                                                    'p-3.5 rounded-2xl border text-body-medium font-semibold flex items-center justify-center gap-2.5 cursor-pointer transition-all',
+                                                    reviewData.decision === 'reject'
+                                                        ? 'bg-status-rose-background border-red-500 text-status-rose-text shadow-xs ring-2 ring-red-500/20'
+                                                        : 'border-border-button-default bg-background-primary-default text-text-secondary hover:bg-background-secondary-default'
+                                                )}
+                                            >
+                                                <RiCloseCircleLine className="size-5 text-red-600" />
+                                                <span>Reject Request</span>
+                                            </button>
+                                        </div>
+                                    </div>
 
-                        <DialogFooter className="flex justify-end gap-2 pt-2 border-t border-border/60">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setSelectedStaff(null)}
-                                className="text-xs border-border rounded-xs"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={processing}
-                                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs text-xs font-bold uppercase rounded-xs"
-                            >
-                                {processing ? 'Recording...' : 'Deduct Days'}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+                                    {/* When Approved */}
+                                    {reviewData.decision === 'approve' && (
+                                        <div className="space-y-3 p-4 rounded-2xl border border-border-button-default bg-background-secondary-default/50">
+                                            <Checkbox
+                                                isSelected={reviewData.deduct_balance}
+                                                onChange={(checked) => setReviewData('deduct_balance', checked)}
+                                            >
+                                                <span className="font-semibold text-text-primary text-body-medium">
+                                                    Deduct from Annual Leave Balance
+                                                </span>
+                                            </Checkbox>
+
+                                            {reviewData.deduct_balance ? (
+                                                <NumberField
+                                                    label="Days to Deduct from Annual Balance"
+                                                    step={0.5}
+                                                    minValue={0.5}
+                                                    maxValue={60}
+                                                    value={Number(reviewData.days_to_deduct) || 1}
+                                                    onChange={(val) => setReviewData('days_to_deduct', String(val))}
+                                                    hint="Supports full or half-day (0.5) deductions"
+                                                />
+                                            ) : (
+                                                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl text-caption-1-regular text-blue-700 dark:text-blue-300 flex items-start gap-2">
+                                                    <RiInformationLine className="size-4 shrink-0 mt-0.5" />
+                                                    <div>
+                                                        <strong className="block font-semibold">Approved as Excused / Special Leave</strong>
+                                                        Zero days will be deducted from the annual balance (e.g. bereavement, statutory wedding, or medical).
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <Input
+                                                label="Reviewer Notes (Optional)"
+                                                placeholder="e.g. Approved per medical cert / Art. 81"
+                                                value={reviewData.reviewer_notes}
+                                                onChange={(val) => setReviewData('reviewer_notes', val)}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* When Rejected */}
+                                    {reviewData.decision === 'reject' && (
+                                        <div className="space-y-2 p-4 rounded-2xl border border-red-500/30 bg-status-rose-background/40">
+                                            <Textarea
+                                                label="Formal Rejection Reason"
+                                                isRequired
+                                                rows={3}
+                                                autoResize
+                                                value={reviewData.reviewer_notes}
+                                                onChange={(val) => setReviewData('reviewer_notes', val)}
+                                                placeholder="Explain why this leave request cannot be approved..."
+                                                isInvalid={Boolean(reviewErrors.reviewer_notes)}
+                                                hint={reviewErrors.reviewer_notes}
+                                            />
+                                        </div>
+                                    )}
+                                </ModalBody>
+
+                                <ModalFooter>
+                                    <Button type="button" variant="secondary" onClick={close}>
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        variant={reviewData.decision === 'approve' ? 'primary' : 'danger'}
+                                        disabled={reviewProcessing}
+                                    >
+                                        {reviewProcessing
+                                            ? 'Submitting...'
+                                            : reviewData.decision === 'approve'
+                                            ? 'Confirm Approval'
+                                            : 'Confirm Rejection'}
+                                    </Button>
+                                </ModalFooter>
+                            </form>
+                        )}
+                    </>
+                )}
+            </Modal>
+
+            {/* Deduct Leave Quick Modal (BoardUI Modal) */}
+            <Modal
+                isOpen={Boolean(selectedStaff)}
+                onOpenChange={(isOpen) => !isOpen && setSelectedStaff(null)}
+                size="md"
+            >
+                {({ close }) => (
+                    <>
+                        <ModalHeader
+                            title="Record Annual Leave Deduction"
+                            description={`Manually deduct taken leave for ${selectedStaff?.full_name} (${selectedStaff?.file_no})`}
+                            icon={RiSubtractLine}
+                        />
+
+                        <form onSubmit={handleDeductSubmit}>
+                            <ModalBody className="space-y-4 py-2">
+                                <div className="p-3.5 bg-background-secondary-default/80 border border-border-button-default rounded-xl flex items-center justify-between">
+                                    <span className="text-caption-1-medium text-text-secondary">Current Balance:</span>
+                                    <Chip color="lime" variant="bold" className="font-mono">
+                                        {selectedStaff?.display_remaining} Working Days
+                                    </Chip>
+                                </div>
+
+                                <NumberField
+                                    label="Number of Days Deducted"
+                                    isRequired
+                                    step={0.5}
+                                    minValue={0.5}
+                                    maxValue={60}
+                                    value={Number(data.days_deducted) || 1}
+                                    onChange={(val) => setData('days_deducted', String(val))}
+                                    hint="Input days taken (supports 0.5 increments)"
+                                />
+
+                                <Input
+                                    label="Leave Reason / Description"
+                                    placeholder="e.g. Annual Vacation, Family Affairs"
+                                    value={data.reason}
+                                    onChange={(val) => setData('reason', val)}
+                                />
+                            </ModalBody>
+
+                            <ModalFooter>
+                                <Button type="button" variant="secondary" onClick={close}>
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    variant="primary"
+                                    disabled={processing}
+                                    leadingIcon={RiSubtractLine}
+                                >
+                                    {processing ? 'Recording...' : 'Deduct Days'}
+                                </Button>
+                            </ModalFooter>
+                        </form>
+                    </>
+                )}
+            </Modal>
 
             {/* Interactive Element-Spotlight Joyride Tour */}
             <InteractiveTour
@@ -1058,5 +1204,3 @@ export default function Index({
         </AuthenticatedLayout>
     );
 }
-
-

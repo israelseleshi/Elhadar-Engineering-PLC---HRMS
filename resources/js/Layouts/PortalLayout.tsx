@@ -1,6 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, useState, useEffect } from 'react';
-import { ShieldCheck, LogOut, Menu, X, UserCheck, LayoutDashboard, Megaphone, ChevronRight, Trash2, CalendarCheck } from 'lucide-react';
+import { ShieldCheck, LogOut, Menu, X, UserCheck, LayoutDashboard, Megaphone, ChevronRight, Trash2, CalendarCheck, MessageSquare } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
 import { ThemeToggle } from '@/Components/ThemeToggle';
 import ApplicationLogo from '@/Components/ApplicationLogo';
@@ -91,6 +91,15 @@ export default function PortalLayout({ title, subtitle, children }: PropsWithChi
             icon: Megaphone,
             activeBg: 'bg-amber-500',
             squircle: 'bg-amber-500 text-white',
+        },
+        {
+            id: 'chat',
+            name: 'Department Chat',
+            href: route('chat.index'),
+            routeName: 'chat.*',
+            icon: MessageSquare,
+            activeBg: 'bg-[#0066cc]',
+            squircle: 'bg-[#0066cc] text-white',
         },
         ...(user.role !== 'Employee'
             ? [

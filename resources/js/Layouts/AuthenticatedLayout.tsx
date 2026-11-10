@@ -8,6 +8,7 @@ import {
     Megaphone,
     UserCheck,
     CalendarCheck,
+    MessageSquare,
     LogOut,
     Trash2,
 } from 'lucide-react';
@@ -27,12 +28,14 @@ interface Props {
     header?: ReactNode;
     title?: string;
     subtitle?: string;
+    fullHeight?: boolean;
 }
 
 export default function AuthenticatedLayout({
     header,
     title,
     subtitle,
+    fullHeight = false,
     children,
 }: PropsWithChildren<Props>) {
     const { auth, flash } = usePage<PageProps>().props;
@@ -180,14 +183,29 @@ export default function AuthenticatedLayout({
                 text: 'text-amber-500',
             },
         },
+        {
+            id: 'chat',
+            name: 'Department Chat',
+            shortName: 'Team Chat',
+            href: route('chat.index'),
+            routeName: 'chat.*',
+            icon: MessageSquare,
+            category: 'personal',
+            description: 'Intra-department workspace, secure file sharing & vault',
+            activeBg: 'bg-[#0066cc]',
+            squircleColor: {
+                bg: 'bg-[#0066cc] text-white',
+                text: 'text-[#0066cc]',
+            },
+        },
     ];
 
     const currentCategories = isEmployee ? employeeCategories : NAV_CATEGORIES;
     const currentNavItems = isEmployee ? employeeNavItems : navItems;
 
     return (
-        <div className="min-h-screen bg-background text-foreground font-sans flex flex-col">
-            <div className="flex flex-1">
+        <div className={`bg-background text-foreground font-sans flex flex-col ${fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
+            <div className={`flex flex-1 ${fullHeight ? 'min-h-0 overflow-hidden' : ''}`}>
                 {/* Desktop macOS System Settings Sidebar for HR/Admin & Employee */}
                 <SystemSettingsSidebar
                     user={user}
@@ -201,7 +219,7 @@ export default function AuthenticatedLayout({
                 />
 
                 {/* Main Content Viewport */}
-                <div className="flex-1 flex flex-col min-w-0">
+                <div className={`flex-1 flex flex-col min-w-0 ${fullHeight ? 'h-full overflow-hidden' : ''}`}>
                     {/* Header */}
                     <header className="h-16 bg-background/80 backdrop-blur-xl border-b border-border/50 flex items-center justify-between gap-3 px-3 sm:px-4 lg:px-8 shrink-0 sticky top-0 z-20">
                         <div className="flex items-center gap-3 sm:gap-4 min-w-0 h-full">
@@ -415,23 +433,31 @@ export default function AuthenticatedLayout({
                     )}
 
                     {/* Main Children */}
-                    <main className="flex-1 px-3 py-4 lg:px-6 lg:py-6 w-full max-w-7xl mx-auto">
-                        <WebPushBanner />
+                    <main
+                        className={
+                            fullHeight
+                                ? 'flex-1 min-h-0 overflow-hidden flex flex-col w-full px-2 sm:px-4 py-2'
+                                : 'flex-1 px-3 py-4 lg:px-6 lg:py-6 w-full max-w-7xl mx-auto'
+                        }
+                    >
+                        {!fullHeight && <WebPushBanner />}
                         {children}
                     </main>
 
-                    {/* Footer */}
-                    <footer className="bg-background/50 border-t border-border py-4 px-4 sm:px-6 lg:px-8 text-xs text-muted-foreground flex flex-col sm:flex-row justify-between items-center gap-2 text-center sm:text-left">
-                        <div className="min-w-0">
-                            &copy; {new Date().getFullYear()} El-Hadar Engineering PLC. All rights
-                            reserved.
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <span className="font-medium text-muted-foreground">
-                                Employee Records, Leave &amp; Payroll Pro
-                            </span>
-                        </div>
-                    </footer>
+                    {/* Footer - omitted on fullHeight viewport apps like Chat */}
+                    {!fullHeight && (
+                        <footer className="bg-background/50 border-t border-border py-4 px-4 sm:px-6 lg:px-8 text-xs text-muted-foreground flex flex-col sm:flex-row justify-between items-center gap-2 text-center sm:text-left">
+                            <div className="min-w-0">
+                                &copy; {new Date().getFullYear()} El-Hadar Engineering PLC. All rights
+                                reserved.
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <span className="font-medium text-muted-foreground">
+                                    Employee Records, Leave &amp; Payroll Pro
+                                </span>
+                            </div>
+                        </footer>
+                    )}
                 </div>
             </div>
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
@@ -58,6 +59,18 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::post('/announcements/{announcement}/acknowledge', [NotificationController::class, 'acknowledge'])->whereNumber('announcement')->name('announcements.acknowledge');
     Route::post('/announcements/{announcement}/react', [NotificationController::class, 'react'])->whereNumber('announcement')->name('announcements.react');
     Route::post('/notifications/push-subscribe', [NotificationController::class, 'subscribePush'])->name('notifications.push-subscribe');
+
+    // Department Workspace Chat & Communications
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/conversations/{conversationId}', [ChatController::class, 'index'])->whereNumber('conversationId')->name('chat.show');
+    Route::get('/chat/conversations/{conversation}/messages', [ChatController::class, 'messages'])->whereNumber('conversation')->name('chat.messages');
+    Route::post('/chat/conversations/{conversation}/messages', [ChatController::class, 'send'])->whereNumber('conversation')->name('chat.send');
+    Route::post('/chat/conversations/{conversation}/read', [ChatController::class, 'markRead'])->whereNumber('conversation')->name('chat.read');
+    Route::get('/chat/messages/{messageId}/receipts', [ChatController::class, 'receipts'])->whereNumber('messageId')->name('chat.receipts');
+    Route::post('/chat/messages/{messageId}/reactions', [ChatController::class, 'react'])->whereNumber('messageId')->name('chat.react');
+    Route::post('/chat/conversations/{conversation}/messages/{messageId}/pin', [ChatController::class, 'pin'])->whereNumber('conversation')->whereNumber('messageId')->name('chat.pin');
+    Route::get('/chat/conversations/{conversation}/vault', [ChatController::class, 'vault'])->whereNumber('conversation')->name('chat.vault');
+    Route::get('/chat/attachments/{attachment}/download', [ChatController::class, 'downloadAttachment'])->whereNumber('attachment')->name('chat.attachments.download');
 
     // Administrative Governance - Strictly HRAdmin and SysAdmin
     Route::middleware('role:HRAdmin,SysAdmin')->group(function () {
