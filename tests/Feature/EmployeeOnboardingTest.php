@@ -68,6 +68,8 @@ class EmployeeOnboardingTest extends TestCase
             'basic_salary' => 20000,
             'responsibility_allowance' => 2500,
             'project_allowance' => 3000,
+            'perdiem' => 1000,
+            'monthly_perdiem' => 500,
             'bank_name' => 'Commercial Bank of Ethiopia',
             'bank_account_no' => '1000123456789',
             'tin_no' => '0098765432',
@@ -89,7 +91,9 @@ class EmployeeOnboardingTest extends TestCase
         $salary = $employee->currentSalary;
         $this->assertNotNull($salary);
         $this->assertEquals(20000, (float) $salary->basic_salary);
-        $this->assertEquals(25500, (float) $salary->total_salary); // 20000 + 2500 + 3000
+        $this->assertEquals(27000, (float) $salary->total_salary); // 20000 + 2500 + 3000 + 1000 + 500
+        $this->assertEquals(1000, (float) $salary->perdiem);
+        $this->assertEquals(500, (float) $salary->monthly_perdiem);
         $this->assertEquals(1400, (float) $salary->pension_employee); // 7% of 20000
         $this->assertEquals(2200, (float) $salary->pension_company); // 11% of 20000
 

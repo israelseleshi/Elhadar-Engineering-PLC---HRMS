@@ -24,6 +24,8 @@ class StoreSalaryIncrementRequest extends FormRequest
             'house_allowance' => ['nullable', 'numeric', 'min:0'],
             'mobile_allowance' => ['nullable', 'numeric', 'min:0'],
             'food_allowance' => ['nullable', 'numeric', 'min:0'],
+            'perdiem' => ['nullable', 'numeric', 'min:0'],
+            'monthly_perdiem' => ['nullable', 'numeric', 'min:0'],
             'remarks' => ['nullable', 'string', 'max:500'],
         ];
     }

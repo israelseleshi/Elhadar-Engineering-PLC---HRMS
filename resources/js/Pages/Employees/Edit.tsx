@@ -75,6 +75,8 @@ interface SalaryRecord {
     house_allowance?: number;
     mobile_allowance?: number;
     food_allowance?: number;
+    perdiem?: number;
+    monthly_perdiem?: number;
     total_salary: number;
     pension_employee: number;
     pension_company: number;
@@ -321,6 +323,8 @@ export default function Edit({ employee, departments }: Props) {
         house_allowance: employee.currentSalary?.house_allowance || 0,
         mobile_allowance: employee.currentSalary?.mobile_allowance || 0,
         food_allowance: employee.currentSalary?.food_allowance || 0,
+        perdiem: employee.currentSalary?.perdiem || 0,
+        monthly_perdiem: employee.currentSalary?.monthly_perdiem || 0,
         effective_date: new Date().toISOString().split('T')[0],
         remarks: '',
     });
@@ -388,7 +392,9 @@ export default function Edit({ employee, departments }: Props) {
         const house = Number(salaryForm.data.house_allowance) || 0;
         const mob = Number(salaryForm.data.mobile_allowance) || 0;
         const food = Number(salaryForm.data.food_allowance) || 0;
-        return basic + resp + proj + pos + hard + trans + house + mob + food;
+        const perdiem = Number(salaryForm.data.perdiem) || 0;
+        const monthlyPerdiem = Number(salaryForm.data.monthly_perdiem) || 0;
+        return basic + resp + proj + pos + hard + trans + house + mob + food + perdiem + monthlyPerdiem;
     };
 
     return (
@@ -1713,6 +1719,28 @@ export default function Edit({ employee, departments }: Props) {
                                     step="0.01"
                                     value={salaryForm.data.mobile_allowance}
                                     onChange={(e) => salaryForm.setData('mobile_allowance', Number(e.target.value))}
+                                    className="mt-1 h-9 text-xs border-border rounded-xl"
+                                />
+                            </div>
+
+                            <div>
+                                <Label className="font-medium text-foreground/90">Per Diem Allowance</Label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={salaryForm.data.perdiem}
+                                    onChange={(e) => salaryForm.setData('perdiem', Number(e.target.value))}
+                                    className="mt-1 h-9 text-xs border-border rounded-xl"
+                                />
+                            </div>
+
+                            <div>
+                                <Label className="font-medium text-foreground/90">Monthly Per Diem Allowance</Label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={salaryForm.data.monthly_perdiem}
+                                    onChange={(e) => salaryForm.setData('monthly_perdiem', Number(e.target.value))}
                                     className="mt-1 h-9 text-xs border-border rounded-xl"
                                 />
                             </div>

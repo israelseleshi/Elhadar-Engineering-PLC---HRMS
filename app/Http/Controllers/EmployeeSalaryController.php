@@ -25,7 +25,9 @@ class EmployeeSalaryController extends Controller
         $house = (float) ($data['house_allowance'] ?? 0);
         $mobile = (float) ($data['mobile_allowance'] ?? 0);
         $food = (float) ($data['food_allowance'] ?? 0);
-        $totalGross = $basic + $resp + $proj + $pos + $hard + $trans + $house + $mobile + $food;
+        $perdiem = (float) ($data['perdiem'] ?? 0);
+        $monthlyPerdiem = (float) ($data['monthly_perdiem'] ?? 0);
+        $totalGross = $basic + $resp + $proj + $pos + $hard + $trans + $house + $mobile + $food + $perdiem + $monthlyPerdiem;
 
         // Statutory pension: 7% employee, 11% employer
         $pensionEmp = round($basic * 0.07, 2);
@@ -48,6 +50,8 @@ class EmployeeSalaryController extends Controller
             'house_allowance' => $house,
             'mobile_allowance' => $mobile,
             'food_allowance' => $food,
+            'perdiem' => $perdiem,
+            'monthly_perdiem' => $monthlyPerdiem,
             'total_salary' => $totalGross,
             'pension_employee' => $pensionEmp,
             'pension_company' => $pensionComp,

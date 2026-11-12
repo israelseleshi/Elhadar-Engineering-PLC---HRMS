@@ -114,6 +114,8 @@ export default function Create({ departments }: Props) {
         house_allowance: '0',
         mobile_allowance: '0',
         food_allowance: '0',
+        perdiem: '0',
+        monthly_perdiem: '0',
         bank_name: 'Commercial Bank of Ethiopia (CBE)',
         bank_account_no: '',
         tin_no: '',
@@ -235,8 +237,10 @@ export default function Create({ departments }: Props) {
         const house = parseFloat(data.house_allowance) || 0;
         const food = parseFloat(data.food_allowance) || 0;
         const mobile = parseFloat(data.mobile_allowance) || 0;
+        const perdiem = parseFloat(data.perdiem) || 0;
+        const monthlyPerdiem = parseFloat(data.monthly_perdiem) || 0;
 
-        const totalAllowances = hardship + project + responsibility + position + transport + house + food + mobile;
+        const totalAllowances = hardship + project + responsibility + position + transport + house + food + mobile + perdiem + monthlyPerdiem;
         const grossSalary = basic + totalAllowances;
         const employeePension = Math.round(basic * 0.07 * 100) / 100;
         const companyPension = Math.round(basic * 0.11 * 100) / 100;
@@ -259,7 +263,7 @@ export default function Create({ departments }: Props) {
         const s1Keys = ['full_name', 'gender', 'marital_status', 'education_status', 'phone', 'email', 'region', 'city', 'sub_city', 'woreda', 'house_no', 'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_phone'];
         const s2Keys = ['file_no', 'department_id', 'position', 'work_place', 'employment_type', 'contract_type', 'status', 'grade', 'step'];
         const s3Keys = ['employment_date', 'employment_date_ec', 'birth_date', 'birth_date_ec', 'contract_end_date'];
-        const s4Keys = ['basic_salary', 'responsibility_allowance', 'project_allowance', 'position_allowance', 'hardship_allowance', 'transport_allowance', 'house_allowance', 'mobile_allowance', 'food_allowance', 'bank_name', 'bank_account_no', 'tin_no', 'social_security_no', 'poessa_no', 'psssa_no', 'plate_number', 'remarks'];
+        const s4Keys = ['basic_salary', 'responsibility_allowance', 'project_allowance', 'position_allowance', 'hardship_allowance', 'transport_allowance', 'house_allowance', 'mobile_allowance', 'food_allowance', 'perdiem', 'monthly_perdiem', 'bank_name', 'bank_account_no', 'tin_no', 'social_security_no', 'poessa_no', 'psssa_no', 'plate_number', 'remarks'];
 
         const hasErr = (keys: string[]) => keys.some((k) => !!errors[k as keyof typeof errors]);
         return {
@@ -1144,6 +1148,35 @@ export default function Create({ departments }: Props) {
                                                     step="0.01"
                                                     value={data.mobile_allowance}
                                                     onChange={(e) => setData('mobile_allowance', e.target.value)}
+                                                    className="h-10 rounded-xl bg-background border-border text-sm"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Per Diem & Site Subsistence */}
+                                    <div className="space-y-3">
+                                        <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                                            Per Diem &amp; Site Subsistence (ETB)
+                                        </h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-semibold text-foreground">Per Diem Allowance</label>
+                                                <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={data.perdiem}
+                                                    onChange={(e) => setData('perdiem', e.target.value)}
+                                                    className="h-10 rounded-xl bg-background border-border text-sm"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-semibold text-foreground">Monthly Per Diem Allowance</label>
+                                                <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={data.monthly_perdiem}
+                                                    onChange={(e) => setData('monthly_perdiem', e.target.value)}
                                                     className="h-10 rounded-xl bg-background border-border text-sm"
                                                 />
                                             </div>

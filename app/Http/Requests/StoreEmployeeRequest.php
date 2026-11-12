@@ -67,6 +67,8 @@ class StoreEmployeeRequest extends FormRequest
             'house_allowance' => ['nullable', 'numeric', 'min:0'],
             'mobile_allowance' => ['nullable', 'numeric', 'min:0'],
             'food_allowance' => ['nullable', 'numeric', 'min:0'],
+            'perdiem' => ['nullable', 'numeric', 'min:0'],
+            'monthly_perdiem' => ['nullable', 'numeric', 'min:0'],
 
             // Banking & Tax
             'bank_name' => ['nullable', 'string', 'max:100'],
