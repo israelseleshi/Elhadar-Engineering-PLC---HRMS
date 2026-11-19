@@ -173,7 +173,8 @@ class PortalController extends Controller
                     'Director' => 4,
                     'Department Manager' => 5,
                     'Division Head' => 6,
-                    default => 7,
+                    'Project Manager' => 7,
+                    default => 8,
                 };
 
                 return sprintf('%d_%s', $rank, $item['name']);

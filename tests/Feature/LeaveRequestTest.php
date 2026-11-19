@@ -423,4 +423,38 @@ class LeaveRequestTest extends TestCase
             'reason' => 'Testing non-manager validation',
         ]);
     }
+
+    public function test_project_manager_is_recognized_as_leave_approver_and_can_be_assigned(): void
+    {
+        $employeeUser = User::factory()->create(['role' => 'Employee']);
+        Employee::factory()->create(['user_id' => $employeeUser->id]);
+
+        $pmUser = User::factory()->create(['role' => 'Employee']);
+        $pmEmployee = Employee::factory()->create([
+            'user_id' => $pmUser->id,
+            'position' => 'Project Manager',
+        ]);
+
+        $this->assertTrue($pmEmployee->isManagerial());
+        $this->assertEquals('Project Manager', $pmEmployee->getManagerialLevel());
+        $this->assertTrue($pmUser->canApproveLeave());
+        $this->assertEquals('department', $pmUser->getManagerialScope());
+
+        $response = $this->actingAs($employeeUser)->post('/portal/leave-requests', [
+            'leave_type' => 'Annual',
+            'start_date' => '2026-11-10',
+            'start_date_ec' => '02/03/2019 E.C.',
+            'end_date' => '2026-11-12',
+            'end_date_ec' => '04/03/2019 E.C.',
+            'requested_days' => 3,
+            'reason' => 'Submitting leave directly to Project Manager',
+            'assigned_to_user_id' => $pmUser->id,
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('leave_requests', [
+            'assigned_to_user_id' => $pmUser->id,
+            'reason' => 'Submitting leave directly to Project Manager',
+        ]);
+    }
 }

@@ -148,7 +148,7 @@ class User extends Authenticatable
             return 'company';
         }
 
-        if (in_array($level, ['Department Manager', 'Division Head'], true)) {
+        if (in_array($level, ['Department Manager', 'Division Head', 'Project Manager'], true)) {
             return 'department';
         }
 

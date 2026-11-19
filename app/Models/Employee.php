@@ -185,7 +185,7 @@ class Employee extends Model
             return false;
         }
 
-        return (bool) preg_match('/(\bCEO\b|\bDCEO\b|Chief\s+.*Officer|Director|Departm.*Manager|Development\s+Manager|Division\s+(Head|Manager))/i', $pos);
+        return (bool) preg_match('/(\bCEO\b|\bDCEO\b|Chief\s+.*Officer|Director|Departm.*Manager|Development\s+Manager|Division\s+(Head|Manager)|Project\s+Manager)/i', $pos);
     }
 
     /**
@@ -220,6 +220,9 @@ class Employee extends Model
         }
         if (preg_match('/Division\s+(Head|Manager)/i', $pos)) {
             return 'Division Head';
+        }
+        if (preg_match('/Project\s+Manager/i', $pos)) {
+            return 'Project Manager';
         }
 
         return null;

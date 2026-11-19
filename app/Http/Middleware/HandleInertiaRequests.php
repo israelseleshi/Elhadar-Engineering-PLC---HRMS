@@ -62,7 +62,10 @@ class HandleInertiaRequests extends Middleware
                 }
                 if ($scope === 'department' && $user->employee?->department_id) {
                     $deptId = $user->employee->department_id;
-                    $pendingQuery->whereHas('employee', fn ($q) => $q->where('department_id', $deptId));
+                    $pendingQuery->where(function ($q) use ($deptId, $user) {
+                        $q->whereHas('employee', fn ($empQ) => $empQ->where('department_id', $deptId))
+                            ->orWhere('assigned_to_user_id', $user->id);
+                    });
                 }
                 $pendingApprovalsCount = $pendingQuery->count();
             }
