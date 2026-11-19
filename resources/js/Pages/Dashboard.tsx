@@ -372,7 +372,7 @@ export default function Dashboard({
     const departmentPalette = [
         { color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' }, // Construction & Engineering
         { color: '#0284c7', bg: '#f0f9ff', border: '#bae6fd' }, // P&ED
-        { color: '#0d9488', bg: '#f0fdfa', border: '#99f6e4' }, // GSFAD
+        { color: '#0d9488', bg: '#f0fdfa', border: '#99f6e4' }, // FFAM
         { color: '#8b5cf6', bg: '#f5f3ff', border: '#ddd6fe' }, // HC Directorate
         { color: '#f59e0b', bg: '#fffbeb', border: '#fde68a' }, // PAD
         { color: '#10b981', bg: '#ecfdf5', border: '#a7f3d0' }, // Finance Dept
