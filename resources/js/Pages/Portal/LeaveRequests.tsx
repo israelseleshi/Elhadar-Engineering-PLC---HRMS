@@ -124,6 +124,10 @@ interface LeaveRequestItem {
         id: number;
         name: string;
     } | null;
+    assigned_approver?: {
+        id: number;
+        name: string;
+    } | null;
 }
 
 interface ManagerInfo {
@@ -356,10 +360,10 @@ export default function LeaveRequests({ managerInfo, pendingRequests = [], recen
                                     <span>{managerInfo.department}</span>
                                 </span>
                             </div>
-                            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight leading-tight">
                                 Leave Requests Inbox
                             </h1>
-                            <p className="text-sm text-muted-foreground max-w-2xl">
+                            <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl mt-1">
                                 Review, verify relief coverage, and render statutory leave approval decisions for personnel under your supervision under Ethiopian Labour Proclamation No. 1156/2019.
                             </p>
                         </div>
@@ -367,22 +371,22 @@ export default function LeaveRequests({ managerInfo, pendingRequests = [], recen
                         {/* Fast Stats */}
                         <div className="grid grid-cols-3 gap-2 sm:gap-3 shrink-0">
                             <div className="bg-card/90 rounded-xl p-3 border border-border text-center min-w-[90px]">
-                                <div className="text-xl sm:text-2xl font-bold text-[#0066cc] dark:text-[#2997ff]">
+                                <div className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0066cc] dark:text-[#2997ff]">
                                     {stats.pending_count}
                                 </div>
-                                <div className="text-[11px] font-medium text-muted-foreground">Pending</div>
+                                <div className="text-xs font-semibold text-muted-foreground mt-0.5">Pending</div>
                             </div>
                             <div className="bg-card/90 rounded-xl p-3 border border-border text-center min-w-[90px]">
-                                <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                                <div className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
                                     {stats.approved_this_year}
                                 </div>
-                                <div className="text-[11px] font-medium text-muted-foreground">Approved YTD</div>
+                                <div className="text-xs font-semibold text-muted-foreground mt-0.5">Approved YTD</div>
                             </div>
                             <div className="bg-card/90 rounded-xl p-3 border border-border text-center min-w-[90px]">
-                                <div className="text-xl sm:text-2xl font-bold text-muted-foreground">
+                                <div className="text-2xl sm:text-3xl font-bold tracking-tight text-muted-foreground">
                                     {stats.rejected_this_year}
                                 </div>
-                                <div className="text-[11px] font-medium text-muted-foreground">Rejected YTD</div>
+                                <div className="text-xs font-semibold text-muted-foreground mt-0.5">Rejected YTD</div>
                             </div>
                         </div>
                     </div>
@@ -480,6 +484,11 @@ export default function LeaveRequests({ managerInfo, pendingRequests = [], recen
                                                 </div>
 
                                                 <div className="flex items-center gap-2">
+                                                    {req.assigned_approver && (
+                                                        <span className="text-[11px] font-medium text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
+                                                            Directed to: {req.assigned_approver.name}
+                                                        </span>
+                                                    )}
                                                     {getLeaveTypeBadge(req.leave_type)}
                                                     {getStatusBadge(req.status)}
                                                 </div>

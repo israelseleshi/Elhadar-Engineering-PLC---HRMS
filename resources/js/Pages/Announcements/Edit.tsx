@@ -319,10 +319,10 @@ export default function AnnouncementsEdit({
                         <Card className="rounded-2xl border border-border/80 shadow-xs bg-card overflow-hidden">
                             <CardHeader className="p-6 pb-4 border-b border-border/60 bg-muted/20 flex flex-row items-center justify-between gap-3">
                                 <div>
-                                    <CardTitle className="text-base font-semibold text-foreground">
+                                    <CardTitle className="text-base sm:text-lg font-bold text-foreground tracking-tight">
                                         Circular Content &amp; Language
                                     </CardTitle>
-                                    <CardDescription className="text-xs text-muted-foreground">
+                                    <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                                         Update the circular details in English and optional Amharic.
                                     </CardDescription>
                                 </div>
@@ -483,7 +483,7 @@ export default function AnnouncementsEdit({
                         {/* Audience Targeting Selector */}
                         <Card data-tour="edit-audience-selector" className="rounded-2xl border border-border/80 shadow-xs bg-card">
                             <CardHeader className="p-6 pb-3">
-                                <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+                                <CardTitle className="text-base sm:text-lg font-bold text-foreground tracking-tight flex items-center gap-2">
                                     <Users className="w-4 h-4 text-primary" />
                                     <span>Target Audience Segmentation</span>
                                 </CardTitle>
@@ -567,7 +567,7 @@ export default function AnnouncementsEdit({
                     <div className="lg:col-span-4 space-y-6">
                         <Card className="rounded-2xl border border-border/80 shadow-xs bg-card">
                             <CardHeader className="p-5 pb-3">
-                                <CardTitle className="text-sm font-semibold text-foreground">
+                                <CardTitle className="text-sm sm:text-base font-bold text-foreground tracking-tight">
                                     Priority &amp; Category
                                 </CardTitle>
                             </CardHeader>
@@ -622,7 +622,7 @@ export default function AnnouncementsEdit({
 
                         <Card data-tour="edit-governance-options" className="rounded-2xl border border-border/80 shadow-xs bg-card">
                             <CardHeader className="p-5 pb-3">
-                                <CardTitle className="text-sm font-semibold text-foreground">
+                                <CardTitle className="text-sm sm:text-base font-bold text-foreground tracking-tight">
                                     Governance
                                 </CardTitle>
                             </CardHeader>

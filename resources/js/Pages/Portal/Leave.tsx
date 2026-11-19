@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/Components/ui/card';
@@ -7,6 +7,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Badge } from '@/Components/ui/badge';
 import {
     SegmentedControl,
@@ -48,6 +49,9 @@ import {
     Shield,
     Users,
     FileText,
+    Search,
+    ChevronDown,
+    Check,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { gcToEc } from '@/lib/ethiopianDate';
@@ -75,6 +79,10 @@ interface LeaveRequestItem {
         file_no: string;
         position: string;
     } | null;
+    assigned_approver?: {
+        id: number;
+        name: string;
+    } | null;
     reviewer?: {
         id: number;
         name: string;
@@ -82,6 +90,15 @@ interface LeaveRequestItem {
     reviewer_notes?: string | null;
     attachment_path?: string | null;
     created_at: string;
+}
+
+interface EligibleApprover {
+    id: number;
+    name: string;
+    position: string;
+    department?: string | null;
+    level?: string | null;
+    scope?: string;
 }
 
 interface Props {
@@ -105,6 +122,7 @@ interface Props {
     pendingCount: number;
     leaveRequests: LeaveRequestItem[];
     colleagues: Colleague[];
+    eligibleApprovers?: EligibleApprover[];
 }
 
 export default function Leave({
@@ -116,10 +134,13 @@ export default function Leave({
     pendingCount,
     leaveRequests,
     colleagues,
+    eligibleApprovers = [],
 }: Props) {
     const [activeTab, setActiveTab] = useState<'new-request' | 'history'>('new-request');
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
     const [requestToCancel, setRequestToCancel] = useState<LeaveRequestItem | null>(null);
+    const [approverOpen, setApproverOpen] = useState(false);
+    const [approverSearch, setApproverSearch] = useState('');
 
     const sanitizePhoneNumber = (raw: string): string => {
         let digits = raw.replace(/\D/g, '');
@@ -162,9 +183,25 @@ export default function Leave({
         requested_days: '1',
         reason: '',
         handover_employee_id: '',
+        assigned_to_user_id: '',
         contact_phone: initialPhoneNational ? `+251${initialPhoneNational}` : '',
         attachment: null as File | null,
     });
+
+    const selectedApprover = eligibleApprovers.find(
+        (a) => String(a.id) === String(leaveData.assigned_to_user_id)
+    );
+
+    const filteredApprovers = useMemo(() => {
+        const query = approverSearch.trim().toLowerCase();
+        if (!query) return eligibleApprovers;
+        return eligibleApprovers.filter(
+            (a) =>
+                a.name.toLowerCase().includes(query) ||
+                a.position.toLowerCase().includes(query) ||
+                (a.department && a.department.toLowerCase().includes(query))
+        );
+    }, [eligibleApprovers, approverSearch]);
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const sanitized = sanitizePhoneNumber(e.target.value);
@@ -255,9 +292,9 @@ export default function Leave({
                     <Card className="border-border bg-card shadow-xs rounded-xl p-5 flex flex-col justify-between">
                         <div className="flex items-start justify-between">
                             <div>
-                                <h3 className="text-base font-semibold text-foreground">Annual Leave Balance</h3>
+                                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Annual Leave Balance</h3>
                                 <div className="flex items-baseline gap-1.5 mt-2">
-                                    <span className="text-3xl font-semibold tracking-tight text-primary">
+                                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-primary">
                                         {availableDays}
                                     </span>
                                     <span className="text-xs font-medium text-muted-foreground">Working Days</span>
@@ -276,9 +313,9 @@ export default function Leave({
                     <Card className="border-border bg-card shadow-xs rounded-xl p-5 flex flex-col justify-between">
                         <div className="flex items-start justify-between">
                             <div>
-                                <h3 className="text-base font-semibold text-foreground">Approved Leaves Taken</h3>
+                                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Approved Leaves Taken</h3>
                                 <div className="flex items-baseline gap-1.5 mt-2">
-                                    <span className="text-3xl font-semibold tracking-tight text-emerald-600 dark:text-emerald-400">
+                                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
                                         {approvedDaysTaken}
                                     </span>
                                     <span className="text-xs font-medium text-muted-foreground">Days</span>
@@ -297,9 +334,9 @@ export default function Leave({
                     <Card className="border-border bg-card shadow-xs rounded-xl p-5 flex flex-col justify-between">
                         <div className="flex items-start justify-between">
                             <div>
-                                <h3 className="text-base font-semibold text-foreground">Pending Requests</h3>
+                                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pending Requests</h3>
                                 <div className="flex items-baseline gap-1.5 mt-2">
-                                    <span className="text-3xl font-semibold tracking-tight text-amber-600 dark:text-amber-400">
+                                    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">
                                         {pendingCount}
                                     </span>
                                     <span className="text-xs font-medium text-muted-foreground">Awaiting Review</span>
@@ -362,7 +399,7 @@ export default function Leave({
 
                             <CardContent className="p-6">
                                 <form onSubmit={handleLeaveSubmit} className="space-y-6">
-                                    {/* 1. Leave Classification & Handover Colleague */}
+                                    {/* 1. Leave Classification & Approver Selection */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div className="space-y-1.5">
                                             <Label htmlFor="leave_type" className="text-xs font-semibold text-foreground flex items-center gap-1">
@@ -396,33 +433,175 @@ export default function Leave({
                                         </div>
 
                                         <div className="space-y-1.5">
-                                            <Label htmlFor="handover_employee_id" className="text-xs font-semibold text-foreground flex items-center gap-1">
-                                                <span>Designated Relief / Handover Colleague</span>
+                                            <Label htmlFor="assigned_to_user_id" className="text-xs font-semibold text-foreground flex items-center gap-1">
+                                                <Shield className="w-3.5 h-3.5 text-primary" />
+                                                <span>Direct Request To (Approving Position / Person)</span>
                                                 <span className="text-muted-foreground font-normal text-[11px]">(Optional)</span>
                                             </Label>
-                                            <Select
-                                                value={leaveData.handover_employee_id || '__none__'}
-                                                onValueChange={(val) => setLeaveData('handover_employee_id', val === '__none__' ? '' : val)}
-                                            >
-                                                <SelectTrigger id="handover_employee_id" className="w-full h-11 px-3.5 rounded-xl border border-border bg-card text-foreground text-xs shadow-2xs hover:border-border/80">
-                                                    <SelectValue placeholder="None / Independent Operational Role" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="__none__">None / Independent Operational Role</SelectItem>
-                                                    {colleagues.map((c) => (
-                                                        <SelectItem key={c.id} value={String(c.id)}>
-                                                            {c.full_name} ({c.file_no}) — {c.position}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+
+                                            <Popover open={approverOpen} onOpenChange={setApproverOpen}>
+                                                <PopoverTrigger asChild>
+                                                    <button
+                                                        type="button"
+                                                        id="assigned_to_user_id"
+                                                        role="combobox"
+                                                        aria-expanded={approverOpen}
+                                                        className="w-full h-11 px-3.5 rounded-xl border border-border bg-card text-foreground text-xs shadow-2xs hover:border-border/80 flex items-center justify-between text-left transition-all focus:outline-hidden focus:ring-2 focus:ring-[#0066cc]/30 cursor-pointer"
+                                                    >
+                                                        {selectedApprover ? (
+                                                            <div className="flex items-center gap-2 truncate">
+                                                                <span className="font-semibold text-foreground truncate">{selectedApprover.name}</span>
+                                                                <span className="text-muted-foreground text-[11px] truncate">
+                                                                    — {selectedApprover.position} {selectedApprover.department ? `(${selectedApprover.department})` : ''}
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center gap-2 truncate">
+                                                                <span className="font-semibold text-foreground">General HR &amp; Executive Queue</span>
+                                                                <span className="text-muted-foreground text-[11px]">(Default Broadcast)</span>
+                                                            </div>
+                                                        )}
+                                                        <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 ml-2" />
+                                                    </button>
+                                                </PopoverTrigger>
+
+                                                <PopoverContent
+                                                    align="start"
+                                                    className="w-[var(--radix-popover-trigger-width)] min-w-[340px] max-w-[520px] p-0 bg-card border border-border shadow-lg rounded-xl overflow-hidden z-50 text-foreground"
+                                                >
+                                                    {/* Real-Time Search Bar */}
+                                                    <div className="p-2.5 border-b border-border/80 bg-muted/30 flex items-center gap-2">
+                                                        <Search className="w-4 h-4 text-muted-foreground shrink-0 ml-1" />
+                                                        <input
+                                                            type="text"
+                                                            value={approverSearch}
+                                                            onChange={(e) => setApproverSearch(e.target.value)}
+                                                            placeholder="Search approver by name, position, or department..."
+                                                            className="w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground outline-hidden border-none p-0 focus:ring-0"
+                                                            autoFocus
+                                                        />
+                                                        {approverSearch && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setApproverSearch('')}
+                                                                className="text-xs text-muted-foreground hover:text-foreground px-1"
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Scrollable Items List */}
+                                                    <div className="max-h-64 overflow-y-auto p-1.5 divide-y divide-border/40">
+                                                        {/* Default General Queue Option */}
+                                                        {!approverSearch && (
+                                                            <div className="pb-1">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setLeaveData('assigned_to_user_id', '');
+                                                                        setApproverOpen(false);
+                                                                    }}
+                                                                    className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors cursor-pointer ${
+                                                                        !leaveData.assigned_to_user_id
+                                                                            ? 'bg-primary/10 text-primary font-semibold'
+                                                                            : 'hover:bg-muted/60 text-foreground'
+                                                                    }`}
+                                                                >
+                                                                    <div>
+                                                                        <div className="font-semibold">General HR &amp; Executive Queue</div>
+                                                                        <div className="text-[11px] text-muted-foreground">Default broadcast to all authorized personnel</div>
+                                                                    </div>
+                                                                    {!leaveData.assigned_to_user_id && <Check className="w-4 h-4 text-primary shrink-0" />}
+                                                                </button>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Filtered Approvers */}
+                                                        <div className="pt-1 space-y-0.5">
+                                                            {filteredApprovers.length === 0 ? (
+                                                                <div className="py-6 px-4 text-center text-xs text-muted-foreground">
+                                                                    No leadership personnel found matching &ldquo;{approverSearch}&rdquo;
+                                                                </div>
+                                                            ) : (
+                                                                filteredApprovers.map((appr) => {
+                                                                    const isSelected = String(appr.id) === String(leaveData.assigned_to_user_id);
+                                                                    return (
+                                                                        <button
+                                                                            key={appr.id}
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setLeaveData('assigned_to_user_id', String(appr.id));
+                                                                                setApproverOpen(false);
+                                                                                setApproverSearch('');
+                                                                            }}
+                                                                            className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors cursor-pointer ${
+                                                                                isSelected
+                                                                                    ? 'bg-primary/10 text-primary font-semibold'
+                                                                                    : 'hover:bg-muted/60 text-foreground'
+                                                                            }`}
+                                                                        >
+                                                                            <div className="truncate pr-2">
+                                                                                <div className="font-semibold text-foreground flex items-center gap-1.5 truncate">
+                                                                                    <span>{appr.name}</span>
+                                                                                    {appr.level && (
+                                                                                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono">
+                                                                                            {appr.level}
+                                                                                        </span>
+                                                                                    )}
+                                                                                </div>
+                                                                                <div className="text-[11px] text-muted-foreground truncate">
+                                                                                    {appr.position} {appr.department ? `· ${appr.department}` : ''}
+                                                                                </div>
+                                                                            </div>
+                                                                            {isSelected && <Check className="w-4 h-4 text-primary shrink-0" />}
+                                                                        </button>
+                                                                    );
+                                                                })
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </PopoverContent>
+                                            </Popover>
+
                                             <p className="text-[11px] text-muted-foreground">
-                                                Colleague assigned to handle time-critical duties during your absence.
+                                                Search by name or position to direct this leave request to a specific manager or executive.
                                             </p>
-                                            {leaveErrors.handover_employee_id && (
-                                                <p className="text-xs text-destructive font-medium">{leaveErrors.handover_employee_id}</p>
+                                            {leaveErrors.assigned_to_user_id && (
+                                                <p className="text-xs text-destructive font-medium">{leaveErrors.assigned_to_user_id}</p>
                                             )}
                                         </div>
+                                    </div>
+
+                                    {/* Relief / Handover Colleague */}
+                                    <div className="space-y-1.5 pt-1">
+                                        <Label htmlFor="handover_employee_id" className="text-xs font-semibold text-foreground flex items-center gap-1">
+                                            <Users className="w-3.5 h-3.5 text-primary" />
+                                            <span>Designated Relief / Handover Colleague</span>
+                                            <span className="text-muted-foreground font-normal text-[11px]">(Optional)</span>
+                                        </Label>
+                                        <Select
+                                            value={leaveData.handover_employee_id || '__none__'}
+                                            onValueChange={(val) => setLeaveData('handover_employee_id', val === '__none__' ? '' : val)}
+                                        >
+                                            <SelectTrigger id="handover_employee_id" className="w-full h-11 px-3.5 rounded-xl border border-border bg-card text-foreground text-xs shadow-2xs hover:border-border/80">
+                                                <SelectValue placeholder="None / Independent Operational Role" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="__none__">None / Independent Operational Role</SelectItem>
+                                                {colleagues.map((c) => (
+                                                    <SelectItem key={c.id} value={String(c.id)}>
+                                                        {c.full_name} ({c.file_no}) — {c.position}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <p className="text-[11px] text-muted-foreground">
+                                            Colleague assigned to handle time-critical duties during your absence.
+                                        </p>
+                                        {leaveErrors.handover_employee_id && (
+                                            <p className="text-xs text-destructive font-medium">{leaveErrors.handover_employee_id}</p>
+                                        )}
                                     </div>
 
                                     {/* 2. Schedule: Commencement & Conclusion Dates */}
@@ -723,6 +902,7 @@ export default function Leave({
                                                 <TableRow className="border-border/60">
                                                     <TableHead className="text-xs font-semibold py-3 px-4">Leave Type</TableHead>
                                                     <TableHead className="text-xs font-semibold py-3 px-4">Duration &amp; Dates</TableHead>
+                                                    <TableHead className="text-xs font-semibold py-3 px-4">Directed To</TableHead>
                                                     <TableHead className="text-xs font-semibold py-3 px-4">Relief Officer</TableHead>
                                                     <TableHead className="text-xs font-semibold py-3 px-4">Reason</TableHead>
                                                     <TableHead className="text-xs font-semibold py-3 px-4">Status</TableHead>
@@ -753,6 +933,21 @@ export default function Leave({
                                                                 <span className="text-[11px] text-muted-foreground font-mono">
                                                                     {req.start_date_ec || req.start_date} &rarr; {req.end_date_ec || req.end_date}
                                                                 </span>
+                                                            </TableCell>
+
+                                                            <TableCell className="py-3 px-4 text-xs text-muted-foreground">
+                                                                {req.assigned_approver ? (
+                                                                    <div>
+                                                                        <span className="font-semibold text-foreground block">
+                                                                            {req.assigned_approver.name}
+                                                                        </span>
+                                                                        <span className="text-[11px] text-muted-foreground">
+                                                                            Assigned Reviewer
+                                                                        </span>
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-muted-foreground/80 italic text-[11px]">General Queue</span>
+                                                                )}
                                                             </TableCell>
 
                                                             <TableCell className="py-3 px-4 text-xs text-muted-foreground">

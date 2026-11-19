@@ -317,10 +317,10 @@ export default function AnnouncementsCreate({
                         <Card className="rounded-2xl border border-border/80 shadow-xs bg-card overflow-hidden">
                             <CardHeader className="p-6 pb-4 border-b border-border/60 bg-muted/20 flex flex-row items-center justify-between gap-3">
                                 <div>
-                                    <CardTitle className="text-base font-semibold text-foreground">
+                                    <CardTitle className="text-base sm:text-lg font-bold text-foreground tracking-tight">
                                         Circular Content &amp; Language
                                     </CardTitle>
-                                    <CardDescription className="text-xs text-muted-foreground">
+                                    <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                                         Provide the announcement details in English and optional Amharic.
                                     </CardDescription>
                                 </div>
@@ -469,11 +469,11 @@ export default function AnnouncementsCreate({
                         {/* Audience Targeting Selector */}
                         <Card data-tour="create-audience-selector" className="rounded-2xl border border-border/80 shadow-xs bg-card">
                             <CardHeader className="p-6 pb-3">
-                                <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+                                <CardTitle className="text-base sm:text-lg font-bold text-foreground tracking-tight flex items-center gap-2">
                                     <Users className="w-4 h-4 text-primary" />
                                     <span>Target Audience Segmentation</span>
                                 </CardTitle>
-                                <CardDescription className="text-xs text-muted-foreground">
+                                <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                                     Specify who should receive and see this circular.
                                 </CardDescription>
                             </CardHeader>
@@ -631,7 +631,7 @@ export default function AnnouncementsCreate({
                         {/* Priority & Category */}
                         <Card className="rounded-2xl border border-border/80 shadow-xs bg-card">
                             <CardHeader className="p-5 pb-3">
-                                <CardTitle className="text-sm font-semibold text-foreground">
+                                <CardTitle className="text-sm sm:text-base font-bold text-foreground tracking-tight">
                                     Priority &amp; Category
                                 </CardTitle>
                             </CardHeader>
@@ -687,7 +687,7 @@ export default function AnnouncementsCreate({
                         {/* Compliance, E-Sign & Social Settings */}
                         <Card data-tour="create-governance-options" className="rounded-2xl border border-border/80 shadow-xs bg-card">
                             <CardHeader className="p-5 pb-3">
-                                <CardTitle className="text-sm font-semibold text-foreground">
+                                <CardTitle className="text-sm sm:text-base font-bold text-foreground tracking-tight">
                                     Governance &amp; Actions
                                 </CardTitle>
                             </CardHeader>
@@ -757,7 +757,7 @@ export default function AnnouncementsCreate({
                         {/* Scheduling & Lifecycle */}
                         <Card className="rounded-2xl border border-border/80 shadow-xs bg-card">
                             <CardHeader className="p-5 pb-3">
-                                <CardTitle className="text-sm font-semibold text-foreground">
+                                <CardTitle className="text-sm sm:text-base font-bold text-foreground tracking-tight">
                                     Publishing &amp; Lifecycle
                                 </CardTitle>
                             </CardHeader>

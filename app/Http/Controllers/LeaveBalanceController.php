@@ -62,12 +62,12 @@ class LeaveBalanceController extends Controller
             'staff_tracked_count' => Employee::where('status', '!=', 'Separated')->count(),
         ];
 
-        $pendingRequests = LeaveRequest::with(['employee.department', 'handoverEmployee:id,full_name,file_no,position'])
+        $pendingRequests = LeaveRequest::with(['employee.department', 'handoverEmployee:id,full_name,file_no,position', 'assignedApprover:id,name'])
             ->where('status', 'Pending')
             ->orderBy('created_at')
             ->get();
 
-        $recentRequests = LeaveRequest::with(['employee.department', 'handoverEmployee:id,full_name,file_no,position', 'reviewer:id,name'])
+        $recentRequests = LeaveRequest::with(['employee.department', 'handoverEmployee:id,full_name,file_no,position', 'reviewer:id,name', 'assignedApprover:id,name'])
             ->where('status', '!=', 'Pending')
             ->orderByDesc('reviewed_at')
             ->limit(50)
@@ -101,6 +101,7 @@ class LeaveBalanceController extends Controller
             'employee.department',
             'employee.currentLeaveBalance',
             'handoverEmployee:id,full_name,file_no,position',
+            'assignedApprover:id,name',
         ])->where('status', 'Pending');
 
         // Base query for reviewed history within this manager's scope
@@ -109,6 +110,7 @@ class LeaveBalanceController extends Controller
             'employee.currentLeaveBalance',
             'handoverEmployee:id,full_name,file_no,position',
             'reviewer:id,name',
+            'assignedApprover:id,name',
         ])->whereIn('status', ['Approved', 'Rejected', 'Cancelled']);
 
         // Exclude manager's own requests (they cannot approve their own leave)
@@ -120,8 +122,14 @@ class LeaveBalanceController extends Controller
         // Apply department scope if applicable
         if ($scope === 'department' && $employee?->department_id) {
             $deptId = $employee->department_id;
-            $pendingQuery->whereHas('employee', fn ($q) => $q->where('department_id', $deptId));
-            $historyQuery->whereHas('employee', fn ($q) => $q->where('department_id', $deptId));
+            $pendingQuery->where(function ($q) use ($deptId, $user) {
+                $q->whereHas('employee', fn ($empQ) => $empQ->where('department_id', $deptId))
+                    ->orWhere('assigned_to_user_id', $user->id);
+            });
+            $historyQuery->where(function ($q) use ($deptId, $user) {
+                $q->whereHas('employee', fn ($empQ) => $empQ->where('department_id', $deptId))
+                    ->orWhere('assigned_to_user_id', $user->id);
+            });
         }
 
         $pendingRequests = $pendingQuery->orderBy('created_at')->get();
@@ -191,8 +199,9 @@ class LeaveBalanceController extends Controller
 
         // Check department scope
         if ($user->getManagerialScope() === 'department' && $user->employee?->department_id) {
-            if ($leaveRequest->employee?->department_id !== $user->employee->department_id) {
-                abort(403, 'You are only authorized to review leave requests within your department.');
+            $isAssignedToMe = (int) $leaveRequest->assigned_to_user_id === (int) $user->id;
+            if (! $isAssignedToMe && $leaveRequest->employee?->department_id !== $user->employee->department_id) {
+                abort(403, 'You are only authorized to review leave requests within your department or specifically assigned to you.');
             }
         }
 

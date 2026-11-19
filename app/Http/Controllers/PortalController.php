@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\DataCorrectionReport;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
+use App\Models\User;
 use App\Services\AnnualLeaveCalculationService;
 use App\Services\RetirementCalculationService;
 use App\Services\TenureCalculationService;
@@ -46,7 +47,7 @@ class PortalController extends Controller
                 'separation',
                 'promotions',
                 'dataCorrectionReports' => fn ($q) => $q->orderByDesc('created_at'),
-                'leaveRequests' => fn ($q) => $q->with(['handoverEmployee:id,full_name,file_no,position', 'reviewer:id,name'])->orderByDesc('created_at'),
+                'leaveRequests' => fn ($q) => $q->with(['handoverEmployee:id,full_name,file_no,position', 'reviewer:id,name', 'assignedApprover:id,name'])->orderByDesc('created_at'),
             ]);
 
             $tenure = $this->tenureService->calculateTenure($employee);
@@ -116,7 +117,7 @@ class PortalController extends Controller
             $employee->load([
                 'department',
                 'leaveBalances' => fn ($q) => $q->orderByDesc('leave_year'),
-                'leaveRequests' => fn ($q) => $q->with(['handoverEmployee:id,full_name,file_no,position', 'reviewer:id,name'])->orderByDesc('created_at'),
+                'leaveRequests' => fn ($q) => $q->with(['handoverEmployee:id,full_name,file_no,position', 'reviewer:id,name', 'assignedApprover:id,name'])->orderByDesc('created_at'),
             ]);
 
             $tenure = $this->tenureService->calculateTenure($employee);
@@ -144,6 +145,41 @@ class PortalController extends Controller
             ->select('id', 'full_name', 'file_no', 'position')
             ->get();
 
+        $eligibleApprovers = User::with('employee.department')
+            ->where('id', '!=', $user->id)
+            ->get()
+            ->filter(fn ($u) => $u->canApproveLeave())
+            ->map(function ($u) {
+                $pos = $u->employee?->position;
+                if (! $pos) {
+                    $pos = $u->role === 'HRAdmin' ? 'HR Administrator' : ($u->role === 'SysAdmin' ? 'System Administrator' : 'Manager');
+                }
+                $dept = $u->employee?->department?->name;
+
+                return [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'position' => $pos,
+                    'department' => $dept,
+                    'level' => $u->employee?->getManagerialLevel(),
+                    'scope' => $u->getManagerialScope(),
+                ];
+            })
+            ->sortBy(function ($item) {
+                $rank = match ($item['level']) {
+                    'CEO' => 1,
+                    'DCEO' => 2,
+                    'Chief Officer' => 3,
+                    'Director' => 4,
+                    'Department Manager' => 5,
+                    'Division Head' => 6,
+                    default => 7,
+                };
+
+                return sprintf('%d_%s', $rank, $item['name']);
+            })
+            ->values();
+
         return Inertia::render('Portal/Leave', [
             'employee' => $employee ? [
                 'id' => $employee->id,
@@ -160,6 +196,7 @@ class PortalController extends Controller
             'pendingCount' => $pendingCount,
             'leaveRequests' => $employee ? $employee->leaveRequests : [],
             'colleagues' => $colleagues,
+            'eligibleApprovers' => $eligibleApprovers,
         ]);
     }
 
@@ -207,6 +244,21 @@ class PortalController extends Controller
             'requested_days' => ['required', 'numeric', 'min:0.5', 'max:120'],
             'reason' => ['required', 'string', 'max:1000'],
             'handover_employee_id' => ['nullable', 'exists:employees,id'],
+            'assigned_to_user_id' => [
+                'nullable',
+                'exists:users,id',
+                function ($attribute, $value, $fail) use ($user) {
+                    if ($value && (int) $value === (int) $user->id) {
+                        $fail('You cannot assign yourself as the approving manager.');
+                    }
+                    if ($value) {
+                        $approver = User::find($value);
+                        if (! $approver?->canApproveLeave()) {
+                            $fail('The selected staff member does not have leave approval authority.');
+                        }
+                    }
+                },
+            ],
             'contact_phone' => ['nullable', 'string', 'max:50'],
             'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120'],
         ]);
@@ -227,6 +279,7 @@ class PortalController extends Controller
             'requested_days' => $validated['requested_days'],
             'reason' => $validated['reason'],
             'handover_employee_id' => $validated['handover_employee_id'] ?? null,
+            'assigned_to_user_id' => $validated['assigned_to_user_id'] ?? null,
             'contact_phone' => $validated['contact_phone'] ?? null,
             'attachment_path' => $attachmentPath,
             'status' => 'Pending',
@@ -244,7 +297,15 @@ class PortalController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        return back()->with('success', "Leave request for {$validated['requested_days']} days submitted for HR review.");
+        $assignedName = null;
+        if (! empty($validated['assigned_to_user_id'])) {
+            $assignedName = User::find($validated['assigned_to_user_id'])?->name;
+        }
+        $msg = $assignedName
+            ? "Leave request for {$validated['requested_days']} days submitted directly to {$assignedName} for review."
+            : "Leave request for {$validated['requested_days']} days submitted for review.";
+
+        return back()->with('success', $msg);
     }
 
     /**

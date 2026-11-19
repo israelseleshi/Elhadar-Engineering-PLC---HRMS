@@ -341,4 +341,86 @@ class LeaveRequestTest extends TestCase
         $response->assertSessionHas('error');
         $this->assertEquals('Pending', $leaveRequest->fresh()->status);
     }
+
+    public function test_employee_can_submit_leave_request_directed_to_specific_manager(): void
+    {
+        $user = User::factory()->create(['role' => 'Employee']);
+        $employee = Employee::factory()->create(['user_id' => $user->id]);
+
+        $managerUser = User::factory()->create(['role' => 'Manager']);
+
+        $response = $this->actingAs($user)->post('/portal/leave-requests', [
+            'leave_type' => 'Annual',
+            'start_date' => '2026-11-10',
+            'start_date_ec' => '02/03/2019 E.C.',
+            'end_date' => '2026-11-12',
+            'end_date_ec' => '04/03/2019 E.C.',
+            'requested_days' => 3,
+            'reason' => 'Annual leave for personal matters',
+            'assigned_to_user_id' => $managerUser->id,
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('leave_requests', [
+            'employee_id' => $employee->id,
+            'user_id' => $user->id,
+            'assigned_to_user_id' => $managerUser->id,
+            'status' => 'Pending',
+        ]);
+
+        $created = LeaveRequest::where('employee_id', $employee->id)->first();
+        $this->assertEquals($managerUser->id, $created->assignedApprover?->id);
+    }
+
+    public function test_employee_cannot_assign_themselves_as_leave_approver(): void
+    {
+        $user = User::factory()->create(['role' => 'Manager']);
+        $employee = Employee::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->post('/portal/leave-requests', [
+            'leave_type' => 'Annual',
+            'start_date' => '2026-11-10',
+            'start_date_ec' => '02/03/2019 E.C.',
+            'end_date' => '2026-11-12',
+            'end_date_ec' => '04/03/2019 E.C.',
+            'requested_days' => 3,
+            'reason' => 'Annual leave self assignment test',
+            'assigned_to_user_id' => $user->id,
+        ]);
+
+        $response->assertSessionHasErrors(['assigned_to_user_id']);
+        $this->assertDatabaseMissing('leave_requests', [
+            'reason' => 'Annual leave self assignment test',
+        ]);
+    }
+
+    public function test_employee_cannot_assign_non_managerial_user_as_leave_approver(): void
+    {
+        $user = User::factory()->create(['role' => 'Employee']);
+        Employee::factory()->create(['user_id' => $user->id]);
+
+        $regularUser = User::factory()->create(['role' => 'Employee']);
+        Employee::factory()->create([
+            'user_id' => $regularUser->id,
+            'position' => 'Junior Electrician',
+        ]);
+
+        $response = $this->actingAs($user)->post('/portal/leave-requests', [
+            'leave_type' => 'Annual',
+            'start_date' => '2026-11-10',
+            'start_date_ec' => '02/03/2019 E.C.',
+            'end_date' => '2026-11-12',
+            'end_date_ec' => '04/03/2019 E.C.',
+            'requested_days' => 3,
+            'reason' => 'Testing non-manager validation',
+            'assigned_to_user_id' => $regularUser->id,
+        ]);
+
+        $response->assertSessionHasErrors(['assigned_to_user_id']);
+        $this->assertDatabaseMissing('leave_requests', [
+            'reason' => 'Testing non-manager validation',
+        ]);
+    }
 }

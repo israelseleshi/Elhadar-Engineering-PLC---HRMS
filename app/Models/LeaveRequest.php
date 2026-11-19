@@ -21,6 +21,7 @@ class LeaveRequest extends Model
         'requested_days',
         'reason',
         'handover_employee_id',
+        'assigned_to_user_id',
         'contact_phone',
         'attachment_path',
         'status',
@@ -56,6 +57,11 @@ class LeaveRequest extends Model
     public function handoverEmployee(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'handover_employee_id');
+    }
+
+    public function assignedApprover(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to_user_id');
     }
 
     public function reviewer(): BelongsTo
