@@ -9,6 +9,7 @@ import {
     UserCheck,
     CalendarCheck,
     MessageSquare,
+    Network,
     LogOut,
     Trash2,
 } from 'lucide-react';
@@ -30,6 +31,7 @@ interface Props {
     title?: string;
     subtitle?: string;
     fullHeight?: boolean;
+    fullWidth?: boolean;
 }
 
 export default function AuthenticatedLayout({
@@ -37,6 +39,7 @@ export default function AuthenticatedLayout({
     title,
     subtitle,
     fullHeight = false,
+    fullWidth = false,
     children,
 }: PropsWithChildren<Props>) {
     const { auth, flash } = usePage<PageProps>().props;
@@ -193,6 +196,21 @@ export default function AuthenticatedLayout({
             icon: MessageSquare,
             category: 'personal',
             description: 'Intra-department workspace, secure file sharing & vault',
+            activeBg: 'bg-[#0066cc]',
+            squircleColor: {
+                bg: 'bg-[#0066cc] text-white',
+                text: 'text-[#0066cc]',
+            },
+        },
+        {
+            id: 'organization-structure',
+            name: 'Organizational Structure',
+            shortName: 'Org Structure',
+            href: route('organization.structure'),
+            routeName: 'organization.structure',
+            icon: Network,
+            category: 'personal',
+            description: 'Enterprise organogram & operational reporting hierarchy',
             activeBg: 'bg-[#0066cc]',
             squircleColor: {
                 bg: 'bg-[#0066cc] text-white',
@@ -448,7 +466,9 @@ export default function AuthenticatedLayout({
                         className={
                             fullHeight
                                 ? 'flex-1 min-h-0 overflow-hidden flex flex-col w-full px-2 sm:px-4 py-2'
-                                : 'flex-1 px-3 py-4 lg:px-6 lg:py-6 w-full max-w-7xl mx-auto'
+                                : fullWidth
+                                    ? 'flex-1 px-2 sm:px-3 py-3 w-full min-w-0'
+                                    : 'flex-1 px-3 py-4 lg:px-6 lg:py-6 w-full max-w-7xl mx-auto'
                         }
                     >
                         {!fullHeight && <WebPushBanner />}

@@ -12,6 +12,7 @@ use App\Http\Controllers\ExcelImportExportController;
 use App\Http\Controllers\LeaveBalanceController;
 use App\Http\Controllers\NewEmployeeController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OrganizationStructureController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\ProbationController;
 use App\Http\Controllers\ProfileController;
@@ -49,6 +50,9 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
     // Staff Photo Management (HR/Admin or Self)
     Route::post('/employees/{employee}/photo', [EmployeePhotoController::class, 'store'])->name('employees.photo.store');
     Route::delete('/employees/{employee}/photo', [EmployeePhotoController::class, 'destroy'])->name('employees.photo.destroy');
+
+    // Enterprise Organizational Structure - Viewable for all staff
+    Route::get('/organization/structure', [OrganizationStructureController::class, 'index'])->name('organization.structure');
 
     // Announcements & Notifications - Viewable & interactive for all staff
     Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
