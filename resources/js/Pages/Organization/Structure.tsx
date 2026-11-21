@@ -33,6 +33,14 @@ import {
     OPERATING_OFFICERS_WINGS,
     OrgWingNode,
 } from './organogramData';
+import {
+    OrgEmployee,
+    NodeLeader,
+    HierarchyMapping,
+    buildHierarchyMapping,
+} from './employeeOrgMapping';
+import { CircleAvatar } from './CircleAvatar';
+import { EmployeeProfileDrawer } from './EmployeeProfileDrawer';
 
 interface Props {
     metrics: {
@@ -42,16 +50,25 @@ interface Props {
         effective_cycle: string;
         company: string;
     };
+    employees?: OrgEmployee[];
 }
 
-export default function OrganizationStructure({ metrics }: Props) {
+export default function OrganizationStructure({ metrics, employees = [] }: Props) {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState<'all' | 'strategic' | 'operating'>('all');
     const [zoomLevel, setZoomLevel] = useState<number>(100);
     const [isFullscreen, setIsFullscreen] = useState(false);
 
+    // Selected employee for the profile slide-over drawer
+    const [selectedEmployee, setSelectedEmployee] = useState<OrgEmployee | null>(null);
+
     // Track collapse toggle for all enterprise wings
     const [collapseWings, setCollapseWings] = useState(false);
+
+    // Build hierarchy mapping from all active employees
+    const mapping: HierarchyMapping = useMemo(() => {
+        return buildHierarchyMapping(employees);
+    }, [employees]);
 
     // All wing IDs
     const allWingIds = useMemo(() => {
@@ -67,6 +84,11 @@ export default function OrganizationStructure({ metrics }: Props) {
         return ids;
     }, []);
 
+    // All division IDs that have employees
+    const allDivisionsWithEmployees = useMemo(() => {
+        return Object.keys(mapping.divisionEmployees);
+    }, [mapping.divisionEmployees]);
+
     // Expanded wings for child directorates - Default: ALL EXPANDED so all subordinate units are visible
     const [expandedWingIds, setExpandedWingIds] = useState<Set<string>>(() => {
         return new Set(allWingIds);
@@ -75,6 +97,11 @@ export default function OrganizationStructure({ metrics }: Props) {
     // Expanded directorates for child divisions - Default: expanded for full visibility
     const [expandedDirIds, setExpandedDirIds] = useState<Set<string>>(() => {
         return new Set(allDirIds);
+    });
+
+    // Expanded division rosters for employee cards - Default: ALL EXPANDED so all active employees are visible
+    const [expandedDivisionRosters, setExpandedDivisionRosters] = useState<Set<string>>(() => {
+        return new Set(allDivisionsWithEmployees);
     });
 
     const toggleWingExpansion = useCallback((id: string) => {
@@ -101,16 +128,40 @@ export default function OrganizationStructure({ metrics }: Props) {
         });
     }, []);
 
+    const toggleDivisionRoster = useCallback((id: string) => {
+        setExpandedDivisionRosters((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    }, []);
+
     const expandAll = useCallback(() => {
         setCollapseWings(false);
         setExpandedWingIds(new Set(allWingIds));
         setExpandedDirIds(new Set(allDirIds));
-    }, [allWingIds, allDirIds]);
+        setExpandedDivisionRosters(new Set(allDivisionsWithEmployees));
+    }, [allWingIds, allDirIds, allDivisionsWithEmployees]);
 
     const collapseAll = useCallback(() => {
         setExpandedWingIds(new Set());
         setExpandedDirIds(new Set());
+        setExpandedDivisionRosters(new Set());
     }, []);
+
+    const toggleAllStaffRosters = useCallback(() => {
+        setExpandedDivisionRosters((prev) => {
+            if (prev.size > 0) {
+                return new Set();
+            } else {
+                return new Set(allDivisionsWithEmployees);
+            }
+        });
+    }, [allDivisionsWithEmployees]);
 
     const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 10, 130));
     const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 10, 45));
@@ -132,18 +183,55 @@ export default function OrganizationStructure({ metrics }: Props) {
 
     const q = searchQuery.trim().toLowerCase();
 
+    // Matching employee IDs for high-precision employee search
+    const matchingEmpIds = useMemo(() => {
+        if (!q) return new Set<number>();
+        const set = new Set<number>();
+        employees.forEach((emp) => {
+            if (
+                emp.name.toLowerCase().includes(q) ||
+                (emp.position && emp.position.toLowerCase().includes(q)) ||
+                (emp.workplace && emp.workplace.toLowerCase().includes(q)) ||
+                (emp.department && emp.department.toLowerCase().includes(q))
+            ) {
+                set.add(emp.id);
+            }
+        });
+        return set;
+    }, [q, employees]);
+
     const matchesWing = useCallback(
         (wing: OrgWingNode) => {
             if (!q) return true;
             if (wing.title.toLowerCase().includes(q)) return true;
             if (wing.subtitle.toLowerCase().includes(q)) return true;
             if (wing.summary.toLowerCase().includes(q)) return true;
+
+            const wingLeader = mapping.wingLeaders[wing.id];
+            if (
+                wingLeader &&
+                (wingLeader.name.toLowerCase().includes(q) || wingLeader.position.toLowerCase().includes(q))
+            ) {
+                return true;
+            }
+
             return wing.directorates.some((d) => {
                 if (d.name.toLowerCase().includes(q)) return true;
-                return d.divisions.some((div) => div.name.toLowerCase().includes(q));
+                const dirLeader = mapping.dirLeaders[d.id];
+                if (
+                    dirLeader &&
+                    (dirLeader.name.toLowerCase().includes(q) || dirLeader.position.toLowerCase().includes(q))
+                ) {
+                    return true;
+                }
+                return d.divisions.some((div) => {
+                    if (div.name.toLowerCase().includes(q)) return true;
+                    const emps = mapping.divisionEmployees[div.id] || [];
+                    return emps.some((emp) => matchingEmpIds.has(emp.id));
+                });
             });
         },
-        [q]
+        [q, mapping, matchingEmpIds]
     );
 
     const filteredWings = useMemo(() => {
@@ -164,10 +252,45 @@ export default function OrganizationStructure({ metrics }: Props) {
         return filteredWings.length;
     }, [q, filteredWings]);
 
+    // Apex CEO leader
+    const ceoLeader = useMemo(() => {
+        return (
+            mapping.wingLeaders['ceo'] || {
+                name: 'Abel Bizuayehu Haile',
+                position: 'Chief Executive Officer',
+                photo_url: null,
+                status: 'Permanent',
+                workplace: 'H.O',
+            }
+        );
+    }, [mapping.wingLeaders]);
+
+    const handleSelectCeo = useCallback(() => {
+        const ceoEmp = employees.find(
+            (e) =>
+                e.name.toLowerCase().includes('abel bizuayehu') ||
+                (e.position && e.position.toLowerCase().includes('chief executive officer'))
+        );
+        if (ceoEmp) {
+            setSelectedEmployee(ceoEmp);
+        } else {
+            setSelectedEmployee({
+                id: 1,
+                name: ceoLeader.name,
+                position: ceoLeader.position,
+                department_id: null,
+                department: 'Office of the CEO',
+                workplace: ceoLeader.workplace,
+                status: ceoLeader.status,
+                photo_url: ceoLeader.photo_url,
+            });
+        }
+    }, [employees, ceoLeader]);
+
     return (
         <AuthenticatedLayout
             title="Organizational Structure"
-            subtitle="Enterprise hierarchy and operational reporting structure of EL-HADAR Engineering PLC."
+            subtitle="Enterprise hierarchy and active operational staff organogram of EL-HADAR Engineering PLC."
             fullWidth
         >
             <Head title="Organizational Structure - EL-HADAR Group" />
@@ -186,7 +309,7 @@ export default function OrganizationStructure({ metrics }: Props) {
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search departments, divisions, positions..."
+                                placeholder="Search employees, positions, departments..."
                                 className="w-full pl-9 pr-8 py-1.5 text-xs bg-gray-50 dark:bg-gray-800 border border-transparent focus:border-[#0066cc] focus:bg-white dark:focus:bg-gray-900 rounded-lg outline-none transition-all placeholder:text-gray-400 text-gray-900 dark:text-gray-100"
                             />
                             {searchQuery && (
@@ -200,7 +323,9 @@ export default function OrganizationStructure({ metrics }: Props) {
                         </div>
                         {searchQuery && (
                             <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400 whitespace-nowrap px-2 py-0.5 bg-blue-50 dark:bg-blue-950/60 rounded-md">
-                                {totalMatches} {totalMatches === 1 ? 'match' : 'matches'}
+                                {matchingEmpIds.size > 0
+                                    ? `${matchingEmpIds.size} staff found`
+                                    : `${totalMatches} ${totalMatches === 1 ? 'unit' : 'units'}`}
                             </span>
                         )}
                     </div>
@@ -244,7 +369,7 @@ export default function OrganizationStructure({ metrics }: Props) {
                         <div className="flex items-center border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-gray-900">
                             <button
                                 onClick={expandAll}
-                                title="Expand All Nodes & Sub-units"
+                                title="Expand All Nodes & Rosters"
                                 className="px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-r border-gray-200 dark:border-gray-800"
                             >
                                 Expand All
@@ -252,9 +377,16 @@ export default function OrganizationStructure({ metrics }: Props) {
                             <button
                                 onClick={collapseAll}
                                 title="Collapse All Sub-units"
-                                className="px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                                className="px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-r border-gray-200 dark:border-gray-800"
                             >
                                 Collapse Sub-units
+                            </button>
+                            <button
+                                onClick={toggleAllStaffRosters}
+                                title="Toggle All Employee Rosters"
+                                className="px-2.5 py-1.5 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/60 font-medium transition-colors"
+                            >
+                                {expandedDivisionRosters.size > 0 ? 'Hide Staff' : 'Show Staff'}
                             </button>
                         </div>
 
@@ -285,7 +417,7 @@ export default function OrganizationStructure({ metrics }: Props) {
                             </button>
                             <button
                                 onClick={handleResetZoom}
-                                title="Reset Zoom (85%)"
+                                title="Reset Zoom (100%)"
                                 className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 border-l border-gray-200 dark:border-gray-800 transition-colors"
                             >
                                 <RotateCcw className="w-3.5 h-3.5" />
@@ -324,6 +456,9 @@ export default function OrganizationStructure({ metrics }: Props) {
                                 icon={Crown}
                                 isApex
                                 avatarBg="#0066cc"
+                                leader={ceoLeader}
+                                staffCount={metrics.total_headcount}
+                                onClick={handleSelectCeo}
                             />
 
                             {/* Stem down to toggle button */}
@@ -359,8 +494,13 @@ export default function OrganizationStructure({ metrics }: Props) {
                                     wings={filteredWings}
                                     expandedWingIds={expandedWingIds}
                                     expandedDirIds={expandedDirIds}
+                                    expandedDivisionRosters={expandedDivisionRosters}
+                                    mapping={mapping}
+                                    matchingEmpIds={matchingEmpIds}
                                     onToggleWing={toggleWingExpansion}
                                     onToggleDir={toggleDirExpansion}
+                                    onToggleDivisionRoster={toggleDivisionRoster}
+                                    onSelectEmployee={setSelectedEmployee}
                                     searchQuery={searchQuery}
                                 />
                             </div>
@@ -373,7 +513,7 @@ export default function OrganizationStructure({ metrics }: Props) {
                                     {metrics.company}
                                 </span>
                                 <span>|</span>
-                                <span>Complete Enterprise Organogram</span>
+                                <span>Active Staff Enterprise Organogram</span>
                                 <span>–</span>
                                 <span>Prepared by {metrics.prepared_by}</span>
                             </div>
@@ -388,12 +528,18 @@ export default function OrganizationStructure({ metrics }: Props) {
                     </div>
                 </div>
             </div>
+
+            {/* Slide-over Profile Drawer */}
+            <EmployeeProfileDrawer
+                employee={selectedEmployee}
+                onClose={() => setSelectedEmployee(null)}
+            />
         </AuthenticatedLayout>
     );
 }
 
 // -------------------------------------------------------------
-// EXACT CARD FROM USER SPEC (CLEAN UNIFORM BORDER, NO TOP TICKS)
+// EXACT CARD FROM USER SPEC (CLEAN UNIFORM BORDER, NO CUT OFFS)
 // -------------------------------------------------------------
 interface TesseraOrgCardProps {
     title: string;
@@ -404,6 +550,8 @@ interface TesseraOrgCardProps {
     badge?: string;
     isMatch?: boolean;
     avatarBg?: string;
+    leader?: NodeLeader;
+    staffCount?: number;
     onClick?: () => void;
 }
 
@@ -416,45 +564,99 @@ function TesseraOrgCard({
     badge,
     isMatch = false,
     avatarBg = '#0066cc',
+    leader,
+    staffCount,
     onClick,
 }: TesseraOrgCardProps) {
     return (
         <div
             onClick={onClick}
-            className={`group relative flex items-center gap-3 ${
-                isApex ? 'w-[380px] max-w-full' : 'w-full'
-            } bg-white dark:bg-[#1a1d24] rounded-lg border border-gray-200 dark:border-gray-800 px-3.5 py-3 shadow-xs hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-md cursor-pointer transition-all ${
+            className={`group relative flex items-start gap-3 w-full bg-white dark:bg-[#1a1d24] rounded-lg border border-gray-200 dark:border-gray-800 px-3.5 py-3 shadow-xs hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-md cursor-pointer transition-all ${
+                isApex ? 'max-w-[420px] mx-auto' : ''
+            } ${
                 isMatch ? 'ring-2 ring-blue-500 border-blue-400 bg-blue-50/50 dark:bg-blue-950/40' : ''
             }`}
         >
-            {/* Left Circular Avatar Icon (solid vibrant blue with clean white icon) */}
-            <div
-                style={{ backgroundColor: avatarBg }}
-                className="w-9 h-9 min-w-9 min-h-9 rounded-full flex items-center justify-center shrink-0 text-white shadow-2xs group-hover:scale-105 transition-transform"
-            >
-                <IconComponent className="w-4.5 h-4.5 text-white" />
-            </div>
-
-            {/* Title & Subtitle */}
-            <div className="flex-1 min-w-0 text-left">
-                <div
-                    className={`${
-                        isApex
-                            ? 'text-sm font-bold'
-                            : isSubordinate
-                            ? 'text-xs font-semibold'
-                            : 'text-xs font-bold'
-                    } text-gray-900 dark:text-gray-100 break-words leading-tight`}
-                >
-                    {title}
+            {/* Left Circular Avatar (Leader photo/initials or Wing Icon) */}
+            {leader ? (
+                <div className="shrink-0 mt-0.5">
+                    <CircleAvatar
+                        name={leader.name}
+                        photoUrl={leader.photo_url}
+                        size={isApex ? 'lg' : 'md'}
+                        showStatusDot
+                        status={leader.status}
+                        className="group-hover:scale-105 transition-transform"
+                    />
                 </div>
-                {subtitle && (
-                    <div className="text-[10.5px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                        {subtitle}
-                    </div>
+            ) : (
+                <div
+                    style={{ backgroundColor: avatarBg }}
+                    className="w-9 h-9 min-w-9 min-h-9 rounded-full flex items-center justify-center shrink-0 text-white shadow-2xs group-hover:scale-105 transition-transform mt-0.5"
+                >
+                    <IconComponent className="w-4.5 h-4.5 text-white" />
+                </div>
+            )}
+
+            {/* Title & Subtitle - FULL WIDTH, NO CUTOFFS */}
+            <div className="flex-1 min-w-0 text-left">
+                {leader ? (
+                    <>
+                        <div className="flex items-start justify-between gap-1.5">
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-blue-600 dark:text-blue-400 break-words leading-tight flex-1">
+                                {title}
+                            </span>
+                            {staffCount !== undefined && staffCount > 0 && (
+                                <span className="text-[8.5px] font-bold px-1.5 py-0.2 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 shrink-0 whitespace-nowrap">
+                                    {staffCount} staff
+                                </span>
+                            )}
+                        </div>
+                        <div
+                            className={`${
+                                isApex ? 'text-sm font-bold' : 'text-xs font-bold'
+                            } text-gray-900 dark:text-gray-100 break-words leading-snug mt-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors`}
+                        >
+                            {leader.name}
+                        </div>
+                        <div className="text-[10.5px] text-gray-500 dark:text-gray-400 break-words leading-tight mt-0.5">
+                            {leader.position}
+                        </div>
+                        {subtitle && (
+                            <div className="text-[9.5px] text-gray-400 dark:text-gray-500 break-words leading-tight mt-0.5">
+                                {subtitle}
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        <div className="flex items-start justify-between gap-1.5">
+                            <div
+                                className={`${
+                                    isApex
+                                        ? 'text-sm font-bold'
+                                        : isSubordinate
+                                        ? 'text-xs font-semibold'
+                                        : 'text-xs font-bold'
+                                } text-gray-900 dark:text-gray-100 break-words leading-snug flex-1`}
+                            >
+                                {title}
+                            </div>
+                            {staffCount !== undefined && staffCount > 0 && (
+                                <span className="text-[8.5px] font-bold px-1.5 py-0.2 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 shrink-0 whitespace-nowrap">
+                                    {staffCount} staff
+                                </span>
+                            )}
+                        </div>
+                        {subtitle && (
+                            <div className="text-[10.5px] text-gray-500 dark:text-gray-400 break-words leading-tight mt-1">
+                                {subtitle}
+                            </div>
+                        )}
+                    </>
                 )}
                 {badge && (
-                    <span className="inline-block mt-0.5 text-[8.5px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                    <span className="inline-block mt-1 text-[8.5px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                         {badge}
                     </span>
                 )}
@@ -475,8 +677,13 @@ interface HorizontalOrgTreeProps {
     wings: OrgWingNode[];
     expandedWingIds: Set<string>;
     expandedDirIds: Set<string>;
+    expandedDivisionRosters: Set<string>;
+    mapping: HierarchyMapping;
+    matchingEmpIds: Set<number>;
     onToggleWing: (id: string) => void;
     onToggleDir: (id: string) => void;
+    onToggleDivisionRoster: (id: string) => void;
+    onSelectEmployee: (emp: OrgEmployee) => void;
     searchQuery: string;
 }
 
@@ -484,8 +691,13 @@ function HorizontalOrgTree({
     wings,
     expandedWingIds,
     expandedDirIds,
+    expandedDivisionRosters,
+    mapping,
+    matchingEmpIds,
     onToggleWing,
     onToggleDir,
+    onToggleDivisionRoster,
+    onSelectEmployee,
     searchQuery,
 }: HorizontalOrgTreeProps) {
     const q = searchQuery.trim().toLowerCase();
@@ -535,21 +747,30 @@ function HorizontalOrgTree({
     return (
         <div className="w-full flex justify-center">
             {/* Horizontal Row of Wings with Continuous Connector Line */}
-            <div className="flex items-start justify-center gap-5 min-w-max">
+            <div className="flex items-start justify-center gap-8 min-w-max">
                 {wings.map((wing, colIdx) => {
                     const isExpanded = expandedWingIds.has(wing.id);
+                    const wingLeader = mapping.wingLeaders[wing.id];
+                    const wingStaffCount = mapping.nodeStaffCounts[wing.id] || 0;
+
                     const isMatch =
                         q &&
                         (wing.title.toLowerCase().includes(q) ||
                             wing.subtitle.toLowerCase().includes(q) ||
-                            wing.directorates.some(
-                                (d) =>
-                                    d.name.toLowerCase().includes(q) ||
-                                    d.divisions.some((div) => div.name.toLowerCase().includes(q))
-                            ));
+                            (wingLeader &&
+                                (wingLeader.name.toLowerCase().includes(q) ||
+                                    wingLeader.position.toLowerCase().includes(q))) ||
+                            wing.directorates.some((d) => {
+                                if (d.name.toLowerCase().includes(q)) return true;
+                                return d.divisions.some((div) => {
+                                    if (div.name.toLowerCase().includes(q)) return true;
+                                    const emps = mapping.divisionEmployees[div.id] || [];
+                                    return emps.some((emp) => matchingEmpIds.has(emp.id));
+                                });
+                            }));
 
                     return (
-                        <div key={wing.id} className="flex flex-col items-center shrink-0 min-w-[280px]">
+                        <div key={wing.id} className="flex flex-col items-center shrink-0">
                             {/* Horizontal Bus Line & Vertical Drop Stem into this Card */}
                             <div className="relative w-full" style={{ height: '20px' }}>
                                 {totalCols > 1 && (
@@ -561,7 +782,7 @@ function HorizontalOrgTree({
                                                     height: '2px',
                                                     top: 0,
                                                     left: '50%',
-                                                    right: '-10px',
+                                                    right: '-16px',
                                                     backgroundColor: '#3b82f6',
                                                 }}
                                                 className="absolute"
@@ -573,8 +794,8 @@ function HorizontalOrgTree({
                                                 style={{
                                                     height: '2px',
                                                     top: 0,
-                                                    left: '-10px',
-                                                    right: '-10px',
+                                                    left: '-16px',
+                                                    right: '-16px',
                                                     backgroundColor: '#3b82f6',
                                                 }}
                                                 className="absolute"
@@ -586,7 +807,7 @@ function HorizontalOrgTree({
                                                 style={{
                                                     height: '2px',
                                                     top: 0,
-                                                    left: '-10px',
+                                                    left: '-16px',
                                                     right: '50%',
                                                     backgroundColor: '#3b82f6',
                                                 }}
@@ -609,16 +830,36 @@ function HorizontalOrgTree({
                                 />
                             </div>
 
-                            {/* Wing Card */}
-                            <div className="w-[280px]">
+                            {/* Wing Card - FIXED 300px WIDTH CENTERED ABOVE SUB-TREE */}
+                            <div className="w-[300px]">
                                 <TesseraOrgCard
                                     title={wing.title}
                                     subtitle={wing.subtitle}
                                     icon={getWingIcon(wing.iconName)}
                                     badge={wing.tag}
                                     isMatch={!!isMatch}
-                                    avatarBg={wing.accentColor || (wing.category === 'strategic' ? '#0066cc' : '#0284c7')}
-                                    onClick={() => onToggleWing(wing.id)}
+                                    avatarBg={
+                                        wing.accentColor ||
+                                        (wing.category === 'strategic' ? '#0066cc' : '#0284c7')
+                                    }
+                                    leader={wingLeader}
+                                    staffCount={wingStaffCount}
+                                    onClick={() => {
+                                        if (wingLeader) {
+                                            onSelectEmployee({
+                                                id: 0,
+                                                name: wingLeader.name,
+                                                position: wingLeader.position,
+                                                department_id: null,
+                                                department: wing.title,
+                                                workplace: wingLeader.workplace,
+                                                status: wingLeader.status,
+                                                photo_url: wingLeader.photo_url,
+                                            });
+                                        } else {
+                                            onToggleWing(wing.id);
+                                        }
+                                    }}
                                 />
                             </div>
 
@@ -652,36 +893,44 @@ function HorizontalOrgTree({
                                         className="shrink-0"
                                     />
 
-                                    {/* Row of Directorate Nodes (Side-by-side) */}
-                                    <div className="flex items-start justify-center gap-4 min-w-max">
+                                    {/* Row of Directorate Nodes (Side-by-side with full width) */}
+                                    <div className="flex items-start justify-center gap-5 min-w-max">
                                         {wing.directorates.map((dir, dirIdx) => {
                                             const totalDirs = wing.directorates.length;
                                             const isDirExpanded = expandedDirIds.has(dir.id);
                                             const hasDivisions = dir.divisions.length > 0;
+                                            const dirLeader = mapping.dirLeaders[dir.id];
+                                            const dirStaffCount = mapping.nodeStaffCounts[dir.id] || 0;
+
                                             const isDirMatch =
                                                 q &&
                                                 (dir.name.toLowerCase().includes(q) ||
-                                                    dir.divisions.some((div) => div.name.toLowerCase().includes(q)));
+                                                    (dirLeader &&
+                                                        (dirLeader.name.toLowerCase().includes(q) ||
+                                                            dirLeader.position.toLowerCase().includes(q))) ||
+                                                    dir.divisions.some((div) => {
+                                                        if (div.name.toLowerCase().includes(q)) return true;
+                                                        const emps = mapping.divisionEmployees[div.id] || [];
+                                                        return emps.some((emp) => matchingEmpIds.has(emp.id));
+                                                    }));
 
                                             return (
                                                 <div
                                                     key={dir.id}
-                                                    className={`flex flex-col items-center shrink-0 ${
-                                                        totalDirs === 1 ? 'w-[260px]' : 'w-[250px]'
-                                                    }`}
+                                                    className="flex flex-col items-center shrink-0 w-[290px] sm:w-[300px]"
                                                 >
                                                     {/* Sub-bus connector line across directorates */}
                                                     <div className="relative w-full" style={{ height: '16px' }}>
                                                         {totalDirs > 1 && (
                                                             <>
-                                                                {/* Leftmost: from 50% to right edge + half gap (-8px for gap-4) */}
+                                                                {/* Leftmost: from 50% to right edge + half gap (-10px for gap-5) */}
                                                                 {dirIdx === 0 && (
                                                                     <div
                                                                         style={{
                                                                             height: '2px',
                                                                             top: 0,
                                                                             left: '50%',
-                                                                            right: '-8px',
+                                                                            right: '-10px',
                                                                             backgroundColor: '#3b82f6',
                                                                         }}
                                                                         className="absolute"
@@ -693,20 +942,20 @@ function HorizontalOrgTree({
                                                                         style={{
                                                                             height: '2px',
                                                                             top: 0,
-                                                                            left: '-8px',
-                                                                            right: '-8px',
+                                                                            left: '-10px',
+                                                                            right: '-10px',
                                                                             backgroundColor: '#3b82f6',
                                                                         }}
                                                                         className="absolute"
                                                                     />
                                                                 )}
-                                                                {/* Rightmost: from left edge (-8px) to 50% */}
+                                                                {/* Rightmost: from left edge (-10px) to 50% */}
                                                                 {dirIdx === totalDirs - 1 && (
                                                                     <div
                                                                         style={{
                                                                             height: '2px',
                                                                             top: 0,
-                                                                            left: '-8px',
+                                                                            left: '-10px',
                                                                             right: '50%',
                                                                             backgroundColor: '#3b82f6',
                                                                         }}
@@ -729,7 +978,7 @@ function HorizontalOrgTree({
                                                         />
                                                     </div>
 
-                                                    {/* Directorate Card */}
+                                                    {/* Directorate Card - FULL WIDTH, NO CUTOFFS */}
                                                     <div className="w-full">
                                                         <TesseraOrgCard
                                                             title={dir.name}
@@ -743,8 +992,21 @@ function HorizontalOrgTree({
                                                             badge={dir.badge}
                                                             isMatch={!!isDirMatch}
                                                             avatarBg="#0284c7"
+                                                            leader={dirLeader}
+                                                            staffCount={dirStaffCount}
                                                             onClick={() => {
-                                                                if (hasDivisions) {
+                                                                if (dirLeader) {
+                                                                    onSelectEmployee({
+                                                                        id: 0,
+                                                                        name: dirLeader.name,
+                                                                        position: dirLeader.position,
+                                                                        department_id: null,
+                                                                        department: dir.name,
+                                                                        workplace: dirLeader.workplace,
+                                                                        status: dirLeader.status,
+                                                                        photo_url: dirLeader.photo_url,
+                                                                    });
+                                                                } else if (hasDivisions) {
                                                                     onToggleDir(dir.id);
                                                                 }
                                                             }}
@@ -756,10 +1018,15 @@ function HorizontalOrgTree({
                                                         <div className="flex flex-col items-center w-full">
                                                             {/* Stem down to toggle button */}
                                                             <div
-                                                                style={{ width: '2px', height: '8px', backgroundColor: '#3b82f6' }}
+                                                                style={{
+                                                                    width: '2px',
+                                                                    height: '8px',
+                                                                    backgroundColor: '#3b82f6',
+                                                                }}
                                                                 className="shrink-0"
                                                             />
 
+                                                            {/* Toggle button for divisions */}
                                                             <button
                                                                 onClick={() => onToggleDir(dir.id)}
                                                                 className={`size-5 rounded border text-[11px] font-bold flex items-center justify-center shadow-2xs transition-colors z-10 select-none cursor-pointer ${
@@ -767,7 +1034,11 @@ function HorizontalOrgTree({
                                                                         ? 'border-blue-400 bg-blue-100 text-blue-700 dark:border-blue-600 dark:bg-blue-900/60 dark:text-blue-300 hover:bg-blue-200'
                                                                         : 'border-gray-300 bg-white text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100'
                                                                 }`}
-                                                                title={isDirExpanded ? 'Collapse divisions' : `Expand (${dir.divisions.length} divisions)`}
+                                                                title={
+                                                                    isDirExpanded
+                                                                        ? 'Collapse divisions'
+                                                                        : `Expand (${dir.divisions.length} divisions)`
+                                                                }
                                                             >
                                                                 {isDirExpanded ? '−' : '+'}
                                                             </button>
@@ -816,34 +1087,44 @@ function HorizontalOrgTree({
                                                                     {/* Division cards with left leaf connectors */}
                                                                     <div className="flex flex-col w-full">
                                                                         {dir.divisions.map((div, divIdx) => {
-                                                                            const isDivMatch =
-                                                                                q && div.name.toLowerCase().includes(q);
                                                                             const isLastDiv =
                                                                                 divIdx === dir.divisions.length - 1;
+                                                                            const divEmployees =
+                                                                                mapping.divisionEmployees[div.id] || [];
+                                                                            const hasEmployees = divEmployees.length > 0;
+                                                                            const isRosterExpanded =
+                                                                                expandedDivisionRosters.has(div.id);
+
+                                                                            const hasMatchingEmp = divEmployees.some(
+                                                                                (emp) => matchingEmpIds.has(emp.id)
+                                                                            );
+                                                                            const isDivMatch =
+                                                                                q &&
+                                                                                (div.name.toLowerCase().includes(q) ||
+                                                                                    hasMatchingEmp);
 
                                                                             return (
                                                                                 <div
                                                                                     key={div.id}
-                                                                                    className="relative w-full flex items-center pl-6 pr-1 py-1"
+                                                                                    className="relative w-full flex flex-col pl-6 pr-0 py-1"
                                                                                 >
                                                                                     {/* Vertical spine on the left side */}
                                                                                     <div
                                                                                         style={{
                                                                                             width: '2px',
                                                                                             top: 0,
-                                                                                            bottom: isLastDiv ? '50%' : 0,
+                                                                                            bottom: isLastDiv ? '18px' : 0,
                                                                                             left: '14px',
                                                                                             backgroundColor: '#3b82f6',
                                                                                         }}
                                                                                         className="absolute"
                                                                                     />
 
-                                                                                    {/* Horizontal leaf branch into the left edge of the card */}
+                                                                                    {/* Horizontal leaf branch into the left edge of the division card */}
                                                                                     <div
                                                                                         style={{
                                                                                             height: '2px',
-                                                                                            top: '50%',
-                                                                                            transform: 'translateY(-50%)',
+                                                                                            top: '18px',
                                                                                             left: '14px',
                                                                                             width: '10px',
                                                                                             backgroundColor: '#3b82f6',
@@ -851,24 +1132,207 @@ function HorizontalOrgTree({
                                                                                         className="absolute"
                                                                                     />
 
-                                                                                    {/* Division Card */}
+                                                                                    {/* Division Card - CLEAN, FULL WIDTH, NO BUTTON ON THE CARD */}
                                                                                     <div
-                                                                                        className={`w-full bg-white dark:bg-[#1a1d24] rounded-md border border-gray-200 dark:border-gray-800 px-2.5 py-1.5 flex items-center justify-between gap-2 shadow-2xs hover:border-blue-400 transition-all ${
+                                                                                        className={`w-full bg-white dark:bg-[#1a1d24] rounded-md border border-gray-200 dark:border-gray-800 px-3 py-2 flex items-center justify-between gap-2 shadow-2xs hover:border-blue-400 transition-all ${
                                                                                             isDivMatch
                                                                                                 ? 'ring-1 ring-blue-500 bg-blue-50 dark:bg-blue-950/40'
                                                                                                 : ''
                                                                                         }`}
                                                                                     >
-                                                                                        <div className="flex items-center gap-2 min-w-0">
+                                                                                        <div className="flex items-center gap-2 min-w-0 flex-1">
                                                                                             <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0">
                                                                                                 <FileText className="w-3 h-3" />
                                                                                             </div>
-                                                                                            <span className="text-[10.5px] font-medium text-gray-800 dark:text-gray-200 break-words leading-tight">
+                                                                                            <span className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 break-words leading-snug">
                                                                                                 {div.name}
                                                                                             </span>
                                                                                         </div>
-                                                                                        <MoreVertical className="w-3 h-3 text-gray-400 shrink-0" />
+
+                                                                                        {/* Right side: Employee Count Badge Only (NO TOGGLE ON CARD) */}
+                                                                                        {hasEmployees && (
+                                                                                            <span
+                                                                                                className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 shrink-0 whitespace-nowrap"
+                                                                                                title={`${divEmployees.length} active team members`}
+                                                                                            >
+                                                                                                {divEmployees.length} {divEmployees.length === 1 ? 'member' : 'members'}
+                                                                                            </span>
+                                                                                        )}
                                                                                     </div>
+
+                                                                                    {/* Dedicated Toggle Button for People, exactly like the division node place */}
+                                                                                    {hasEmployees && (
+                                                                                        <div className="flex flex-col items-center w-full my-1">
+                                                                                            {/* Stem down from division card to people toggle button */}
+                                                                                            <div
+                                                                                                style={{
+                                                                                                    width: '2px',
+                                                                                                    height: '6px',
+                                                                                                    backgroundColor: '#3b82f6',
+                                                                                                }}
+                                                                                                className="shrink-0"
+                                                                                            />
+
+                                                                                            {/* Toggle Button [-] / [+] for People */}
+                                                                                            <button
+                                                                                                onClick={(e) => {
+                                                                                                    e.stopPropagation();
+                                                                                                    onToggleDivisionRoster(div.id);
+                                                                                                }}
+                                                                                                className={`size-4.5 rounded border text-[10px] font-bold flex items-center justify-center shadow-2xs transition-colors z-10 select-none cursor-pointer ${
+                                                                                                    isRosterExpanded
+                                                                                                        ? 'border-blue-400 bg-blue-100 text-blue-700 dark:border-blue-600 dark:bg-blue-900/60 dark:text-blue-300 hover:bg-blue-200'
+                                                                                                        : 'border-gray-300 bg-white text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100'
+                                                                                                }`}
+                                                                                                title={
+                                                                                                    isRosterExpanded
+                                                                                                        ? 'Collapse team members'
+                                                                                                        : `Show all ${divEmployees.length} team members`
+                                                                                                }
+                                                                                            >
+                                                                                                {isRosterExpanded ? '−' : '+'}
+                                                                                            </button>
+
+                                                                                            {/* When expanded: Connector and Leaf List for Employees */}
+                                                                                            {isRosterExpanded && (
+                                                                                                <div className="flex flex-col w-full">
+                                                                                                    {/* Connector from toggle button to left employee tree spine */}
+                                                                                                    <div className="relative w-full h-2.5">
+                                                                                                        {/* Center drop line from toggle button */}
+                                                                                                        <div
+                                                                                                            style={{
+                                                                                                                width: '2px',
+                                                                                                                height: '5px',
+                                                                                                                top: 0,
+                                                                                                                left: '50%',
+                                                                                                                transform: 'translateX(-50%)',
+                                                                                                                backgroundColor: '#3b82f6',
+                                                                                                            }}
+                                                                                                            className="absolute"
+                                                                                                        />
+                                                                                                        {/* Horizontal line to left spine at 10px */}
+                                                                                                        <div
+                                                                                                            style={{
+                                                                                                                height: '2px',
+                                                                                                                top: '5px',
+                                                                                                                left: '10px',
+                                                                                                                right: '50%',
+                                                                                                                backgroundColor: '#3b82f6',
+                                                                                                            }}
+                                                                                                            className="absolute"
+                                                                                                        />
+                                                                                                        {/* Left drop down into first employee card */}
+                                                                                                        <div
+                                                                                                            style={{
+                                                                                                                width: '2px',
+                                                                                                                height: '5px',
+                                                                                                                top: '5px',
+                                                                                                                left: '10px',
+                                                                                                                backgroundColor: '#3b82f6',
+                                                                                                            }}
+                                                                                                            className="absolute"
+                                                                                                        />
+                                                                                                    </div>
+
+                                                                                                    {/* Scrollable list of active employee leaf cards */}
+                                                                                                    <div className="flex flex-col w-full max-h-80 overflow-y-auto space-y-1 pr-0.5 custom-scrollbar">
+                                                                                                        {divEmployees.map((emp, empIdx) => {
+                                                                                                            const isLastEmp =
+                                                                                                                empIdx === divEmployees.length - 1;
+                                                                                                            const isEmpMatch = matchingEmpIds.has(emp.id);
+
+                                                                                                            return (
+                                                                                                                <div
+                                                                                                                    key={emp.id}
+                                                                                                                    onClick={() => onSelectEmployee(emp)}
+                                                                                                                    className="relative w-full flex items-center pl-5 pr-0 py-0.5 group cursor-pointer"
+                                                                                                                >
+                                                                                                                    {/* Vertical Sub-spine Line */}
+                                                                                                                    <div
+                                                                                                                        style={{
+                                                                                                                            width: '2px',
+                                                                                                                            top: 0,
+                                                                                                                            bottom: isLastEmp ? '50%' : 0,
+                                                                                                                            left: '10px',
+                                                                                                                            backgroundColor: '#3b82f6',
+                                                                                                                        }}
+                                                                                                                        className="absolute"
+                                                                                                                    />
+
+                                                                                                                    {/* Horizontal Leaf Branch into Employee Card */}
+                                                                                                                    <div
+                                                                                                                        style={{
+                                                                                                                            height: '2px',
+                                                                                                                            top: '50%',
+                                                                                                                            transform: 'translateY(-50%)',
+                                                                                                                            left: '10px',
+                                                                                                                            width: '10px',
+                                                                                                                            backgroundColor: '#3b82f6',
+                                                                                                                        }}
+                                                                                                                        className="absolute"
+                                                                                                                    />
+
+                                                                                                                    {/* Employee Card - FULL WIDTH, NO CUTOFFS */}
+                                                                                                                    <div
+                                                                                                                        className={`w-full bg-white dark:bg-[#16181f] rounded-lg border border-gray-200 dark:border-gray-800 px-2.5 py-1.5 flex items-start justify-between gap-2 shadow-2xs hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xs transition-all ${
+                                                                                                                            isEmpMatch
+                                                                                                                                ? 'ring-1.5 ring-blue-500 bg-blue-50/70 dark:bg-blue-950/50'
+                                                                                                                                : ''
+                                                                                                                        }`}
+                                                                                                                    >
+                                                                                                                        {/* Avatar + Full Name + Full Position */}
+                                                                                                                        <div className="flex items-start gap-2 min-w-0 flex-1">
+                                                                                                                            <div className="shrink-0 mt-0.5">
+                                                                                                                                <CircleAvatar
+                                                                                                                                    name={emp.name}
+                                                                                                                                    photoUrl={emp.photo_url}
+                                                                                                                                    size="sm"
+                                                                                                                                    showStatusDot
+                                                                                                                                    status={emp.status}
+                                                                                                                                />
+                                                                                                                            </div>
+                                                                                                                            <div className="min-w-0 flex-1 text-left">
+                                                                                                                                <div className="text-xs font-semibold text-gray-900 dark:text-gray-100 break-words leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                                                                                                    {emp.name}
+                                                                                                                                </div>
+                                                                                                                                <div className="text-[10px] text-gray-500 dark:text-gray-400 break-words leading-tight mt-0.5">
+                                                                                                                                    {emp.position || 'Staff Member'}
+                                                                                                                                </div>
+                                                                                                                                {emp.workplace && (
+                                                                                                                                    <div className="flex items-center gap-1 mt-0.5 text-[8.5px] text-gray-500 dark:text-gray-400">
+                                                                                                                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                                                                                                                                        <span className="break-words leading-tight">
+                                                                                                                                            {emp.workplace}
+                                                                                                                                        </span>
+                                                                                                                                    </div>
+                                                                                                                                )}
+                                                                                                                            </div>
+                                                                                                                        </div>
+
+                                                                                                                        {/* Status Badge */}
+                                                                                                                        <div className="flex flex-col items-end gap-1 shrink-0 pt-0.5">
+                                                                                                                            <span
+                                                                                                                                className={`text-[7.5px] font-bold px-1 py-0.2 rounded whitespace-nowrap ${
+                                                                                                                                    emp.status === 'Permanent'
+                                                                                                                                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/50'
+                                                                                                                                        : 'bg-amber-50 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/50'
+                                                                                                                                }`}
+                                                                                                                                title={`Status: ${emp.status}`}
+                                                                                                                            >
+                                                                                                                                {emp.status === 'Permanent'
+                                                                                                                                    ? 'PERM'
+                                                                                                                                    : 'PROB'}
+                                                                                                                            </span>
+                                                                                                                        </div>
+                                                                                                                    </div>
+                                                                                                                </div>
+                                                                                                            );
+                                                                                                        })}
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    )}
                                                                                 </div>
                                                                             );
                                                                         })}

@@ -18,6 +18,33 @@ class OrganizationStructureController extends Controller
         $headcount = Employee::active()->count();
         $departmentsCount = Department::where('is_active', true)->count();
 
+        $employees = Employee::active()
+            ->with('department:id,name')
+            ->select([
+                'id',
+                'user_id',
+                'full_name',
+                'position',
+                'department_id',
+                'work_place',
+                'status',
+                'profile_photo_path',
+            ])
+            ->orderBy('full_name')
+            ->get()
+            ->map(function ($emp) {
+                return [
+                    'id' => $emp->id,
+                    'name' => $emp->full_name,
+                    'position' => $emp->position,
+                    'department_id' => $emp->department_id,
+                    'department' => $emp->department?->name,
+                    'workplace' => $emp->work_place,
+                    'status' => $emp->status,
+                    'photo_url' => $emp->profile_photo_url,
+                ];
+            });
+
         return Inertia::render('Organization/Structure', [
             'metrics' => [
                 'total_headcount' => $headcount,
@@ -26,6 +53,7 @@ class OrganizationStructureController extends Controller
                 'effective_cycle' => '2026 G.C. / 2018 E.C.',
                 'company' => 'EL-HADAR Engineering PLC',
             ],
+            'employees' => $employees,
         ]);
     }
 }
