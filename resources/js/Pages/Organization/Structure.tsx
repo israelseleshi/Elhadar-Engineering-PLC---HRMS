@@ -65,6 +65,10 @@ export default function OrganizationStructure({ metrics, employees = [] }: Props
     // Track collapse toggle for all enterprise wings
     const [collapseWings, setCollapseWings] = useState(false);
 
+    // Switch between compact scrollable roster view and non-scrollable (full tree)
+    // Default: true (compact scroll) as requested by user
+    const [isScrollable, setIsScrollable] = useState(true);
+
     // Build hierarchy mapping from all active employees
     const mapping: HierarchyMapping = useMemo(() => {
         return buildHierarchyMapping(employees);
@@ -365,7 +369,33 @@ export default function OrganizationStructure({ metrics, employees = [] }: Props
                     </div>
 
                     {/* Toolbar Actions */}
-                    <div className="flex items-center gap-1.5 ml-auto">
+                    <div className="flex items-center gap-2 ml-auto flex-wrap">
+                        {/* Option to switch between Compact Scroll (default) and Full Tree Roster */}
+                        <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800 p-0.5 rounded-lg border border-gray-200 dark:border-gray-700/60">
+                            <button
+                                onClick={() => setIsScrollable(true)}
+                                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all ${
+                                    isScrollable
+                                        ? 'bg-white dark:bg-gray-900 text-[#0066cc] dark:text-[#2997ff] shadow-2xs font-semibold'
+                                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                                }`}
+                                title="Limit roster height with compact scrollable containers"
+                            >
+                                Compact Scroll
+                            </button>
+                            <button
+                                onClick={() => setIsScrollable(false)}
+                                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all ${
+                                    !isScrollable
+                                        ? 'bg-white dark:bg-gray-900 text-[#0066cc] dark:text-[#2997ff] shadow-2xs font-semibold'
+                                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                                }`}
+                                title="Display all team members continuously in the organization tree"
+                            >
+                                Full Tree Roster
+                            </button>
+                        </div>
+
                         <div className="flex items-center border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-gray-900">
                             <button
                                 onClick={expandAll}
@@ -497,6 +527,7 @@ export default function OrganizationStructure({ metrics, employees = [] }: Props
                                     expandedDivisionRosters={expandedDivisionRosters}
                                     mapping={mapping}
                                     matchingEmpIds={matchingEmpIds}
+                                    isScrollable={isScrollable}
                                     onToggleWing={toggleWingExpansion}
                                     onToggleDir={toggleDirExpansion}
                                     onToggleDivisionRoster={toggleDivisionRoster}
@@ -539,7 +570,7 @@ export default function OrganizationStructure({ metrics, employees = [] }: Props
 }
 
 // -------------------------------------------------------------
-// EXACT CARD FROM USER SPEC (CLEAN UNIFORM BORDER, NO CUT OFFS)
+// EXACT CARD FROM USER SPEC (CLEAN UNIFORM BORDER, 2X BIGGER AVATARS, LARGER TEXTS)
 // -------------------------------------------------------------
 interface TesseraOrgCardProps {
     title: string;
@@ -571,13 +602,13 @@ function TesseraOrgCard({
     return (
         <div
             onClick={onClick}
-            className={`group relative flex items-start gap-3 w-full bg-white dark:bg-[#1a1d24] rounded-lg border border-gray-200 dark:border-gray-800 px-3.5 py-3 shadow-xs hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-md cursor-pointer transition-all ${
-                isApex ? 'max-w-[420px] mx-auto' : ''
+            className={`group relative flex items-start gap-3.5 w-full bg-white dark:bg-[#1a1d24] rounded-xl border border-gray-200 dark:border-gray-800 px-4 py-3.5 shadow-xs hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-md cursor-pointer transition-all ${
+                isApex ? 'max-w-[440px] mx-auto' : ''
             } ${
                 isMatch ? 'ring-2 ring-blue-500 border-blue-400 bg-blue-50/50 dark:bg-blue-950/40' : ''
             }`}
         >
-            {/* Left Circular Avatar (Leader photo/initials or Wing Icon) */}
+            {/* Left Circular Avatar (2x Enlarged Avatar or Icon) */}
             {leader ? (
                 <div className="shrink-0 mt-0.5">
                     <CircleAvatar
@@ -592,38 +623,38 @@ function TesseraOrgCard({
             ) : (
                 <div
                     style={{ backgroundColor: avatarBg }}
-                    className="w-9 h-9 min-w-9 min-h-9 rounded-full flex items-center justify-center shrink-0 text-white shadow-2xs group-hover:scale-105 transition-transform mt-0.5"
+                    className="w-14 h-14 min-w-14 min-h-14 rounded-full flex items-center justify-center shrink-0 text-white shadow-xs group-hover:scale-105 transition-transform mt-0.5"
                 >
-                    <IconComponent className="w-4.5 h-4.5 text-white" />
+                    <IconComponent className="w-7 h-7 text-white" />
                 </div>
             )}
 
-            {/* Title & Subtitle - FULL WIDTH, NO CUTOFFS */}
+            {/* Title & Subtitle - LARGER TYPOGRAPHY, FULL WIDTH, NO CUTOFFS */}
             <div className="flex-1 min-w-0 text-left">
                 {leader ? (
                     <>
                         <div className="flex items-start justify-between gap-1.5">
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-blue-600 dark:text-blue-400 break-words leading-tight flex-1">
+                            <span className="text-[11px] uppercase font-bold tracking-wider text-blue-600 dark:text-blue-400 break-words leading-tight flex-1">
                                 {title}
                             </span>
                             {staffCount !== undefined && staffCount > 0 && (
-                                <span className="text-[8.5px] font-bold px-1.5 py-0.2 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 shrink-0 whitespace-nowrap">
+                                <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 shrink-0 whitespace-nowrap">
                                     {staffCount} staff
                                 </span>
                             )}
                         </div>
                         <div
                             className={`${
-                                isApex ? 'text-sm font-bold' : 'text-xs font-bold'
+                                isApex ? 'text-base sm:text-lg font-bold' : 'text-sm sm:text-base font-bold'
                             } text-gray-900 dark:text-gray-100 break-words leading-snug mt-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors`}
                         >
                             {leader.name}
                         </div>
-                        <div className="text-[10.5px] text-gray-500 dark:text-gray-400 break-words leading-tight mt-0.5">
+                        <div className="text-xs font-medium text-gray-600 dark:text-gray-300 break-words leading-tight mt-0.5">
                             {leader.position}
                         </div>
                         {subtitle && (
-                            <div className="text-[9.5px] text-gray-400 dark:text-gray-500 break-words leading-tight mt-0.5">
+                            <div className="text-[11px] text-gray-400 dark:text-gray-500 break-words leading-tight mt-0.5">
                                 {subtitle}
                             </div>
                         )}
@@ -634,29 +665,29 @@ function TesseraOrgCard({
                             <div
                                 className={`${
                                     isApex
-                                        ? 'text-sm font-bold'
+                                        ? 'text-base sm:text-lg font-bold'
                                         : isSubordinate
-                                        ? 'text-xs font-semibold'
-                                        : 'text-xs font-bold'
+                                        ? 'text-sm font-semibold'
+                                        : 'text-sm sm:text-base font-bold'
                                 } text-gray-900 dark:text-gray-100 break-words leading-snug flex-1`}
                             >
                                 {title}
                             </div>
                             {staffCount !== undefined && staffCount > 0 && (
-                                <span className="text-[8.5px] font-bold px-1.5 py-0.2 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 shrink-0 whitespace-nowrap">
+                                <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 shrink-0 whitespace-nowrap">
                                     {staffCount} staff
                                 </span>
                             )}
                         </div>
                         {subtitle && (
-                            <div className="text-[10.5px] text-gray-500 dark:text-gray-400 break-words leading-tight mt-1">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 break-words leading-tight mt-1">
                                 {subtitle}
                             </div>
                         )}
                     </>
                 )}
                 {badge && (
-                    <span className="inline-block mt-1 text-[8.5px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                    <span className="inline-block mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                         {badge}
                     </span>
                 )}
@@ -671,7 +702,7 @@ function TesseraOrgCard({
 }
 
 // -------------------------------------------------------------
-// HORIZONTAL ORGANOGRAM TREE (FLUID HORIZONTAL SPREAD)
+// HORIZONTAL ORGANOGRAM TREE (FLUID HORIZONTAL SPREAD, SCROLLABLE OPTION)
 // -------------------------------------------------------------
 interface HorizontalOrgTreeProps {
     wings: OrgWingNode[];
@@ -680,6 +711,7 @@ interface HorizontalOrgTreeProps {
     expandedDivisionRosters: Set<string>;
     mapping: HierarchyMapping;
     matchingEmpIds: Set<number>;
+    isScrollable: boolean;
     onToggleWing: (id: string) => void;
     onToggleDir: (id: string) => void;
     onToggleDivisionRoster: (id: string) => void;
@@ -694,6 +726,7 @@ function HorizontalOrgTree({
     expandedDivisionRosters,
     mapping,
     matchingEmpIds,
+    isScrollable,
     onToggleWing,
     onToggleDir,
     onToggleDivisionRoster,
@@ -830,8 +863,8 @@ function HorizontalOrgTree({
                                 />
                             </div>
 
-                            {/* Wing Card - FIXED 300px WIDTH CENTERED ABOVE SUB-TREE */}
-                            <div className="w-[300px]">
+                            {/* Wing Card - FIXED 320-340px WIDTH CENTERED ABOVE SUB-TREE */}
+                            <div className="w-[320px] sm:w-[340px]">
                                 <TesseraOrgCard
                                     title={wing.title}
                                     subtitle={wing.subtitle}
@@ -894,7 +927,7 @@ function HorizontalOrgTree({
                                     />
 
                                     {/* Row of Directorate Nodes (Side-by-side with full width) */}
-                                    <div className="flex items-start justify-center gap-5 min-w-max">
+                                    <div className="flex items-start justify-center gap-6 min-w-max">
                                         {wing.directorates.map((dir, dirIdx) => {
                                             const totalDirs = wing.directorates.length;
                                             const isDirExpanded = expandedDirIds.has(dir.id);
@@ -917,20 +950,20 @@ function HorizontalOrgTree({
                                             return (
                                                 <div
                                                     key={dir.id}
-                                                    className="flex flex-col items-center shrink-0 w-[290px] sm:w-[300px]"
+                                                    className="flex flex-col items-center shrink-0 w-[320px] sm:w-[340px]"
                                                 >
                                                     {/* Sub-bus connector line across directorates */}
                                                     <div className="relative w-full" style={{ height: '16px' }}>
                                                         {totalDirs > 1 && (
                                                             <>
-                                                                {/* Leftmost: from 50% to right edge + half gap (-10px for gap-5) */}
+                                                                {/* Leftmost: from 50% to right edge + half gap (-12px for gap-6) */}
                                                                 {dirIdx === 0 && (
                                                                     <div
                                                                         style={{
                                                                             height: '2px',
                                                                             top: 0,
                                                                             left: '50%',
-                                                                            right: '-10px',
+                                                                            right: '-12px',
                                                                             backgroundColor: '#3b82f6',
                                                                         }}
                                                                         className="absolute"
@@ -942,20 +975,20 @@ function HorizontalOrgTree({
                                                                         style={{
                                                                             height: '2px',
                                                                             top: 0,
-                                                                            left: '-10px',
-                                                                            right: '-10px',
+                                                                            left: '-12px',
+                                                                            right: '-12px',
                                                                             backgroundColor: '#3b82f6',
                                                                         }}
                                                                         className="absolute"
                                                                     />
                                                                 )}
-                                                                {/* Rightmost: from left edge (-10px) to 50% */}
+                                                                {/* Rightmost: from left edge (-12px) to 50% */}
                                                                 {dirIdx === totalDirs - 1 && (
                                                                     <div
                                                                         style={{
                                                                             height: '2px',
                                                                             top: 0,
-                                                                            left: '-10px',
+                                                                            left: '-12px',
                                                                             right: '50%',
                                                                             backgroundColor: '#3b82f6',
                                                                         }}
@@ -1051,306 +1084,312 @@ function HorizontalOrgTree({
                                                                         {/* Center drop line from toggle button */}
                                                                         <div
                                                                             style={{
-                                                                                width: '2px',
-                                                                                height: '6px',
-                                                                                top: 0,
-                                                                                left: '50%',
-                                                                                transform: 'translateX(-50%)',
-                                                                                backgroundColor: '#3b82f6',
-                                                                            }}
-                                                                            className="absolute"
-                                                                        />
-                                                                        {/* Horizontal line to left spine at 14px */}
-                                                                        <div
-                                                                            style={{
-                                                                                height: '2px',
-                                                                                top: '6px',
-                                                                                left: '14px',
-                                                                                right: '50%',
-                                                                                backgroundColor: '#3b82f6',
-                                                                            }}
-                                                                            className="absolute"
-                                                                        />
-                                                                        {/* Left drop down into first division item */}
-                                                                        <div
-                                                                            style={{
-                                                                                width: '2px',
-                                                                                height: '6px',
-                                                                                top: '6px',
-                                                                                left: '14px',
-                                                                                backgroundColor: '#3b82f6',
-                                                                            }}
-                                                                            className="absolute"
-                                                                        />
-                                                                    </div>
+                                                                            width: '2px',
+                                                                            height: '6px',
+                                                                            top: 0,
+                                                                            left: '50%',
+                                                                            transform: 'translateX(-50%)',
+                                                                            backgroundColor: '#3b82f6',
+                                                                        }}
+                                                                        className="absolute"
+                                                                    />
+                                                                    {/* Horizontal line to left spine at 14px */}
+                                                                    <div
+                                                                        style={{
+                                                                            height: '2px',
+                                                                            top: '6px',
+                                                                            left: '14px',
+                                                                            right: '50%',
+                                                                            backgroundColor: '#3b82f6',
+                                                                        }}
+                                                                        className="absolute"
+                                                                    />
+                                                                    {/* Left drop down into first division item */}
+                                                                    <div
+                                                                        style={{
+                                                                            width: '2px',
+                                                                            height: '6px',
+                                                                            top: '6px',
+                                                                            left: '14px',
+                                                                            backgroundColor: '#3b82f6',
+                                                                        }}
+                                                                        className="absolute"
+                                                                    />
+                                                                </div>
 
-                                                                    {/* Division cards with left leaf connectors */}
-                                                                    <div className="flex flex-col w-full">
-                                                                        {dir.divisions.map((div, divIdx) => {
-                                                                            const isLastDiv =
-                                                                                divIdx === dir.divisions.length - 1;
-                                                                            const divEmployees =
-                                                                                mapping.divisionEmployees[div.id] || [];
-                                                                            const hasEmployees = divEmployees.length > 0;
-                                                                            const isRosterExpanded =
-                                                                                expandedDivisionRosters.has(div.id);
+                                                                {/* Division cards with left leaf connectors */}
+                                                                <div className="flex flex-col w-full">
+                                                                    {dir.divisions.map((div, divIdx) => {
+                                                                        const isLastDiv =
+                                                                            divIdx === dir.divisions.length - 1;
+                                                                        const divEmployees =
+                                                                            mapping.divisionEmployees[div.id] || [];
+                                                                        const hasEmployees = divEmployees.length > 0;
+                                                                        const isRosterExpanded =
+                                                                            expandedDivisionRosters.has(div.id);
 
-                                                                            const hasMatchingEmp = divEmployees.some(
-                                                                                (emp) => matchingEmpIds.has(emp.id)
-                                                                            );
-                                                                            const isDivMatch =
-                                                                                q &&
-                                                                                (div.name.toLowerCase().includes(q) ||
-                                                                                    hasMatchingEmp);
+                                                                        const hasMatchingEmp = divEmployees.some(
+                                                                            (emp) => matchingEmpIds.has(emp.id)
+                                                                        );
+                                                                        const isDivMatch =
+                                                                            q &&
+                                                                            (div.name.toLowerCase().includes(q) ||
+                                                                                hasMatchingEmp);
 
-                                                                            return (
+                                                                        return (
+                                                                            <div
+                                                                                key={div.id}
+                                                                                className="relative w-full flex flex-col pl-6 pr-0 py-1"
+                                                                            >
+                                                                                {/* Vertical spine on the left side */}
                                                                                 <div
-                                                                                    key={div.id}
-                                                                                    className="relative w-full flex flex-col pl-6 pr-0 py-1"
+                                                                                    style={{
+                                                                                        width: '2px',
+                                                                                        top: 0,
+                                                                                        bottom: isLastDiv ? '20px' : 0,
+                                                                                        left: '14px',
+                                                                                        backgroundColor: '#3b82f6',
+                                                                                    }}
+                                                                                    className="absolute"
+                                                                                />
+
+                                                                                {/* Horizontal leaf branch into the left edge of the division card */}
+                                                                                <div
+                                                                                    style={{
+                                                                                        height: '2px',
+                                                                                        top: '20px',
+                                                                                        left: '14px',
+                                                                                        width: '10px',
+                                                                                        backgroundColor: '#3b82f6',
+                                                                                    }}
+                                                                                    className="absolute"
+                                                                                />
+
+                                                                                {/* Division Card - CLEAN, FULL WIDTH, NO BUTTON ON THE CARD */}
+                                                                                <div
+                                                                                    className={`w-full bg-white dark:bg-[#1a1d24] rounded-lg border border-gray-200 dark:border-gray-800 px-3.5 py-2.5 flex items-center justify-between gap-2 shadow-2xs hover:border-blue-400 transition-all ${
+                                                                                        isDivMatch
+                                                                                            ? 'ring-1 ring-blue-500 bg-blue-50 dark:bg-blue-950/40'
+                                                                                            : ''
+                                                                                    }`}
                                                                                 >
-                                                                                    {/* Vertical spine on the left side */}
-                                                                                    <div
-                                                                                        style={{
-                                                                                            width: '2px',
-                                                                                            top: 0,
-                                                                                            bottom: isLastDiv ? '18px' : 0,
-                                                                                            left: '14px',
-                                                                                            backgroundColor: '#3b82f6',
-                                                                                        }}
-                                                                                        className="absolute"
-                                                                                    />
-
-                                                                                    {/* Horizontal leaf branch into the left edge of the division card */}
-                                                                                    <div
-                                                                                        style={{
-                                                                                            height: '2px',
-                                                                                            top: '18px',
-                                                                                            left: '14px',
-                                                                                            width: '10px',
-                                                                                            backgroundColor: '#3b82f6',
-                                                                                        }}
-                                                                                        className="absolute"
-                                                                                    />
-
-                                                                                    {/* Division Card - CLEAN, FULL WIDTH, NO BUTTON ON THE CARD */}
-                                                                                    <div
-                                                                                        className={`w-full bg-white dark:bg-[#1a1d24] rounded-md border border-gray-200 dark:border-gray-800 px-3 py-2 flex items-center justify-between gap-2 shadow-2xs hover:border-blue-400 transition-all ${
-                                                                                            isDivMatch
-                                                                                                ? 'ring-1 ring-blue-500 bg-blue-50 dark:bg-blue-950/40'
-                                                                                                : ''
-                                                                                        }`}
-                                                                                    >
-                                                                                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                                                                                            <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0">
-                                                                                                <FileText className="w-3 h-3" />
-                                                                                            </div>
-                                                                                            <span className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 break-words leading-snug">
-                                                                                                {div.name}
-                                                                                            </span>
+                                                                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                                                                        <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0">
+                                                                                            <FileText className="w-3.5 h-3.5" />
                                                                                         </div>
-
-                                                                                        {/* Right side: Employee Count Badge Only (NO TOGGLE ON CARD) */}
-                                                                                        {hasEmployees && (
-                                                                                            <span
-                                                                                                className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 shrink-0 whitespace-nowrap"
-                                                                                                title={`${divEmployees.length} active team members`}
-                                                                                            >
-                                                                                                {divEmployees.length} {divEmployees.length === 1 ? 'member' : 'members'}
-                                                                                            </span>
-                                                                                        )}
+                                                                                        <span className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200 break-words leading-snug">
+                                                                                            {div.name}
+                                                                                        </span>
                                                                                     </div>
 
-                                                                                    {/* Dedicated Toggle Button for People, exactly like the division node place */}
+                                                                                    {/* Right side: Employee Count Badge Only (NO TOGGLE ON CARD) */}
                                                                                     {hasEmployees && (
-                                                                                        <div className="flex flex-col items-center w-full my-1">
-                                                                                            {/* Stem down from division card to people toggle button */}
-                                                                                            <div
-                                                                                                style={{
-                                                                                                    width: '2px',
-                                                                                                    height: '6px',
-                                                                                                    backgroundColor: '#3b82f6',
-                                                                                                }}
-                                                                                                className="shrink-0"
-                                                                                            />
-
-                                                                                            {/* Toggle Button [-] / [+] for People */}
-                                                                                            <button
-                                                                                                onClick={(e) => {
-                                                                                                    e.stopPropagation();
-                                                                                                    onToggleDivisionRoster(div.id);
-                                                                                                }}
-                                                                                                className={`size-4.5 rounded border text-[10px] font-bold flex items-center justify-center shadow-2xs transition-colors z-10 select-none cursor-pointer ${
-                                                                                                    isRosterExpanded
-                                                                                                        ? 'border-blue-400 bg-blue-100 text-blue-700 dark:border-blue-600 dark:bg-blue-900/60 dark:text-blue-300 hover:bg-blue-200'
-                                                                                                        : 'border-gray-300 bg-white text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100'
-                                                                                                }`}
-                                                                                                title={
-                                                                                                    isRosterExpanded
-                                                                                                        ? 'Collapse team members'
-                                                                                                        : `Show all ${divEmployees.length} team members`
-                                                                                                }
-                                                                                            >
-                                                                                                {isRosterExpanded ? '−' : '+'}
-                                                                                            </button>
-
-                                                                                            {/* When expanded: Connector and Leaf List for Employees */}
-                                                                                            {isRosterExpanded && (
-                                                                                                <div className="flex flex-col w-full">
-                                                                                                    {/* Connector from toggle button to left employee tree spine */}
-                                                                                                    <div className="relative w-full h-2.5">
-                                                                                                        {/* Center drop line from toggle button */}
-                                                                                                        <div
-                                                                                                            style={{
-                                                                                                                width: '2px',
-                                                                                                                height: '5px',
-                                                                                                                top: 0,
-                                                                                                                left: '50%',
-                                                                                                                transform: 'translateX(-50%)',
-                                                                                                                backgroundColor: '#3b82f6',
-                                                                                                            }}
-                                                                                                            className="absolute"
-                                                                                                        />
-                                                                                                        {/* Horizontal line to left spine at 10px */}
-                                                                                                        <div
-                                                                                                            style={{
-                                                                                                                height: '2px',
-                                                                                                                top: '5px',
-                                                                                                                left: '10px',
-                                                                                                                right: '50%',
-                                                                                                                backgroundColor: '#3b82f6',
-                                                                                                            }}
-                                                                                                            className="absolute"
-                                                                                                        />
-                                                                                                        {/* Left drop down into first employee card */}
-                                                                                                        <div
-                                                                                                            style={{
-                                                                                                                width: '2px',
-                                                                                                                height: '5px',
-                                                                                                                top: '5px',
-                                                                                                                left: '10px',
-                                                                                                                backgroundColor: '#3b82f6',
-                                                                                                            }}
-                                                                                                            className="absolute"
-                                                                                                        />
-                                                                                                    </div>
-
-                                                                                                    {/* Scrollable list of active employee leaf cards */}
-                                                                                                    <div className="flex flex-col w-full max-h-80 overflow-y-auto space-y-1 pr-0.5 custom-scrollbar">
-                                                                                                        {divEmployees.map((emp, empIdx) => {
-                                                                                                            const isLastEmp =
-                                                                                                                empIdx === divEmployees.length - 1;
-                                                                                                            const isEmpMatch = matchingEmpIds.has(emp.id);
-
-                                                                                                            return (
-                                                                                                                <div
-                                                                                                                    key={emp.id}
-                                                                                                                    onClick={() => onSelectEmployee(emp)}
-                                                                                                                    className="relative w-full flex items-center pl-5 pr-0 py-0.5 group cursor-pointer"
-                                                                                                                >
-                                                                                                                    {/* Vertical Sub-spine Line */}
-                                                                                                                    <div
-                                                                                                                        style={{
-                                                                                                                            width: '2px',
-                                                                                                                            top: 0,
-                                                                                                                            bottom: isLastEmp ? '50%' : 0,
-                                                                                                                            left: '10px',
-                                                                                                                            backgroundColor: '#3b82f6',
-                                                                                                                        }}
-                                                                                                                        className="absolute"
-                                                                                                                    />
-
-                                                                                                                    {/* Horizontal Leaf Branch into Employee Card */}
-                                                                                                                    <div
-                                                                                                                        style={{
-                                                                                                                            height: '2px',
-                                                                                                                            top: '50%',
-                                                                                                                            transform: 'translateY(-50%)',
-                                                                                                                            left: '10px',
-                                                                                                                            width: '10px',
-                                                                                                                            backgroundColor: '#3b82f6',
-                                                                                                                        }}
-                                                                                                                        className="absolute"
-                                                                                                                    />
-
-                                                                                                                    {/* Employee Card - FULL WIDTH, NO CUTOFFS */}
-                                                                                                                    <div
-                                                                                                                        className={`w-full bg-white dark:bg-[#16181f] rounded-lg border border-gray-200 dark:border-gray-800 px-2.5 py-1.5 flex items-start justify-between gap-2 shadow-2xs hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xs transition-all ${
-                                                                                                                            isEmpMatch
-                                                                                                                                ? 'ring-1.5 ring-blue-500 bg-blue-50/70 dark:bg-blue-950/50'
-                                                                                                                                : ''
-                                                                                                                        }`}
-                                                                                                                    >
-                                                                                                                        {/* Avatar + Full Name + Full Position */}
-                                                                                                                        <div className="flex items-start gap-2 min-w-0 flex-1">
-                                                                                                                            <div className="shrink-0 mt-0.5">
-                                                                                                                                <CircleAvatar
-                                                                                                                                    name={emp.name}
-                                                                                                                                    photoUrl={emp.photo_url}
-                                                                                                                                    size="sm"
-                                                                                                                                    showStatusDot
-                                                                                                                                    status={emp.status}
-                                                                                                                                />
-                                                                                                                            </div>
-                                                                                                                            <div className="min-w-0 flex-1 text-left">
-                                                                                                                                <div className="text-xs font-semibold text-gray-900 dark:text-gray-100 break-words leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                                                                                                                    {emp.name}
-                                                                                                                                </div>
-                                                                                                                                <div className="text-[10px] text-gray-500 dark:text-gray-400 break-words leading-tight mt-0.5">
-                                                                                                                                    {emp.position || 'Staff Member'}
-                                                                                                                                </div>
-                                                                                                                                {emp.workplace && (
-                                                                                                                                    <div className="flex items-center gap-1 mt-0.5 text-[8.5px] text-gray-500 dark:text-gray-400">
-                                                                                                                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                                                                                                                                        <span className="break-words leading-tight">
-                                                                                                                                            {emp.workplace}
-                                                                                                                                        </span>
-                                                                                                                                    </div>
-                                                                                                                                )}
-                                                                                                                            </div>
-                                                                                                                        </div>
-
-                                                                                                                        {/* Status Badge */}
-                                                                                                                        <div className="flex flex-col items-end gap-1 shrink-0 pt-0.5">
-                                                                                                                            <span
-                                                                                                                                className={`text-[7.5px] font-bold px-1 py-0.2 rounded whitespace-nowrap ${
-                                                                                                                                    emp.status === 'Permanent'
-                                                                                                                                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/50'
-                                                                                                                                        : 'bg-amber-50 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/50'
-                                                                                                                                }`}
-                                                                                                                                title={`Status: ${emp.status}`}
-                                                                                                                            >
-                                                                                                                                {emp.status === 'Permanent'
-                                                                                                                                    ? 'PERM'
-                                                                                                                                    : 'PROB'}
-                                                                                                                            </span>
-                                                                                                                        </div>
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                            );
-                                                                                                        })}
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            )}
-                                                                                        </div>
+                                                                                        <span
+                                                                                            className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 shrink-0 whitespace-nowrap"
+                                                                                            title={`${divEmployees.length} active team members`}
+                                                                                        >
+                                                                                            {divEmployees.length} {divEmployees.length === 1 ? 'member' : 'members'}
+                                                                                        </span>
                                                                                     )}
                                                                                 </div>
-                                                                            );
-                                                                        })}
-                                                                    </div>
+
+                                                                                {/* Dedicated Toggle Button for People, exactly like the division node place */}
+                                                                                {hasEmployees && (
+                                                                                    <div className="flex flex-col items-center w-full my-1.5">
+                                                                                        {/* Stem down from division card to people toggle button */}
+                                                                                        <div
+                                                                                            style={{
+                                                                                                width: '2px',
+                                                                                                height: '8px',
+                                                                                                backgroundColor: '#3b82f6',
+                                                                                            }}
+                                                                                            className="shrink-0"
+                                                                                        />
+
+                                                                                        {/* Toggle Button [-] / [+] for People */}
+                                                                                        <button
+                                                                                            onClick={(e) => {
+                                                                                                e.stopPropagation();
+                                                                                                onToggleDivisionRoster(div.id);
+                                                                                            }}
+                                                                                            className={`size-5 rounded border text-[11px] font-bold flex items-center justify-center shadow-2xs transition-colors z-10 select-none cursor-pointer ${
+                                                                                                isRosterExpanded
+                                                                                                    ? 'border-blue-400 bg-blue-100 text-blue-700 dark:border-blue-600 dark:bg-blue-900/60 dark:text-blue-300 hover:bg-blue-200'
+                                                                                                    : 'border-gray-300 bg-white text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100'
+                                                                                            }`}
+                                                                                            title={
+                                                                                                isRosterExpanded
+                                                                                                    ? 'Collapse team members'
+                                                                                                    : `Show all ${divEmployees.length} team members`
+                                                                                            }
+                                                                                        >
+                                                                                            {isRosterExpanded ? '−' : '+'}
+                                                                                        </button>
+
+                                                                                        {/* When expanded: Connector and Leaf List for Employees */}
+                                                                                        {isRosterExpanded && (
+                                                                                            <div className="flex flex-col w-full">
+                                                                                                {/* Connector from toggle button to left employee tree spine */}
+                                                                                                <div className="relative w-full h-3">
+                                                                                                    {/* Center drop line from toggle button */}
+                                                                                                    <div
+                                                                                                        style={{
+                                                                                                            width: '2px',
+                                                                                                            height: '6px',
+                                                                                                            top: 0,
+                                                                                                            left: '50%',
+                                                                                                            transform: 'translateX(-50%)',
+                                                                                                            backgroundColor: '#3b82f6',
+                                                                                                        }}
+                                                                                                        className="absolute"
+                                                                                                    />
+                                                                                                    {/* Horizontal line to left spine at 12px */}
+                                                                                                    <div
+                                                                                                        style={{
+                                                                                                            height: '2px',
+                                                                                                            top: '6px',
+                                                                                                            left: '12px',
+                                                                                                            right: '50%',
+                                                                                                            backgroundColor: '#3b82f6',
+                                                                                                        }}
+                                                                                                        className="absolute"
+                                                                                                    />
+                                                                                                    {/* Left drop down into first employee card */}
+                                                                                                    <div
+                                                                                                        style={{
+                                                                                                            width: '2px',
+                                                                                                            height: '6px',
+                                                                                                            top: '6px',
+                                                                                                            left: '12px',
+                                                                                                            backgroundColor: '#3b82f6',
+                                                                                                        }}
+                                                                                                        className="absolute"
+                                                                                                    />
+                                                                                                </div>
+
+                                                                                                {/* Active team members container: switchable between non-scrollable (full tree) and scrollable */}
+                                                                                                <div
+                                                                                                    className={`flex flex-col w-full space-y-1.5 pr-0.5 ${
+                                                                                                        isScrollable
+                                                                                                            ? 'max-h-96 overflow-y-auto custom-scrollbar'
+                                                                                                            : ''
+                                                                                                    }`}
+                                                                                                >
+                                                                                                    {divEmployees.map((emp, empIdx) => {
+                                                                                                        const isLastEmp =
+                                                                                                            empIdx === divEmployees.length - 1;
+                                                                                                        const isEmpMatch = matchingEmpIds.has(emp.id);
+
+                                                                                                        return (
+                                                                                                            <div
+                                                                                                                key={emp.id}
+                                                                                                                onClick={() => onSelectEmployee(emp)}
+                                                                                                                className="relative w-full flex items-center pl-6 pr-0 py-0.5 group cursor-pointer"
+                                                                                                            >
+                                                                                                                {/* Vertical Sub-spine Line */}
+                                                                                                                <div
+                                                                                                                    style={{
+                                                                                                                        width: '2px',
+                                                                                                                        top: 0,
+                                                                                                                        bottom: isLastEmp ? '50%' : 0,
+                                                                                                                        left: '12px',
+                                                                                                                        backgroundColor: '#3b82f6',
+                                                                                                                    }}
+                                                                                                                    className="absolute"
+                                                                                                                />
+
+                                                                                                                {/* Horizontal Leaf Branch into Employee Card */}
+                                                                                                                <div
+                                                                                                                    style={{
+                                                                                                                        height: '2px',
+                                                                                                                        top: '50%',
+                                                                                                                        transform: 'translateY(-50%)',
+                                                                                                                        left: '12px',
+                                                                                                                        width: '12px',
+                                                                                                                        backgroundColor: '#3b82f6',
+                                                                                                                    }}
+                                                                                                                    className="absolute"
+                                                                                                                />
+
+                                                                                                                {/* Employee Card - 2X BIGGER AVATAR, LARGER TEXT, NO CUTOFFS */}
+                                                                                                                <div
+                                                                                                                    className={`w-full bg-white dark:bg-[#16181f] rounded-xl border border-gray-200 dark:border-gray-800 px-3.5 py-3 flex items-start justify-between gap-3 shadow-2xs hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xs transition-all ${
+                                                                                                                        isEmpMatch
+                                                                                                                            ? 'ring-2 ring-blue-500 border-blue-400 bg-blue-50/70 dark:bg-blue-950/50'
+                                                                                                                            : ''
+                                                                                                                    }`}
+                                                                                                                >
+                                                                                                                    {/* 2x Bigger Avatar (48px) + Full Name + Full Position */}
+                                                                                                                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                                                                                                                        <div className="shrink-0 mt-0.5">
+                                                                                                                            <CircleAvatar
+                                                                                                                                name={emp.name}
+                                                                                                                                photoUrl={emp.photo_url}
+                                                                                                                                size="sm"
+                                                                                                                                showStatusDot
+                                                                                                                                status={emp.status}
+                                                                                                                            />
+                                                                                                                        </div>
+                                                                                                                        <div className="min-w-0 flex-1 text-left">
+                                                                                                                            <div className="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100 break-words leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                                                                                                {emp.name}
+                                                                                                                            </div>
+                                                                                                                            <div className="text-[11px] sm:text-xs text-gray-600 dark:text-gray-300 break-words leading-tight mt-0.5">
+                                                                                                                                {emp.position || 'Staff Member'}
+                                                                                                                            </div>
+                                                                                                                            {emp.workplace && (
+                                                                                                                                <div className="flex items-center gap-1.5 mt-1 text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400">
+                                                                                                                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                                                                                                                                    <span className="break-words leading-tight">
+                                                                                                                                        {emp.workplace}
+                                                                                                                                    </span>
+                                                                                                                                </div>
+                                                                                                                            )}
+                                                                                                                        </div>
+                                                                                                                    </div>
+
+                                                                                                                    {/* Status Badge */}
+                                                                                                                    <div className="flex flex-col items-end gap-1 shrink-0 pt-0.5">
+                                                                                                                        <span
+                                                                                                                            className={`text-[8.5px] font-bold px-2 py-0.5 rounded whitespace-nowrap ${
+                                                                                                                                emp.status === 'Permanent'
+                                                                                                                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/50'
+                                                                                                                                    : 'bg-amber-50 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/50'
+                                                                                                                            }`}
+                                                                                                                            title={`Status: ${emp.status}`}
+                                                                                                                        >
+                                                                                                                            {emp.status === 'Permanent'
+                                                                                                                                ? 'PERMANENT'
+                                                                                                                                : 'PROBATION'}
+                                                                                                                        </span>
+                                                                                                                    </div>
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                        );
+                                                                                                    })}
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        )}
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                        );
+                                                                    })}
                                                                 </div>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
         </div>
-    );
+    </div>
+);
 }

@@ -22,12 +22,13 @@ export function CircleAvatar({
     const initials = getInitials(name);
     const gradient = getAvatarGradient(name);
 
+    // 2x enlarged avatar dimensions for bold Apple-inspired visual clarity
     const sizeClasses = {
-        xs: 'w-5 h-5 min-w-5 min-h-5 text-[8.5px]',
-        sm: 'w-6 h-6 min-w-6 min-h-6 text-[9.5px]',
-        md: 'w-8 h-8 min-w-8 min-h-8 text-[11px]',
-        lg: 'w-10 h-10 min-w-10 min-h-10 text-xs',
-        xl: 'w-14 h-14 min-w-14 min-h-14 text-base',
+        xs: 'w-7 h-7 min-w-7 min-h-7 text-[10px]',
+        sm: 'w-12 h-12 min-w-12 min-h-12 text-sm',
+        md: 'w-14 h-14 min-w-14 min-h-14 text-base font-bold',
+        lg: 'w-16 h-16 min-w-16 min-h-16 text-lg font-bold',
+        xl: 'w-20 h-20 min-w-20 min-h-20 text-2xl font-bold',
     };
 
     const hasValidPhoto = photoUrl && !imgError;
@@ -35,7 +36,7 @@ export function CircleAvatar({
     return (
         <div className={`relative inline-block shrink-0 ${className}`}>
             <div
-                className={`${sizeClasses[size]} rounded-full flex items-center justify-center font-bold tracking-tight overflow-hidden select-none shadow-2xs border border-black/5 dark:border-white/10 transition-transform`}
+                className={`${sizeClasses[size]} rounded-full flex items-center justify-center font-bold tracking-tight overflow-hidden select-none shadow-xs border border-black/10 dark:border-white/15 transition-transform`}
             >
                 {hasValidPhoto ? (
                     <img
@@ -60,7 +61,7 @@ export function CircleAvatar({
 
             {showStatusDot && (
                 <span
-                    className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-white dark:border-gray-900 ${
+                    className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 shadow-2xs ${
                         status === 'Permanent' ? 'bg-emerald-500' : 'bg-amber-500'
                     }`}
                     title={status}
