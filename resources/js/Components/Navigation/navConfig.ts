@@ -13,6 +13,7 @@ import {
     UserCheck,
     CalendarCheck,
     MessageSquare,
+    Network,
     LucideProps,
 } from 'lucide-react';
 
@@ -88,6 +89,21 @@ export const getNavItems = (): NavItemConfig[] => {
             },
         },
         {
+            id: 'organization-structure',
+            name: 'Organizational Structure',
+            shortName: 'Org Structure',
+            href: route('organization.structure'),
+            routeName: 'organization.structure',
+            icon: Network,
+            category: 'overview',
+            description: 'Complete enterprise organogram & operational reporting lines',
+            activeBg: 'bg-[#0066cc]',
+            squircleColor: {
+                bg: 'bg-[#0066cc] text-white',
+                text: 'text-[#0066cc]',
+            },
+        },
+        {
             id: 'announcements',
             name: 'Announcements',
             shortName: 'Notice Board',
@@ -118,7 +134,22 @@ export const getNavItems = (): NavItemConfig[] => {
             },
         },
 
-        // Category 2: Workforce Lifecycle (Natural chronological order: Onboard -> Roster -> Leave -> Grow -> Train -> Exit)
+        // Category 2: Workforce Lifecycle
+        {
+            id: 'employees',
+            name: 'Staff Directory',
+            shortName: 'Directory',
+            href: route('employees.index'),
+            routeName: 'employees.*',
+            icon: Users,
+            category: 'workforce',
+            description: 'Active personnel directory & master files',
+            activeBg: 'bg-[#0071e3]',
+            squircleColor: {
+                bg: 'bg-[#0071e3] text-white',
+                text: 'text-[#0071e3]',
+            },
+        },
         {
             id: 'new-employees',
             name: 'New Employees',
@@ -135,18 +166,18 @@ export const getNavItems = (): NavItemConfig[] => {
             },
         },
         {
-            id: 'employees',
-            name: 'Staff Directory',
-            shortName: 'Directory',
-            href: route('employees.index'),
-            routeName: 'employees.*',
-            icon: Users,
+            id: 'separations',
+            name: 'Separated Employees',
+            shortName: 'Separated',
+            href: route('separations.index'),
+            routeName: 'separations.*',
+            icon: UserMinus,
             category: 'workforce',
-            description: 'Active personnel directory & master files',
-            activeBg: 'bg-[#0071e3]',
+            description: 'Resignations, clearances & offboarding workflow',
+            activeBg: 'bg-rose-500',
             squircleColor: {
-                bg: 'bg-[#0071e3] text-white',
-                text: 'text-[#0071e3]',
+                bg: 'bg-rose-500 text-white',
+                text: 'text-rose-500',
             },
         },
         {
@@ -192,21 +223,6 @@ export const getNavItems = (): NavItemConfig[] => {
             squircleColor: {
                 bg: 'bg-purple-600 text-white',
                 text: 'text-purple-600',
-            },
-        },
-        {
-            id: 'separations',
-            name: 'Separations & Exits',
-            shortName: 'Exits',
-            href: route('separations.index'),
-            routeName: 'separations.*',
-            icon: UserMinus,
-            category: 'workforce',
-            description: 'Resignations, clearances & offboarding workflow',
-            activeBg: 'bg-rose-500',
-            squircleColor: {
-                bg: 'bg-rose-500 text-white',
-                text: 'text-rose-500',
             },
         },
 

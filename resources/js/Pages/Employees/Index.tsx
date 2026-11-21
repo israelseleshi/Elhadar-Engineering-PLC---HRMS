@@ -124,12 +124,6 @@ const toArray = (val: string | string[] | undefined): string[] => {
 
 const staffDirectoryTourSteps: TourStep[] = [
     {
-        target: '[data-tour="lifecycle-tabs"]',
-        title: 'Status filters',
-        content: 'Switch between permanent, probation, contract, and separated personnel.',
-        placement: 'bottom',
-    },
-    {
         target: '[data-tour="filters-bar"]',
         title: 'Search and filters',
         content: 'Search by name, file number, or phone, and filter by department or workplace.',
@@ -153,7 +147,6 @@ export default function Index({ employees, filters, stats, departments, workplac
     const [search, setSearch] = useState(filters.search || '');
     const [departmentId, setDepartmentId] = useState<string[]>(toArray(filters.department_id));
     const [workPlace, setWorkPlace] = useState<string[]>(toArray(filters.work_place));
-    const [status, setStatus] = useState<string[]>(toArray(filters.status));
     const [position, setPosition] = useState<string[]>(toArray(filters.position));
     const [sortBy, setSortBy] = useState(filters.sort_by || 'file_no');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(filters.sort_direction || 'asc');
@@ -170,18 +163,16 @@ export default function Index({ employees, filters, stats, departments, workplac
         setSearch(filters.search || '');
         setDepartmentId(toArray(filters.department_id));
         setWorkPlace(toArray(filters.work_place));
-        setStatus(toArray(filters.status));
         setPosition(toArray(filters.position));
         setSortBy(filters.sort_by || 'file_no');
         setSortDirection(filters.sort_direction || 'asc');
-    }, [filters.search, filters.department_id, filters.work_place, filters.status, filters.position, filters.sort_by, filters.sort_direction]);
+    }, [filters.search, filters.department_id, filters.work_place, filters.position, filters.sort_by, filters.sort_direction]);
 
     const executeFilter = useCallback((updates: Record<string, any>) => {
         const queryParams: Record<string, any> = {
             search,
             department_id: departmentId,
             work_place: workPlace,
-            status,
             position,
             sort_by: sortBy,
             sort_direction: sortDirection,
@@ -198,7 +189,7 @@ export default function Index({ employees, filters, stats, departments, workplac
         });
 
         router.get(route('employees.index'), queryParams, { preserveState: true, replace: true });
-    }, [search, departmentId, workPlace, status, position, sortBy, sortDirection]);
+    }, [search, departmentId, workPlace, position, sortBy, sortDirection]);
 
     const debouncedFilter = useCallback((updates: Record<string, any>) => {
         if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
@@ -216,7 +207,6 @@ export default function Index({ employees, filters, stats, departments, workplac
     const handleFilterUpdate = (updates: Record<string, any>) => {
         if ('department_id' in updates) setDepartmentId(updates.department_id);
         if ('work_place' in updates) setWorkPlace(updates.work_place);
-        if ('status' in updates) setStatus(updates.status);
         if ('position' in updates) setPosition(updates.position);
         if ('search' in updates) setSearch(updates.search);
         executeFilter(updates);
@@ -226,7 +216,6 @@ export default function Index({ employees, filters, stats, departments, workplac
         setSearch('');
         setDepartmentId([]);
         setWorkPlace([]);
-        setStatus([]);
         setPosition([]);
         setSortBy('file_no');
         setSortDirection('asc');
@@ -279,13 +268,6 @@ export default function Index({ employees, filters, stats, departments, workplac
             value: w,
         }));
     }, [workplaces]);
-
-    const statusOptions: FilterOption[] = useMemo(() => [
-        { label: 'Permanent', value: 'Permanent' },
-        { label: 'Contract', value: 'Contract' },
-        { label: 'Probation', value: 'Probation' },
-        { label: 'Separated', value: 'Separated' },
-    ], []);
 
     const positionOptions: FilterOption[] = useMemo(() => {
         return (positions || []).map((p) => ({
@@ -438,50 +420,20 @@ export default function Index({ employees, filters, stats, departments, workplac
         >
             <Head title="Staff Directory - Elhadar Engineering HRMS" />
 
-            {/* Top Workspace Command Strip: Unified Segments & Utility Tools */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3.5 mb-5">
-                {/* 1. Primary Status Segmented Control (Minimalist, Apple-style pills) */}
-                <div data-tour="lifecycle-tabs" className="flex flex-wrap items-center gap-1.5 p-1 bg-muted/60 dark:bg-muted/30 border border-border/80 rounded-xl">
-                    {[
-                        { label: 'All Staff', val: '', count: stats.total_headcount },
-                        { label: 'Permanent', val: 'Permanent', count: stats.permanent_count },
-                        { label: 'Probation Pipeline', val: 'Probation', count: stats.probation_count },
-                        { label: 'Contracts', val: 'Contract', count: stats.contract_count },
-                        { label: 'Separated Archive', val: 'Separated', count: stats.separated_count },
-                    ].map((tab) => {
-                        const isActive = tab.val === '' ? status.length === 0 : (status.length === 1 && status[0] === tab.val);
-                        const hasAttention = tab.val === 'Probation' && tab.count > 0;
-                        return (
-                            <button
-                                key={tab.val}
-                                type="button"
-                                onClick={() => {
-                                    const nextStatus = tab.val ? [tab.val] : [];
-                                    handleFilterUpdate({ status: nextStatus });
-                                }}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2 cursor-pointer ${
-                                    isActive
-                                        ? 'bg-card text-foreground font-semibold shadow-xs border border-border/60'
-                                        : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
-                                }`}
-                            >
-                                <span>{tab.label}</span>
-                                <span className={`text-[11px] font-mono px-1.5 py-0.2 rounded-md ${
-                                    isActive 
-                                        ? 'bg-primary/10 text-primary font-semibold' 
-                                        : hasAttention 
-                                            ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 font-semibold' 
-                                            : 'text-muted-foreground'
-                                }`}>
-                                    {tab.count}
-                                </span>
-                            </button>
-                        );
-                    })}
+            {/* Top Workspace Command Strip: Unified Info & Utility Tools */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 mb-5">
+                <div className="flex items-center gap-2.5">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 shadow-2xs">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        Permanent Staff Directory
+                    </span>
+                    <span className="text-xs text-muted-foreground font-mono">
+                        ({employees.total} active permanent staff)
+                    </span>
                 </div>
 
-                {/* 2. Utility Actions: Export, Excel Sync, Table/Grid View Switcher */}
-                <div className="flex items-center gap-2 self-end lg:self-auto">
+                {/* Utility Actions: Export, Excel Sync, Table/Grid View Switcher */}
+                <div className="flex items-center gap-2 self-end sm:self-auto">
                     {/* Excel Export Menu */}
                     <div className="relative">
                         <Button
@@ -498,7 +450,7 @@ export default function Index({ employees, filters, stats, departments, workplac
                         {exportMenuOpen && (
                             <div className="absolute right-0 mt-1 w-56 bg-card border border-border rounded-xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
                                 <a
-                                    href={route('export.employees', { search, department_id: departmentId, work_place: workPlace, status })}
+                                    href={route('export.employees', { search, department_id: departmentId, work_place: workPlace, status: 'Permanent' })}
                                     className="flex items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted"
                                     onClick={() => setExportMenuOpen(false)}
                                 >
@@ -768,20 +720,8 @@ export default function Index({ employees, filters, stats, departments, workplac
 
                                 <TableHead className="text-right w-28 font-medium">Total salary</TableHead>
 
-                                <TableHead className="w-28">
-                                    <ExcelColumnFilter
-                                        title="Status"
-                                        columnKey="status"
-                                        options={statusOptions}
-                                        selectedValues={status}
-                                        onApply={(vals) => handleFilterUpdate({ status: vals })}
-                                        onReset={() => handleFilterUpdate({ status: [] })}
-                                        enableSort
-                                        sortKey="status"
-                                        currentSortBy={sortBy}
-                                        currentSortDir={sortDirection}
-                                        onSort={handleSort}
-                                    />
+                                <TableHead className="w-28 text-xs font-semibold text-muted-foreground">
+                                    Status
                                 </TableHead>
 
                                 <TableHead className="text-right w-20 px-4"><span className="sr-only">Actions</span></TableHead>

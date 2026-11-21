@@ -88,7 +88,7 @@ class EmployeeTest extends TestCase
         );
     }
 
-    public function test_employee_directory_supports_multi_select_excel_column_filtering_and_sorting(): void
+    public function test_employee_directory_only_shows_active_permanent_staff_and_supports_filtering_and_sorting(): void
     {
         $user = User::factory()->create(['role' => 'HRAdmin']);
         $dept1 = Department::factory()->create(['name' => 'Surveying']);
@@ -105,12 +105,13 @@ class EmployeeTest extends TestCase
 
         Employee::factory()->create([
             'file_no' => 'B-02',
-            'full_name' => 'Bekele Debele',
+            'full_name' => 'Zelalem Tesfaye',
             'department_id' => $dept2->id,
-            'status' => 'Contract',
+            'status' => 'Permanent',
             'position' => 'Procurement Officer',
         ]);
 
+        // Non-permanent & separated employees must be excluded from staff directory
         Employee::factory()->create([
             'file_no' => 'C-03',
             'full_name' => 'Chala Tadesse',
@@ -119,17 +120,26 @@ class EmployeeTest extends TestCase
             'position' => 'Junior Engineer',
         ]);
 
-        // Multi-select status filter (Permanent OR Contract)
-        $response = $this->actingAs($user)->get('/employees?status[]=Permanent&status[]=Contract');
+        Employee::factory()->create([
+            'file_no' => 'D-04',
+            'full_name' => 'Dawit Separated',
+            'department_id' => $dept3->id,
+            'status' => 'Separated',
+            'position' => 'Former Surveyor',
+        ]);
+
+        // Default directory should only show the 2 permanent employees
+        $response = $this->actingAs($user)->get('/employees');
         $response->assertOk();
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Employees/Index')
             ->has('employees.data', 2)
-            ->has('positions')
+            ->where('employees.data.0.status', 'Permanent')
+            ->where('employees.data.1.status', 'Permanent')
         );
 
-        // Multi-select department filter (Surveying OR Engineering)
-        $responseDept = $this->actingAs($user)->get("/employees?department_id[]={$dept1->id}&department_id[]={$dept3->id}");
+        // Multi-select department filter (Surveying OR Procurement)
+        $responseDept = $this->actingAs($user)->get("/employees?department_id[]={$dept1->id}&department_id[]={$dept2->id}");
         $responseDept->assertOk();
         $responseDept->assertInertia(fn (Assert $page) => $page
             ->component('Employees/Index')
@@ -141,7 +151,8 @@ class EmployeeTest extends TestCase
         $responseSort->assertOk();
         $responseSort->assertInertia(fn (Assert $page) => $page
             ->component('Employees/Index')
-            ->where('employees.data.0.full_name', 'Chala Tadesse')
+            ->where('employees.data.0.full_name', 'Zelalem Tesfaye')
+            ->where('employees.data.1.full_name', 'Abebe Bikila')
         );
     }
 

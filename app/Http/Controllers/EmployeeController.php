@@ -154,7 +154,8 @@ class EmployeeController extends Controller
 
     public function index(Request $request): Response
     {
-        $query = Employee::with(['department', 'currentSalary']);
+        $query = Employee::with(['department', 'currentSalary'])
+            ->where('status', 'Permanent');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -197,14 +198,6 @@ class EmployeeController extends Controller
             }
         }
 
-        if ($statusInput = $request->input('status')) {
-            $statuses = is_array($statusInput) ? $statusInput : explode(',', (string) $statusInput);
-            $statuses = array_values(array_filter(array_map('trim', $statuses)));
-            if (! empty($statuses)) {
-                $query->whereIn('status', $statuses);
-            }
-        }
-
         if ($positionInput = $request->input('position')) {
             $positions = is_array($positionInput) ? $positionInput : explode(',', (string) $positionInput);
             $positions = array_values(array_filter(array_map('trim', $positions)));
@@ -237,13 +230,15 @@ class EmployeeController extends Controller
         ];
 
         $departments = Department::orderBy('name')->get(['id', 'name']);
-        $workplaces = Employee::whereNotNull('work_place')
+        $workplaces = Employee::where('status', 'Permanent')
+            ->whereNotNull('work_place')
             ->where('work_place', '!=', '')
             ->distinct()
             ->orderBy('work_place')
             ->pluck('work_place');
 
-        $positions = Employee::whereNotNull('position')
+        $positions = Employee::where('status', 'Permanent')
+            ->whereNotNull('position')
             ->where('position', '!=', '')
             ->distinct()
             ->orderBy('position')
@@ -251,7 +246,7 @@ class EmployeeController extends Controller
 
         return Inertia::render('Employees/Index', [
             'employees' => $employees,
-            'filters' => $request->only(['search', 'department_id', 'work_place', 'status', 'position', 'sort_by', 'sort_direction']),
+            'filters' => $request->only(['search', 'department_id', 'work_place', 'position', 'sort_by', 'sort_direction']),
             'stats' => $stats,
             'departments' => $departments,
             'workplaces' => $workplaces,
