@@ -19,7 +19,8 @@ class NewEmployeeController extends Controller
     {
         $cutoff = (string) SystemSetting::get('new_hire_cutoff_date', '2026-07-08');
 
-        $query = Employee::with(['department', 'currentSalary'])
+        $query = Employee::active()
+            ->with(['department', 'currentSalary'])
             ->where('employment_date', '>=', $cutoff);
 
         if ($search = $request->input('search')) {
@@ -47,7 +48,9 @@ class NewEmployeeController extends Controller
         }
 
         if ($status = $request->input('status')) {
-            $query->where('status', $status);
+            if ($status !== 'Separated') {
+                $query->where('status', $status);
+            }
         }
 
         $newHires = $query->orderByDesc('employment_date')
@@ -63,14 +66,14 @@ class NewEmployeeController extends Controller
             return $employee;
         });
 
-        $scoped = Employee::where('employment_date', '>=', $cutoff);
+        $scoped = Employee::active()->where('employment_date', '>=', $cutoff);
 
         $stats = [
             'total_new_hires' => (clone $scoped)->count(),
             'probation_count' => (clone $scoped)->where('status', 'Probation')->count(),
             'permanent_count' => (clone $scoped)->where('status', 'Permanent')->count(),
             'contract_count' => (clone $scoped)->where('status', 'Contract')->count(),
-            'separated_count' => (clone $scoped)->where('status', 'Separated')->count(),
+            'separated_count' => 0,
             'head_office_count' => (clone $scoped)->whereIn('work_place', ['Head Office', 'H.O'])->count(),
             'project_count' => (clone $scoped)->whereNotIn('work_place', ['Head Office', 'H.O'])->count(),
             'joined_this_month' => (clone $scoped)->whereBetween('employment_date', [now()->startOfMonth(), now()->endOfMonth()])->count(),
@@ -79,7 +82,8 @@ class NewEmployeeController extends Controller
 
         $departments = Department::orderBy('name')->get(['id', 'name']);
 
-        $workplaces = Employee::where('employment_date', '>=', $cutoff)
+        $workplaces = Employee::active()
+            ->where('employment_date', '>=', $cutoff)
             ->whereNotNull('work_place')
             ->where('work_place', '!=', '')
             ->distinct()

@@ -35,7 +35,7 @@ interface NewHireItem {
     gender: 'Male' | 'Female';
     position: string;
     work_place: string;
-    status: 'Permanent' | 'Contract' | 'Probation' | 'Separated';
+    status: 'Permanent' | 'Contract' | 'Probation';
     employment_date_ec: string;
     employment_date: string;
     days_since_joining: number;
@@ -72,7 +72,7 @@ interface Props {
         probation_count: number;
         permanent_count: number;
         contract_count: number;
-        separated_count: number;
+        separated_count?: number;
         head_office_count: number;
         project_count: number;
         joined_this_month: number;
@@ -189,7 +189,6 @@ export default function Index({ newHires, filters, stats, departments, workplace
                     { label: 'Probation', val: 'Probation', count: stats.probation_count },
                     { label: 'Permanent', val: 'Permanent', count: stats.permanent_count },
                     { label: 'Contracts', val: 'Contract', count: stats.contract_count },
-                    { label: 'Separated', val: 'Separated', count: stats.separated_count },
                 ].map((tab) => {
                     const isActive = (status || '') === tab.val;
                     return (
@@ -254,7 +253,6 @@ export default function Index({ newHires, filters, stats, departments, workplace
                                     <SelectItem value="Permanent">Permanent</SelectItem>
                                     <SelectItem value="Contract">Contract</SelectItem>
                                     <SelectItem value="Probation">Probation</SelectItem>
-                                    <SelectItem value="Separated">Separated</SelectItem>
                                 </SelectContent>
                             </Select>
 

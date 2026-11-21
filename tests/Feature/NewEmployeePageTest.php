@@ -118,4 +118,23 @@ class NewEmployeePageTest extends TestCase
                 ->where('stats.permanent_count', 1)
             );
     }
+
+    public function test_roster_excludes_separated_employees(): void
+    {
+        $user = User::factory()->create(['role' => 'HRAdmin']);
+
+        $activeNewHire = Employee::factory()->probation()->create(['employment_date' => '2026-08-01']);
+        Employee::factory()->create([
+            'employment_date' => '2026-08-01',
+            'status' => 'Separated',
+        ]);
+
+        $this->actingAs($user)->get('/new-employees')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('stats.total_new_hires', 1)
+                ->has('newHires.data', 1)
+                ->where('newHires.data.0.id', $activeNewHire->id)
+            );
+    }
 }
