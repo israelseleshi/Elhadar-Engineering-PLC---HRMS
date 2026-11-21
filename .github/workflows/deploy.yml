@@ -197,9 +197,9 @@ jobs:
             chmod -R 755 public/build
             find public/build -type f -exec chmod 644 {} +
 
-            # Force LiteSpeed to reload PHP workers and flush OPcache
+            # Force LiteSpeed to gracefully reload PHP workers and flush OPcache without severing client connections
             touch public/index.php
-            pkill -u $DEPLOY_USER lsphp || true
+            touch .lsphp_restart.txt
 
             # Verify application status
             \$PHP artisan about

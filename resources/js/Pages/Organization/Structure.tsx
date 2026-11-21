@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useCallback } from 'react';
+import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
@@ -168,11 +168,111 @@ export default function OrganizationStructure({ metrics, employees = [] }: Props
     }, [allDivisionsWithEmployees]);
 
     const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 10, 130));
-    const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 10, 45));
+    const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 10, 25));
     const handleResetZoom = () => setZoomLevel(100);
     const handleFitWidth = () => setZoomLevel(70);
 
     const containerRef = useRef<HTMLDivElement>(null);
+    const canvasContainerRef = useRef<HTMLDivElement>(null);
+    const [isPinching, setIsPinching] = useState(false);
+
+    // Keep zoom level in ref so event listeners always access current zoom without re-binding
+    const zoomLevelRef = useRef(zoomLevel);
+    useEffect(() => {
+        zoomLevelRef.current = zoomLevel;
+    }, [zoomLevel]);
+
+    // Trackpad two-finger pinch (wheel with ctrlKey) & touchscreen two-finger pinch zoom
+    useEffect(() => {
+        const el = canvasContainerRef.current;
+        if (!el) return;
+
+        // 1. Laptop Trackpad Pinch: browsers emit wheel events with ctrlKey = true
+        const handleWheel = (e: WheelEvent) => {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                // deltaY is negative when pinching out (zooming in), positive when pinching in (zooming out)
+                const zoomDelta = -e.deltaY;
+                const factor = Math.max(-12, Math.min(12, zoomDelta * 0.15));
+                setZoomLevel((prev) => Math.min(130, Math.max(25, Math.round(prev + factor))));
+            }
+        };
+
+        // 2. Touchscreen Two-Finger Pinch (phones, tablets, touchscreens)
+        let initialDist = 0;
+        let startZoom = 100;
+
+        const handleTouchStart = (e: TouchEvent) => {
+            if (e.touches.length === 2) {
+                const t1 = e.touches[0];
+                const t2 = e.touches[1];
+                initialDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+                startZoom = zoomLevelRef.current;
+                setIsPinching(true);
+            }
+        };
+
+        const handleTouchMove = (e: TouchEvent) => {
+            if (e.touches.length === 2 && initialDist > 0) {
+                if (e.cancelable) {
+                    e.preventDefault();
+                }
+                const t1 = e.touches[0];
+                const t2 = e.touches[1];
+                const currentDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+                const scale = currentDist / initialDist;
+                const targetZoom = Math.round(startZoom * scale);
+                setZoomLevel(Math.min(130, Math.max(25, targetZoom)));
+            }
+        };
+
+        const handleTouchEnd = (e: TouchEvent) => {
+            if (e.touches.length < 2) {
+                initialDist = 0;
+                setIsPinching(false);
+            }
+        };
+
+        // 3. Safari Gesture events (macOS trackpad pinch gestures)
+        const handleGestureStart = (e: Event) => {
+            e.preventDefault();
+            startZoom = zoomLevelRef.current;
+            setIsPinching(true);
+        };
+
+        const handleGestureChange = (e: any) => {
+            e.preventDefault();
+            if (typeof e.scale === 'number') {
+                const target = Math.round(startZoom * e.scale);
+                setZoomLevel(Math.min(130, Math.max(25, target)));
+            }
+        };
+
+        const handleGestureEnd = (e: Event) => {
+            e.preventDefault();
+            setIsPinching(false);
+        };
+
+        el.addEventListener('wheel', handleWheel, { passive: false });
+        el.addEventListener('touchstart', handleTouchStart, { passive: false });
+        el.addEventListener('touchmove', handleTouchMove, { passive: false });
+        el.addEventListener('touchend', handleTouchEnd);
+        el.addEventListener('touchcancel', handleTouchEnd);
+        el.addEventListener('gesturestart', handleGestureStart, { passive: false });
+        el.addEventListener('gesturechange', handleGestureChange, { passive: false });
+        el.addEventListener('gestureend', handleGestureEnd);
+
+        return () => {
+            el.removeEventListener('wheel', handleWheel);
+            el.removeEventListener('touchstart', handleTouchStart);
+            el.removeEventListener('touchmove', handleTouchMove);
+            el.removeEventListener('touchend', handleTouchEnd);
+            el.removeEventListener('touchcancel', handleTouchEnd);
+            el.removeEventListener('gesturestart', handleGestureStart);
+            el.removeEventListener('gesturechange', handleGestureChange);
+            el.removeEventListener('gestureend', handleGestureEnd);
+        };
+    }, []);
 
     const toggleFullscreen = () => {
         if (!containerRef.current) return;
@@ -424,8 +524,8 @@ export default function OrganizationStructure({ metrics, employees = [] }: Props
                         <div className="flex items-center border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-gray-900">
                             <button
                                 onClick={handleZoomOut}
-                                disabled={zoomLevel <= 45}
-                                title="Zoom Out"
+                                disabled={zoomLevel <= 25}
+                                title="Zoom Out (Min 25%)"
                                 className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 transition-colors"
                             >
                                 <ZoomOut className="w-3.5 h-3.5" />
@@ -467,10 +567,16 @@ export default function OrganizationStructure({ metrics, employees = [] }: Props
                     </div>
                 </div>
 
-                {/* Canvas Container with subtle background */}
-                <div className="relative w-full overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-800 bg-[#f4f7fb] dark:bg-[#0c0e12] p-2.5 sm:p-4 min-h-[750px] shadow-xs">
+                {/* Canvas Container with subtle background and two-finger gesture support */}
+                <div
+                    ref={canvasContainerRef}
+                    style={{ touchAction: 'pan-x pan-y' }}
+                    className="relative w-full overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-800 bg-[#f4f7fb] dark:bg-[#0c0e12] p-2.5 sm:p-4 min-h-[750px] shadow-xs"
+                >
                     <div
-                        className="transition-transform duration-200 origin-top flex flex-col items-center mx-auto w-max min-w-full px-4"
+                        className={`${
+                            isPinching ? 'duration-0' : 'duration-150'
+                        } transition-transform ease-out origin-top flex flex-col items-center mx-auto w-max min-w-full px-4`}
                         style={{
                             transform: `scale(${zoomLevel / 100})`,
                         }}
