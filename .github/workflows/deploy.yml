@@ -179,9 +179,6 @@ jobs:
             # Ingest terminated personnel dataset
             \$PHP artisan hrms:import-terminated-employees --no-interaction || true
 
-            # Ingest annual leave ledger
-            \$PHP artisan hrms:import-annual-leave --no-interaction || true
-
             # Provision department chat channels & enroll staff
             \$PHP artisan db:seed --class=DepartmentChatSeeder --force || true
 

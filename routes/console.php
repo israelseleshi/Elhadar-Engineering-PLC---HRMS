@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('hrms:auto-confirm-probation')->dailyAt('00:05')->withoutOverlapping();
+Schedule::command('hrms:rollover-annual-leave')->yearlyOn(1, 1, '00:10')->withoutOverlapping();

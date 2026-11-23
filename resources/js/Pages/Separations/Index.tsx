@@ -50,6 +50,8 @@ interface SeparationItem {
     basic_salary_at_separation: number;
     completed_years_service: number;
     severance_amount: number;
+    unused_leave_days?: number;
+    leave_payout_amount?: number;
     severance_paid: boolean;
     employee: {
         id: number;
@@ -84,6 +86,8 @@ interface Props {
         total_separations: number;
         total_severance_paid: number;
         pending_severance_liability: number;
+        total_leave_paid?: number;
+        pending_leave_liability?: number;
     };
     activeEmployees: ActiveStaffOption[];
 }
@@ -103,6 +107,9 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
         statutory_cap: number;
         final_payout: number;
         is_capped: boolean;
+        unused_leave_days: number;
+        leave_payout_amount: number;
+        total_settlement: number;
     } | null>(null);
 
     const { data, setData, post, processing, reset, errors } = useForm({
@@ -242,8 +249,10 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                             <TableHead>Department</TableHead>
                             <TableHead>Separation type</TableHead>
                             <TableHead>Effective date</TableHead>
-                            <TableHead className="text-center">Service (years)</TableHead>
+                            <TableHead className="text-center">Service</TableHead>
                             <TableHead className="text-right">Severance pay</TableHead>
+                            <TableHead className="text-right">Leave payout</TableHead>
+                            <TableHead className="text-right">Total settlement</TableHead>
                             <TableHead className="text-center">Disbursement</TableHead>
                             <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
                         </TableRow>
@@ -251,12 +260,16 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                     <TableBody>
                         {separations.data.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
+                                <TableCell colSpan={11} className="text-center py-12 text-muted-foreground">
                                     No employee separation records found matching your query.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            separations.data.map((item) => (
+                            separations.data.map((item) => {
+                                const leavePay = Number(item.leave_payout_amount || 0);
+                                const totalSettlement = Number(item.severance_amount || 0) + leavePay;
+
+                                return (
                                 <TableRow key={item.id} className="hover:bg-muted/40/50">
                                     <TableCell className="font-bold text-primary text-xs">
                                         {item.employee.file_no}
@@ -284,8 +297,25 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                     <TableCell className="text-center text-xs font-bold text-foreground">
                                         {item.completed_years_service} Yrs
                                     </TableCell>
-                                    <TableCell className="text-right font-bold text-foreground text-sm">
+                                    <TableCell className="text-right text-xs font-semibold text-foreground">
                                         {item.severance_amount > 0 ? formatCurrency(item.severance_amount) : '0.00 ETB'}
+                                    </TableCell>
+                                    <TableCell className="text-right text-xs text-foreground font-semibold">
+                                        {leavePay > 0 ? (
+                                            <span className="text-emerald-600 dark:text-emerald-400">
+                                                {formatCurrency(leavePay)}
+                                                {item.unused_leave_days !== undefined && (
+                                                    <span className="block text-[10px] text-muted-foreground font-normal">
+                                                        ({item.unused_leave_days}d)
+                                                    </span>
+                                                )}
+                                            </span>
+                                        ) : (
+                                            <span className="text-muted-foreground">0.00 ETB</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right font-bold text-foreground text-sm">
+                                        {formatCurrency(totalSettlement)}
                                     </TableCell>
                                     <TableCell className="text-center">
                                         <Badge variant={item.severance_paid ? 'secondary' : 'outline'}>
@@ -294,7 +324,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex flex-wrap items-center justify-end gap-2">
-                                            {!item.severance_paid && item.severance_amount > 0 && (
+                                            {!item.severance_paid && totalSettlement > 0 && (
                                                 <Button
                                                     onClick={() => handleMarkPaid(item.id)}
                                                     size="sm"
@@ -316,7 +346,8 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                         </div>
                                     </TableCell>
                                 </TableRow>
-                            ))
+                                );
+                            })
                         )}
                     </TableBody>
                 </Table>
@@ -327,7 +358,11 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                 No employee separation records found matching your query.
                             </div>
                         ) : (
-                            separations.data.map((item) => (
+                            separations.data.map((item) => {
+                                const leavePay = Number(item.leave_payout_amount || 0);
+                                const totalSettlement = Number(item.severance_amount || 0) + leavePay;
+
+                                return (
                                 <div
                                     key={item.id}
                                     className="rounded-xl border border-border/60 bg-muted/40 p-4 transition-colors hover:border-border hover:bg-white"
@@ -336,7 +371,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                         <div className="min-w-0">
                                             <p className="truncate text-sm font-bold text-foreground">{item.employee.full_name}</p>
                                             <p className="text-[11px] font-semibold text-primary">
-                                                {item.employee.file_no} Â· {item.employee.department?.name || 'Operations'}
+                                                {item.employee.file_no} · {item.employee.department?.name || 'Operations'}
                                             </p>
                                         </div>
                                         <Badge variant={getSeparationVariant(item.separation_type)} className="shrink-0">
@@ -354,12 +389,18 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                             <p className="text-[11px] font-bold text-foreground/90">{item.effective_date}</p>
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Payout</p>
+                                            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Settlement</p>
                                             <p className="text-[11px] font-bold text-foreground">
-                                                {item.severance_amount > 0 ? formatCurrency(item.severance_amount) : '0.00'}
+                                                {formatCurrency(totalSettlement)}
                                             </p>
                                         </div>
                                     </div>
+
+                                    {leavePay > 0 && (
+                                        <p className="mt-1 text-center text-[10px] text-muted-foreground">
+                                            Severance: {formatCurrency(item.severance_amount)} | Leave: {formatCurrency(leavePay)}
+                                        </p>
+                                    )}
 
                                     {item.reason && (
                                         <p className="mt-2 line-clamp-2 text-[11px] text-muted-foreground">{item.reason}</p>
@@ -372,7 +413,7 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                     </div>
 
                                     <div className="mt-2 flex gap-2">
-                                        {!item.severance_paid && item.severance_amount > 0 && (
+                                        {!item.severance_paid && totalSettlement > 0 && (
                                             <Button
                                                 onClick={() => handleMarkPaid(item.id)}
                                                 size="sm"
@@ -382,18 +423,19 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                             </Button>
                                         )}
                                         <Link href={route('employees.show', item.employee.id)} className="flex-1">
-                                            <Button
-                                                variant="outline"
+                                            <Button 
+                                                variant="outline" 
                                                 size="sm"
-                                                className="w-full border-border bg-card hover:bg-muted text-primary font-medium text-xs h-9 gap-1.5 rounded-full"
+                                                className="w-full border-border bg-card hover:bg-muted text-primary font-medium text-xs h-9 rounded-full"
                                             >
-                                                <Eye className="w-3.5 h-3.5" />
+                                                <Eye className="w-3.5 h-3.5 mr-1" />
                                                 Profile
                                             </Button>
                                         </Link>
                                     </div>
                                 </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
                 )}
@@ -487,13 +529,13 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                             />
                         </div>
 
-                        {/* Live Statutory Severance Pay Estimation Card */}
+                        {/* Live Statutory Severance & Leave Pay Estimation Card */}
                         {previewCalc && (
                             <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-2 text-xs">
                                 <div className="flex justify-between items-center font-bold text-foreground border-b border-border/60 pb-1.5">
                                     <span className="flex items-center gap-1.5">
                                         <Calculator className="w-3.5 h-3.5" />
-                                        Statutory Severance Pay Estimate (Arts. 39â€“41)
+                                        Statutory Settlement Calculation (Proc. 1156/2019)
                                     </span>
                                     <span>{previewCalc.years_service} Years Service</span>
                                 </div>
@@ -513,10 +555,23 @@ export default function Index({ separations, filters, stats, activeEmployees }: 
                                     <span>Legal Maximum Cap (12 Months):</span>
                                     <span>{formatCurrency(previewCalc.statutory_cap)}</span>
                                 </div>
+                                <div className="flex justify-between text-foreground font-semibold pt-1 border-t border-border/40">
+                                    <span>Severance Subtotal (Arts. 39–41):</span>
+                                    <span>{formatCurrency(previewCalc.final_payout)}</span>
+                                </div>
+                                <div className="flex justify-between text-foreground/90 pt-1">
+                                    <span className="flex items-center gap-1">
+                                        Unused Annual Leave Payout (Art. 80(2)):
+                                        <span className="text-[11px] text-muted-foreground font-mono">({previewCalc.unused_leave_days} Days)</span>
+                                    </span>
+                                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                        {formatCurrency(previewCalc.leave_payout_amount)}
+                                    </span>
+                                </div>
                                 <div className="flex justify-between items-center pt-2 border-t border-border font-bold">
-                                    <span className="text-foreground uppercase">Estimated Severance Payout:</span>
+                                    <span className="text-foreground uppercase">Total Final Settlement:</span>
                                     <span className="text-primary text-base">
-                                        {formatCurrency(previewCalc.final_payout)}
+                                        {formatCurrency(previewCalc.total_settlement)}
                                     </span>
                                 </div>
                             </div>

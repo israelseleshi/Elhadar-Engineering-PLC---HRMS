@@ -20,6 +20,8 @@ class Separation extends Model
         'completed_years_service',
         'severance_amount',
         'severance_paid',
+        'unused_leave_days',
+        'leave_payout_amount',
     ];
 
     protected function casts(): array
@@ -30,6 +32,8 @@ class Separation extends Model
             'completed_years_service' => 'decimal:2',
             'severance_amount' => 'decimal:2',
             'severance_paid' => 'boolean',
+            'unused_leave_days' => 'decimal:1',
+            'leave_payout_amount' => 'decimal:2',
         ];
     }
 

@@ -94,13 +94,14 @@ class EmployeeController extends Controller
             'is_current' => true,
         ]);
 
-        // Initialize statutory annual leave balance (16 base days)
+        // Initialize statutory annual leave balance per Proclamation 1156/2019
+        $statutoryLeave = $this->leaveService->calculateAnnualEntitlement($employee, false);
         $employee->leaveBalances()->create([
             'leave_year' => (int) date('Y'),
-            'entitled_days' => 16.0,
+            'entitled_days' => $statutoryLeave,
             'carried_over_days' => 0.0,
             'taken_days' => 0.0,
-            'remaining_days' => 16.0,
+            'remaining_days' => $statutoryLeave,
         ]);
 
         return redirect()->route('employees.show', $employee->id)

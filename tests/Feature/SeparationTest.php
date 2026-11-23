@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\EmployeeSalary;
+use App\Models\LeaveBalance;
 use App\Models\Separation;
 use App\Models\User;
 use Carbon\Carbon;
@@ -81,6 +82,9 @@ class SeparationTest extends TestCase
             'first_year_amount',
             'subsequent_amount',
             'final_payout',
+            'unused_leave_days',
+            'leave_payout_amount',
+            'total_settlement',
         ]);
         $response->assertJson([
             'basic_salary' => 15000,
@@ -106,6 +110,15 @@ class SeparationTest extends TestCase
             'is_current' => true,
         ]);
 
+        LeaveBalance::create([
+            'employee_id' => $employee->id,
+            'leave_year' => (int) date('Y'),
+            'entitled_days' => 16.0,
+            'carried_over_days' => 0.0,
+            'taken_days' => 6.0,
+            'remaining_days' => 10.0,
+        ]);
+
         $response = $this->actingAs($user)->post('/separations', [
             'employee_id' => $employee->id,
             'separation_type' => 'Layoff',
@@ -120,6 +133,8 @@ class SeparationTest extends TestCase
             'separation_type' => 'Layoff',
             'reason' => 'Contract completed',
             'severance_paid' => false,
+            'unused_leave_days' => 10.0,
+            'leave_payout_amount' => 4000.0, // (12,000 / 30) * 10 = 4,000
         ]);
 
         $this->assertEquals('Separated', $employee->fresh()->status);

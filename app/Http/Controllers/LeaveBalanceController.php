@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AdjustLeaveBalanceRequest;
 use App\Models\AuditLog;
+use App\Models\Department;
 use App\Models\Employee;
 use App\Models\LeaveBalance;
 use App\Models\LeaveRequest;
@@ -26,57 +27,101 @@ class LeaveBalanceController extends Controller
     {
         $year = (int) date('Y');
 
-        $query = Employee::with(['department', 'currentLeaveBalance'])
-            ->where('status', '!=', 'Separated');
+        $query = Employee::active()
+            ->with(['department', 'currentLeaveBalance']);
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('full_name', 'like', "%{$search}%")
                     ->orWhere('file_no', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
                     ->orWhere('position', 'like', "%{$search}%");
             });
         }
 
+        if ($deptId = $request->input('department_id')) {
+            $query->where('department_id', $deptId);
+        }
+
+        if ($workPlace = $request->input('work_place')) {
+            if ($workPlace === 'Head Office' || $workPlace === 'H.O') {
+                $query->whereIn('work_place', ['Head Office', 'H.O']);
+            } elseif ($workPlace === 'Project') {
+                $query->whereNotIn('work_place', ['Head Office', 'H.O']);
+            } else {
+                $query->where('work_place', $workPlace);
+            }
+        }
+
+        if ($status = $request->input('status')) {
+            if ($status !== 'Separated' && in_array($status, ['Permanent', 'Probation', 'Contract'], true)) {
+                $query->where('status', $status);
+            }
+        }
+
         $employees = $query->orderBy('file_no')->paginate(15)->withQueryString();
 
-        // Ensure statutory entitlements and balances are accurate
+        // Ensure statutory entitlements, capped carryovers, and balances are accurate
         $employees->getCollection()->transform(function ($emp) {
             $statutory = $this->leaveService->calculateAnnualEntitlement($emp);
+            $maxCarryover = $this->leaveService->getMaximumAllowedCarryover($emp);
             $emp->statutory_entitlement = $statutory;
+            $emp->max_carryover = $maxCarryover;
 
             $balance = $emp->currentLeaveBalance;
             if (! $balance) {
+                $emp->carried_over_days = 0.0;
+                $emp->display_entitlement = $statutory;
+                $emp->total_available = $statutory;
+                $emp->display_taken = 0.0;
                 $emp->display_remaining = $statutory;
-                $emp->display_taken = 0;
             } else {
-                $emp->display_remaining = (float) $balance->remaining_days;
+                $emp->carried_over_days = (float) $balance->carried_over_days;
+                $emp->display_entitlement = (float) $balance->entitled_days;
+                $emp->total_available = (float) ($balance->entitled_days + $balance->carried_over_days);
                 $emp->display_taken = (float) $balance->taken_days;
+                $emp->display_remaining = (float) $balance->remaining_days;
             }
 
             return $emp;
         });
 
+        $activeEmployees = Employee::active();
         $stats = [
-            'total_leave_liability_days' => (float) (LeaveBalance::where('leave_year', $year)->sum('remaining_days') ?: (Employee::where('status', 'Permanent')->count() * 16)),
-            'average_entitlement' => round((float) (Employee::where('status', '!=', 'Separated')->get()->avg(fn ($e) => $this->leaveService->calculateAnnualEntitlement($e)) ?: 16.0), 1),
-            'staff_tracked_count' => Employee::where('status', '!=', 'Separated')->count(),
+            'total_leave_liability_days' => (float) LeaveBalance::where('leave_year', $year)
+                ->whereHas('employee', fn ($q) => $q->active())
+                ->sum('remaining_days'),
+            'average_entitlement' => round((float) ($activeEmployees->get()->avg(fn ($e) => $this->leaveService->calculateAnnualEntitlement($e)) ?: 16.0), 1),
+            'staff_tracked_count' => (clone $activeEmployees)->count(),
         ];
 
         $pendingRequests = LeaveRequest::with(['employee.department', 'handoverEmployee:id,full_name,file_no,position', 'assignedApprover:id,name'])
+            ->whereHas('employee', fn ($q) => $q->active())
             ->where('status', 'Pending')
             ->orderBy('created_at')
             ->get();
 
         $recentRequests = LeaveRequest::with(['employee.department', 'handoverEmployee:id,full_name,file_no,position', 'reviewer:id,name', 'assignedApprover:id,name'])
+            ->whereHas('employee', fn ($q) => $q->active())
             ->where('status', '!=', 'Pending')
             ->orderByDesc('reviewed_at')
             ->limit(50)
             ->get();
 
+        $departments = Department::orderBy('name')->get(['id', 'name']);
+        $workplaces = Employee::active()
+            ->whereNotNull('work_place')
+            ->where('work_place', '!=', '')
+            ->distinct()
+            ->orderBy('work_place')
+            ->pluck('work_place');
+
         return Inertia::render('Leave/Index', [
             'employees' => $employees,
-            'filters' => $request->only(['search']),
+            'filters' => $request->only(['search', 'department_id', 'work_place', 'status']),
             'stats' => $stats,
+            'departments' => $departments,
+            'workplaces' => $workplaces,
             'currentYear' => $year,
             'pendingRequests' => $pendingRequests,
             'recentRequests' => $recentRequests,
@@ -102,7 +147,9 @@ class LeaveBalanceController extends Controller
             'employee.currentLeaveBalance',
             'handoverEmployee:id,full_name,file_no,position',
             'assignedApprover:id,name',
-        ])->where('status', 'Pending');
+        ])
+            ->whereHas('employee', fn ($q) => $q->active())
+            ->where('status', 'Pending');
 
         // Base query for reviewed history within this manager's scope
         $historyQuery = LeaveRequest::with([
@@ -111,7 +158,9 @@ class LeaveBalanceController extends Controller
             'handoverEmployee:id,full_name,file_no,position',
             'reviewer:id,name',
             'assignedApprover:id,name',
-        ])->whereIn('status', ['Approved', 'Rejected', 'Cancelled']);
+        ])
+            ->whereHas('employee', fn ($q) => $q->active())
+            ->whereIn('status', ['Approved', 'Rejected', 'Cancelled']);
 
         // Exclude manager's own requests (they cannot approve their own leave)
         if ($employee) {

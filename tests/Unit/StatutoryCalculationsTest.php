@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\EmployeeSalary;
+use App\Models\LeaveBalance;
 use App\Services\AnnualLeaveCalculationService;
 use App\Services\ProbationCalculationService;
 use App\Services\RetirementCalculationService;
@@ -164,6 +165,95 @@ class StatutoryCalculationsTest extends TestCase
             'status' => 'Permanent',
         ]);
         $this->assertEquals(18.0, $this->leaveService->calculateAnnualEntitlement($emp5));
+    }
+
+    public function test_annual_leave_prorates_first_year_of_service(): void
+    {
+        $dept = Department::create(['name' => 'Operations Dept']);
+
+        // 6 months service -> 16 * (6 / 12) = 8.0 days
+        $emp6m = Employee::create([
+            'file_no' => 'P-001',
+            'full_name' => 'Hanan Mohammed',
+            'gender' => 'Female',
+            'department_id' => $dept->id,
+            'position' => 'Junior Clerk',
+            'employment_date_ec' => '01/06/2018',
+            'employment_date' => Carbon::now()->subMonths(6)->toDateString(),
+            'status' => 'Probation',
+        ]);
+        $this->assertEquals(8.0, $this->leaveService->calculateAnnualEntitlement($emp6m, true));
+
+        // 3 months service -> 16 * (3 / 12) = 4.0 days
+        $emp3m = Employee::create([
+            'file_no' => 'P-002',
+            'full_name' => 'Solomon Girma',
+            'gender' => 'Male',
+            'department_id' => $dept->id,
+            'position' => 'Technician',
+            'employment_date_ec' => '01/09/2018',
+            'employment_date' => Carbon::now()->subMonths(3)->toDateString(),
+            'status' => 'Probation',
+        ]);
+        $this->assertEquals(4.0, $this->leaveService->calculateAnnualEntitlement($emp3m, true));
+    }
+
+    public function test_annual_leave_carryover_and_pool_caps_at_two_years(): void
+    {
+        $dept = Department::create(['name' => 'Management Dept']);
+        $emp = Employee::create([
+            'file_no' => 'M-001',
+            'full_name' => 'Yared Bekele',
+            'gender' => 'Male',
+            'department_id' => $dept->id,
+            'position' => 'Project Manager',
+            'employment_date_ec' => '01/01/2014',
+            'employment_date' => Carbon::now()->subYears(5)->toDateString(), // 5 yrs -> 18.0 days
+            'status' => 'Permanent',
+        ]);
+
+        $maxCarryover = $this->leaveService->getMaximumAllowedCarryover($emp);
+        $maxTotalPool = $this->leaveService->getMaximumTotalLeavePool($emp);
+
+        $this->assertEquals(36.0, $maxCarryover); // 18 * 2
+        $this->assertEquals(54.0, $maxTotalPool); // 18 * 3
+    }
+
+    public function test_unused_leave_payout_calculation_on_separation(): void
+    {
+        $dept = Department::create(['name' => 'Site Engineering']);
+        $emp = Employee::create([
+            'file_no' => 'S-001',
+            'full_name' => 'Biruk Tadesse',
+            'gender' => 'Male',
+            'department_id' => $dept->id,
+            'position' => 'Site Supervisor',
+            'employment_date_ec' => '01/01/2015',
+            'employment_date' => Carbon::now()->subYears(3)->toDateString(),
+            'status' => 'Permanent',
+        ]);
+
+        EmployeeSalary::create([
+            'employee_id' => $emp->id,
+            'basic_salary' => 30000.00,
+            'effective_date' => Carbon::now()->subYear()->toDateString(),
+            'is_current' => true,
+        ]);
+
+        LeaveBalance::create([
+            'employee_id' => $emp->id,
+            'leave_year' => (int) date('Y'),
+            'entitled_days' => 17.0,
+            'carried_over_days' => 5.0,
+            'taken_days' => 9.5,
+            'remaining_days' => 12.5,
+        ]);
+
+        $payout = $this->leaveService->calculateSeparationLeavePayout($emp);
+
+        $this->assertEquals(12.5, $payout['unused_leave_days']);
+        $this->assertEquals(1000.00, $payout['daily_rate']);
+        $this->assertEquals(12500.00, $payout['payout_amount']);
     }
 
     public function test_retirement_calculates_60th_birthday_and_alerts(): void

@@ -9,6 +9,7 @@ import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { toast } from 'sonner';
 import {
     Dialog,
@@ -41,20 +42,22 @@ import {
     Paperclip,
     ShieldCheck,
     Check,
-    Calendar
+    Calendar,
+    Users,
+    X
 } from 'lucide-react';
 
 const leaveTourSteps: TourStep[] = [
     {
         target: '[data-tour="leave-search"]',
         title: 'Search and leave cycle',
-        content: 'Search staff members and check the active annual leave cycle.',
+        content: 'Search active staff members, filter by department or employment status, and check the active statutory leave cycle.',
         placement: 'bottom',
     },
     {
         target: '[data-tour="leave-table"]',
         title: 'Leave balance ledger',
-        content: 'Track statutory entitlement, days taken, and remaining leave balances.',
+        content: 'Track statutory entitlement, carried over days, days taken, and remaining leave balances for active personnel.',
         placement: 'top',
     },
     {
@@ -77,8 +80,13 @@ interface StaffLeave {
     full_name: string;
     position: string;
     employment_date_ec: string;
+    status: 'Permanent' | 'Probation' | 'Contract';
+    work_place?: string;
     department?: { name: string };
     statutory_entitlement: number;
+    max_carryover?: number;
+    carried_over_days: number;
+    total_available: number;
     display_taken: number;
     display_remaining: number;
 }
@@ -140,7 +148,12 @@ interface Props {
     };
     filters: {
         search?: string;
+        department_id?: string;
+        work_place?: string;
+        status?: string;
     };
+    departments?: { id: number; name: string }[];
+    workplaces?: string[];
     stats: {
         total_leave_liability_days: number;
         average_entitlement: number;
@@ -155,6 +168,8 @@ interface Props {
 export default function Index({
     employees,
     filters,
+    departments = [],
+    workplaces = [],
     stats,
     currentYear,
     pendingRequests = [],
@@ -162,6 +177,9 @@ export default function Index({
     pendingCount = 0,
 }: Props) {
     const [search, setSearch] = useState(filters.search || '');
+    const [departmentId, setDepartmentId] = useState(filters.department_id || '__all__');
+    const [workPlace, setWorkPlace] = useState(filters.work_place || '__all__');
+    const [statusFilter, setStatusFilter] = useState(filters.status || 'all');
     const [selectedStaff, setSelectedStaff] = useState<StaffLeave | null>(null);
     const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
     const [viewMode, setViewMode] = useViewMode('leave');
@@ -229,11 +247,18 @@ export default function Index({
     };
 
     const handleFilter = (updates: Record<string, string>) => {
+        const nextSearch = updates.search !== undefined ? updates.search : search;
+        const nextDept = updates.department_id !== undefined ? updates.department_id : departmentId;
+        const nextWorkplace = updates.work_place !== undefined ? updates.work_place : workPlace;
+        const nextStatus = updates.status !== undefined ? updates.status : statusFilter;
+
         router.get(
             route('leave.index'),
             {
-                search,
-                ...updates,
+                search: nextSearch || undefined,
+                department_id: nextDept && nextDept !== '__all__' ? nextDept : undefined,
+                work_place: nextWorkplace && nextWorkplace !== '__all__' ? nextWorkplace : undefined,
+                status: nextStatus && nextStatus !== 'all' ? nextStatus : undefined,
             },
             { preserveState: true, replace: true }
         );
@@ -308,204 +333,372 @@ export default function Index({
                 </TabsList>
 
                 {/* TAB 1: STAFF LEAVE BALANCES LEDGER */}
-                <TabsContent value="balances" className="space-y-6 focus-visible:outline-none">
-                    {/* Filter and Search Bar */}
-                    <Card data-tour="leave-search" className="border-border bg-card">
-                <CardContent className="p-4">
-                    <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-                        <div className="relative w-full sm:w-80">
-                            <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
-                            <Input
-                                placeholder="Search by name, file no..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') handleFilter({ search });
-                                }}
-                                className="pl-9 bg-muted/50 border-border text-xs h-10"
-                            />
+                <TabsContent value="balances" className="space-y-4 focus-visible:outline-none">
+                    {/* Key Metrics Banner */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <Card className="border-border bg-card shadow-xs">
+                            <CardContent className="p-4">
+                                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Active Staff Tracked</p>
+                                <div className="flex items-baseline justify-between mt-1">
+                                    <span className="text-2xl font-bold text-foreground">{stats.staff_tracked_count}</span>
+                                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                        Active Roster Only
+                                    </span>
+                                </div>
+                                <p className="text-[11px] text-muted-foreground mt-1">Excludes separated personnel</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="border-border bg-card shadow-xs">
+                            <CardContent className="p-4">
+                                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Total Leave Liability</p>
+                                <div className="flex items-baseline justify-between mt-1">
+                                    <span className="text-2xl font-bold text-foreground">{stats.total_leave_liability_days.toLocaleString()} <span className="text-sm font-normal text-muted-foreground">Days</span></span>
+                                    <span className="text-xs text-muted-foreground font-mono">{currentYear} Cycle</span>
+                                </div>
+                                <p className="text-[11px] text-muted-foreground mt-1">Capped at statutory 2-year carryover</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="border-border bg-card shadow-xs">
+                            <CardContent className="p-4">
+                                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Average Entitlement</p>
+                                <div className="flex items-baseline justify-between mt-1">
+                                    <span className="text-2xl font-bold text-foreground">{stats.average_entitlement} <span className="text-sm font-normal text-muted-foreground">Days / Staff</span></span>
+                                    <span className="text-xs text-primary font-medium">Art. 77 Statutory Base</span>
+                                </div>
+                                <p className="text-[11px] text-muted-foreground mt-1">16 days + 1 day per 2 years of service</p>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Filter and Command Strip */}
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="inline-flex rounded-lg border border-border bg-muted/40 p-1 text-xs">
+                            {[
+                                { id: 'all', label: 'All Active' },
+                                { id: 'Permanent', label: 'Permanent' },
+                                { id: 'Probation', label: 'Probation' },
+                                { id: 'Contract', label: 'Contract' },
+                            ].map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    type="button"
+                                    onClick={() => {
+                                        setStatusFilter(tab.id);
+                                        handleFilter({ status: tab.id });
+                                    }}
+                                    className={`px-3 py-1.5 rounded-md font-medium transition-all ${
+                                        statusFilter === tab.id
+                                            ? 'bg-card text-foreground shadow-2xs font-bold'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    }`}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
                         </div>
 
-                        <div className="flex items-center gap-3">
-                            <div className="text-xs text-muted-foreground">
-                                Active Statutory Leave Cycle: <strong className="text-foreground">{currentYear}</strong> G.C.
-                            </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground hidden sm:inline">
+                                Active Statutory Cycle: <strong className="text-foreground">{currentYear}</strong> G.C.
+                            </span>
                             <Button
                                 type="button"
                                 onClick={() => setIsTourOpen(true)}
                                 variant="outline"
                                 size="sm"
-                                className="border-border bg-card text-foreground hover:bg-muted font-medium text-xs gap-1.5 rounded-md"
+                                className="border-border bg-card text-foreground hover:bg-muted font-medium text-xs gap-1.5 rounded-lg h-8"
                             >
                                 <Compass className="w-3.5 h-3.5 text-primary" />
-                                <span>Tour Leave Ledger</span>
+                                <span className="hidden sm:inline">Tour Ledger</span>
                             </Button>
                             <ViewToggle value={viewMode} onChange={setViewMode} />
                         </div>
                     </div>
-                </CardContent>
-            </Card>
 
-            {/* Leave Ledger Table */}
-            <Card data-tour="leave-table" className="border-border bg-card shadow-xs overflow-hidden shadow-sm">
-                {viewMode === 'table' ? (
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-24 text-xs font-semibold text-muted-foreground">File no</TableHead>
-                            <TableHead className="text-xs font-semibold text-muted-foreground">Staff name</TableHead>
-                            <TableHead className="text-xs font-semibold text-muted-foreground">Department</TableHead>
-                            <TableHead className="text-xs font-semibold text-muted-foreground">Employment date (E.C)</TableHead>
-                            <TableHead className="text-center text-xs font-semibold text-muted-foreground" data-tour="col-entitlement">Statutory entitlement</TableHead>
-                            <TableHead className="text-center text-xs font-semibold text-muted-foreground">Days taken</TableHead>
-                            <TableHead className="text-center text-xs font-semibold text-muted-foreground">Remaining balance</TableHead>
-                            <TableHead className="text-right text-xs font-semibold text-muted-foreground"><span className="sr-only">Actions</span></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {employees.data.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                                    No personnel records found matching your query.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            employees.data.map((emp, index) => (
-                                <TableRow key={emp.id} className="hover:bg-muted/40/50">
-                                    <TableCell className="font-bold text-primary text-xs">
-                                        {emp.file_no}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="font-bold text-foreground text-sm">{emp.full_name}</div>
-                                        <div className="text-xs text-muted-foreground">{emp.position}</div>
-                                    </TableCell>
-                                    <TableCell className="text-xs text-foreground/90">
-                                        {emp.department?.name || 'General Operations'}
-                                    </TableCell>
-                                    <TableCell className="text-xs text-muted-foreground">
-                                        {emp.employment_date_ec}
-                                    </TableCell>
-                                    <TableCell className="text-center font-bold text-foreground text-xs">
-                                        {emp.statutory_entitlement} Days
-                                    </TableCell>
-                                    <TableCell className="text-center text-xs text-muted-foreground">
-                                        {emp.display_taken} Days
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <span 
-                                            data-tour={index === 0 ? "balance-badge" : undefined}
-                                            className={`inline-flex items-center px-2 py-0.5 rounded-xs text-xs font-bold ${
-                                                emp.display_remaining <= 3 ? 'bg-destructive/10 text-destructive border border-destructive/25' :
-                                                emp.display_remaining <= 8 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25' :
-                                                'bg-muted/40 text-primary'
-                                            }`}
+                    {/* Search, Department, Workplace Filters */}
+                    <Card data-tour="leave-search" className="border-border bg-card shadow-xs">
+                        <CardContent className="p-3">
+                            <div className="flex flex-wrap items-center gap-2.5">
+                                <div className="relative flex-1 min-w-[200px] max-w-sm">
+                                    <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search name, file no, position..."
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') handleFilter({ search });
+                                        }}
+                                        className="pl-9 pr-8 bg-muted/50 border-border text-xs h-9 rounded-lg"
+                                    />
+                                    {search && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setSearch('');
+                                                handleFilter({ search: '' });
+                                            }}
+                                            className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
                                         >
-                                            {emp.display_remaining} Days
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex flex-wrap items-center justify-end gap-2">
-                                            <Button
-                                                data-tour={index === 0 ? "first-deduct-btn" : undefined}
-                                                onClick={() => openAdjustModal(emp)}
-                                                size="sm"
-                                                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs font-bold text-xs h-8 px-2.5 rounded-xs"
-                                            >
-                                                <MinusCircle className="w-3.5 h-3.5 mr-1" />
-                                                Deduct Leave
-                                            </Button>
-                                            <Link href={route('employees.show', emp.id)}>
-                                                <Button 
-                                                    data-tour={index === 0 ? "first-profile-btn" : undefined}
-                                                    variant="outline" 
-                                                    size="sm"
-                                                    className="border-border bg-card hover:bg-muted text-primary font-semibold text-xs h-8 px-2.5 rounded-xs"
-                                                >
-                                                    <Eye className="w-3.5 h-3.5 mr-1" />
-                                                    Profile
-                                                </Button>
-                                            </Link>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-                ) : (
-                    <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
-                        {employees.data.length === 0 ? (
-                            <div className="col-span-full py-12 text-center text-xs text-muted-foreground">
-                                No personnel records found matching your query.
-                            </div>
-                        ) : (
-                            employees.data.map((emp, index) => (
-                                <div
-                                    key={emp.id}
-                                    className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:shadow-xs"
-                                >
-                                    <div className="flex items-start justify-between gap-2">
-                                        <div className="min-w-0">
-                                            <p className="truncate text-sm font-bold text-foreground">{emp.full_name}</p>
-                                            <p className="text-[11px] font-semibold text-primary">{emp.file_no}</p>
-                                            <p className="truncate text-[11px] text-muted-foreground">
-                                                {emp.position} Â· {emp.department?.name || 'General Operations'}
-                                            </p>
-                                        </div>
-                                        <span
-                                            data-tour={index === 0 ? 'balance-badge' : undefined}
-                                            className={`inline-flex shrink-0 items-center rounded-md px-2 py-0.5 text-[11px] font-bold ${getBalanceClass(emp.display_remaining)}`}
-                                        >
-                                            {emp.display_remaining} Days
-                                        </span>
-                                    </div>
-
-                                    <div className="mt-3 grid grid-cols-3 gap-2 border-t border-border/60 pt-3 text-center">
-                                        <div>
-                                            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Entitled</p>
-                                            <p className="text-sm font-bold text-foreground">{emp.statutory_entitlement}</p>
-                                        </div>
-                                        <div className="border-x border-border/60">
-                                            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Taken</p>
-                                            <p className="text-sm font-bold text-foreground/90">{emp.display_taken}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Remaining</p>
-                                            <p className="text-sm font-bold text-foreground">{emp.display_remaining}</p>
-                                        </div>
-                                    </div>
-
-                                    <p className="mt-2 text-[11px] text-muted-foreground">
-                                        Employed: {emp.employment_date_ec} E.C.
-                                    </p>
-
-                                    <div className="mt-3 flex gap-2">
-                                        <Button
-                                            data-tour={index === 0 ? 'first-deduct-btn' : undefined}
-                                            onClick={() => openAdjustModal(emp)}
-                                            size="sm"
-                                            className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs font-bold text-xs h-8 gap-1.5 rounded-xs"
-                                        >
-                                            <MinusCircle className="w-3.5 h-3.5" />
-                                            Deduct Leave
-                                        </Button>
-                                        <Link href={route('employees.show', emp.id)}>
-                                            <Button
-                                                data-tour={index === 0 ? 'first-profile-btn' : undefined}
-                                                variant="outline"
-                                                size="sm"
-                                                className="border-border bg-card hover:bg-muted text-primary font-semibold text-xs h-8 gap-1.5 rounded-xs"
-                                            >
-                                                <Eye className="w-3.5 h-3.5" />
-                                                Profile
-                                            </Button>
-                                        </Link>
-                                    </div>
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    )}
                                 </div>
-                            ))
+
+                                <div className="w-44 sm:w-48">
+                                    <Select
+                                        value={departmentId}
+                                        onValueChange={(val) => {
+                                            setDepartmentId(val);
+                                            handleFilter({ department_id: val });
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-full h-9 rounded-lg border-border bg-card text-foreground text-xs">
+                                            <SelectValue placeholder="All Departments" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="__all__">All Departments</SelectItem>
+                                            {departments.map((d) => (
+                                                <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="w-36 sm:w-40">
+                                    <Select
+                                        value={workPlace}
+                                        onValueChange={(val) => {
+                                            setWorkPlace(val);
+                                            handleFilter({ work_place: val });
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-full h-9 rounded-lg border-border bg-card text-foreground text-xs">
+                                            <SelectValue placeholder="All Workplaces" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="__all__">All Workplaces</SelectItem>
+                                            <SelectItem value="Head Office">Head Office</SelectItem>
+                                            <SelectItem value="Project">Project Sites</SelectItem>
+                                            {workplaces.filter(w => !['Head Office', 'H.O', 'Project'].includes(w)).map((w) => (
+                                                <SelectItem key={w} value={w}>{w}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {(search || departmentId !== '__all__' || workPlace !== '__all__' || statusFilter !== 'all') && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                            setSearch('');
+                                            setDepartmentId('__all__');
+                                            setWorkPlace('__all__');
+                                            setStatusFilter('all');
+                                            router.get(route('leave.index'), {}, { preserveState: true, replace: true });
+                                        }}
+                                        className="h-9 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+                                    >
+                                        Reset filters
+                                    </Button>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Leave Ledger Table */}
+                    <Card data-tour="leave-table" className="border-border bg-card shadow-xs overflow-hidden shadow-sm">
+                        {viewMode === 'table' ? (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-24 text-xs font-semibold text-muted-foreground">File no</TableHead>
+                                    <TableHead className="text-xs font-semibold text-muted-foreground">Staff name</TableHead>
+                                    <TableHead className="text-xs font-semibold text-muted-foreground">Department</TableHead>
+                                    <TableHead className="text-xs font-semibold text-muted-foreground">Employment date (E.C)</TableHead>
+                                    <TableHead className="text-center text-xs font-semibold text-muted-foreground" data-tour="col-entitlement">Annual entitlement</TableHead>
+                                    <TableHead className="text-center text-xs font-semibold text-muted-foreground">Carried over</TableHead>
+                                    <TableHead className="text-center text-xs font-semibold text-muted-foreground">Days taken</TableHead>
+                                    <TableHead className="text-center text-xs font-semibold text-muted-foreground">Remaining balance</TableHead>
+                                    <TableHead className="text-right text-xs font-semibold text-muted-foreground"><span className="sr-only">Actions</span></TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {employees.data.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
+                                            No personnel records found matching your query.
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    employees.data.map((emp, index) => (
+                                        <TableRow key={emp.id} className="hover:bg-muted/40/50">
+                                            <TableCell className="font-bold text-primary text-xs">
+                                                {emp.file_no}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="font-bold text-foreground text-sm">{emp.full_name}</div>
+                                                    {emp.status === 'Probation' && (
+                                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                                                            Probation
+                                                        </span>
+                                                    )}
+                                                    {emp.status === 'Contract' && (
+                                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-500/20">
+                                                            Contract
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="text-xs text-muted-foreground">{emp.position}</div>
+                                            </TableCell>
+                                            <TableCell className="text-xs text-foreground/90">
+                                                {emp.department?.name || 'General Operations'}
+                                            </TableCell>
+                                            <TableCell className="text-xs text-muted-foreground">
+                                                {emp.employment_date_ec}
+                                            </TableCell>
+                                            <TableCell className="text-center font-bold text-foreground text-xs">
+                                                {emp.statutory_entitlement} Days
+                                            </TableCell>
+                                            <TableCell className="text-center text-xs text-foreground/80 font-medium">
+                                                {emp.carried_over_days > 0 ? (
+                                                    <span className="text-foreground font-semibold">{emp.carried_over_days} Days</span>
+                                                ) : (
+                                                    <span className="text-muted-foreground">0 Days</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="text-center text-xs text-muted-foreground">
+                                                {emp.display_taken} Days
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <span 
+                                                    data-tour={index === 0 ? "balance-badge" : undefined}
+                                                    className={`inline-flex items-center px-2 py-0.5 rounded-xs text-xs font-bold ${
+                                                        emp.display_remaining <= 3 ? 'bg-destructive/10 text-destructive border border-destructive/25' :
+                                                        emp.display_remaining <= 8 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25' :
+                                                        'bg-muted/40 text-primary'
+                                                    }`}
+                                                >
+                                                    {emp.display_remaining} Days
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                                    <Button
+                                                        data-tour={index === 0 ? "first-deduct-btn" : undefined}
+                                                        onClick={() => openAdjustModal(emp)}
+                                                        size="sm"
+                                                        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs font-bold text-xs h-8 px-2.5 rounded-xs"
+                                                    >
+                                                        <MinusCircle className="w-3.5 h-3.5 mr-1" />
+                                                        Deduct Leave
+                                                    </Button>
+                                                    <Link href={route('employees.show', emp.id)}>
+                                                        <Button 
+                                                            data-tour={index === 0 ? "first-profile-btn" : undefined}
+                                                            variant="outline" 
+                                                            size="sm"
+                                                            className="border-border bg-card hover:bg-muted text-primary font-semibold text-xs h-8 px-2.5 rounded-xs"
+                                                        >
+                                                            <Eye className="w-3.5 h-3.5 mr-1" />
+                                                            Profile
+                                                        </Button>
+                                                    </Link>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
+                                {employees.data.length === 0 ? (
+                                    <div className="col-span-full py-12 text-center text-xs text-muted-foreground">
+                                        No personnel records found matching your query.
+                                    </div>
+                                ) : (
+                                    employees.data.map((emp, index) => (
+                                        <div
+                                            key={emp.id}
+                                            className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:shadow-xs"
+                                        >
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-sm font-bold text-foreground">{emp.full_name}</p>
+                                                    <p className="text-[11px] font-semibold text-primary">{emp.file_no}</p>
+                                                    <p className="truncate text-[11px] text-muted-foreground">
+                                                        {emp.position} · {emp.department?.name || 'General Operations'}
+                                                    </p>
+                                                </div>
+                                                <div className="flex flex-col items-end gap-1">
+                                                    <span
+                                                        data-tour={index === 0 ? 'balance-badge' : undefined}
+                                                        className={`inline-flex shrink-0 items-center rounded-md px-2 py-0.5 text-[11px] font-bold ${getBalanceClass(emp.display_remaining)}`}
+                                                    >
+                                                        {emp.display_remaining} Days
+                                                    </span>
+                                                    {emp.status === 'Probation' && (
+                                                        <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                                                            Probation
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-3 grid grid-cols-4 gap-1.5 border-t border-border/60 pt-3 text-center">
+                                                <div>
+                                                    <p className="text-[9px] font-bold uppercase tracking-wide text-muted-foreground">Annual</p>
+                                                    <p className="text-xs font-bold text-foreground">{emp.statutory_entitlement}</p>
+                                                </div>
+                                                <div className="border-l border-border/60">
+                                                    <p className="text-[9px] font-bold uppercase tracking-wide text-muted-foreground">Carried</p>
+                                                    <p className="text-xs font-bold text-foreground/90">{emp.carried_over_days}</p>
+                                                </div>
+                                                <div className="border-l border-border/60">
+                                                    <p className="text-[9px] font-bold uppercase tracking-wide text-muted-foreground">Taken</p>
+                                                    <p className="text-xs font-bold text-foreground/90">{emp.display_taken}</p>
+                                                </div>
+                                                <div className="border-l border-border/60">
+                                                    <p className="text-[9px] font-bold uppercase tracking-wide text-muted-foreground">Balance</p>
+                                                    <p className="text-xs font-bold text-foreground">{emp.display_remaining}</p>
+                                                </div>
+                                            </div>
+
+                                            <p className="mt-2 text-[11px] text-muted-foreground">
+                                                Employed: {emp.employment_date_ec} E.C.
+                                            </p>
+
+                                            <div className="mt-3 flex gap-2">
+                                                <Button
+                                                    data-tour={index === 0 ? 'first-deduct-btn' : undefined}
+                                                    onClick={() => openAdjustModal(emp)}
+                                                    size="sm"
+                                                    className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs font-bold text-xs h-8 gap-1.5 rounded-xs"
+                                                >
+                                                    <MinusCircle className="w-3.5 h-3.5" />
+                                                    Deduct Leave
+                                                </Button>
+                                                <Link href={route('employees.show', emp.id)}>
+                                                    <Button
+                                                        data-tour={index === 0 ? 'first-profile-btn' : undefined}
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="border-border bg-card hover:bg-muted text-primary font-semibold text-xs h-8 gap-1.5 rounded-xs"
+                                                    >
+                                                        <Eye className="w-3.5 h-3.5" />
+                                                        Profile
+                                                    </Button>
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         )}
-                    </div>
-                )}
 
                 {/* Pagination */}
                 {employees.last_page > 1 && (

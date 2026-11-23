@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreSeparationRequest;
 use App\Models\Employee;
 use App\Models\Separation;
+use App\Services\AnnualLeaveCalculationService;
 use App\Services\SeveranceCalculationService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,8 @@ use Inertia\Response;
 class SeparationController extends Controller
 {
     public function __construct(
-        protected SeveranceCalculationService $severanceService
+        protected SeveranceCalculationService $severanceService,
+        protected AnnualLeaveCalculationService $leaveService
     ) {}
 
     /**
@@ -43,10 +45,12 @@ class SeparationController extends Controller
             'total_separations' => Separation::count(),
             'total_severance_paid' => (float) Separation::where('severance_paid', true)->sum('severance_amount'),
             'pending_severance_liability' => (float) Separation::where('severance_paid', false)->sum('severance_amount'),
+            'total_leave_paid' => (float) Separation::where('severance_paid', true)->sum('leave_payout_amount'),
+            'pending_leave_liability' => (float) Separation::where('severance_paid', false)->sum('leave_payout_amount'),
         ];
 
-        $activeEmployees = Employee::with('currentSalary')
-            ->where('status', '!=', 'Separated')
+        $activeEmployees = Employee::active()
+            ->with(['currentSalary', 'currentLeaveBalance'])
             ->orderBy('file_no')
             ->get(['id', 'file_no', 'full_name', 'employment_date']);
 
@@ -59,7 +63,7 @@ class SeparationController extends Controller
     }
 
     /**
-     * Preview statutory severance calculation for an employee prior to submission.
+     * Preview statutory severance and unused leave calculation for an employee prior to submission.
      */
     public function calculate(Employee $employee, Request $request): JsonResponse
     {
@@ -67,19 +71,37 @@ class SeparationController extends Controller
         $separationDate = Carbon::parse($dateStr);
 
         $calculation = $this->severanceService->calculateSeverance($employee, $separationDate);
+        $leaveCalculation = $this->leaveService->calculateSeparationLeavePayout($employee, $separationDate);
+
+        $isEligible = in_array($request->input('separation_type'), [
+            'Termination_Without_Cause',
+            'Layoff',
+            'Retirement',
+        ], true);
+
+        $severanceAmount = $isEligible ? $calculation['final_payout'] : 0.00;
+        $leavePayout = $leaveCalculation['leave_payout'];
+
+        $calculation['unused_leave_days'] = $leaveCalculation['unused_leave_days'];
+        $calculation['daily_rate'] = $leaveCalculation['daily_rate'];
+        $calculation['leave_payout'] = $leavePayout;
+        $calculation['leave_payout_amount'] = $leavePayout;
+        $calculation['severance_amount'] = $severanceAmount;
+        $calculation['total_settlement'] = round($severanceAmount + $leavePayout, 2);
 
         return response()->json($calculation);
     }
 
     /**
-     * Record an employee separation and calculate statutory severance.
+     * Record an employee separation, statutory severance, and wages in lieu of unused annual leave.
      */
     public function store(StoreSeparationRequest $request): RedirectResponse
     {
-        $employee = Employee::with('currentSalary')->findOrFail($request->validated('employee_id'));
+        $employee = Employee::with(['currentSalary', 'currentLeaveBalance'])->findOrFail($request->validated('employee_id'));
         $effectiveDate = Carbon::parse($request->validated('effective_date'));
 
         $calculation = $this->severanceService->calculateSeverance($employee, $effectiveDate);
+        $leaveCalculation = $this->leaveService->calculateSeparationLeavePayout($employee, $effectiveDate);
 
         $isEligible = in_array($request->validated('separation_type'), [
             'Termination_Without_Cause',
@@ -88,6 +110,7 @@ class SeparationController extends Controller
         ], true);
 
         $severanceAmount = $isEligible ? $calculation['final_payout'] : 0.00;
+        $leavePayout = $leaveCalculation['leave_payout'];
 
         Separation::create([
             'employee_id' => $employee->id,
@@ -97,6 +120,8 @@ class SeparationController extends Controller
             'basic_salary_at_separation' => $calculation['basic_salary'],
             'completed_years_service' => $calculation['years_service'],
             'severance_amount' => $severanceAmount,
+            'unused_leave_days' => $leaveCalculation['unused_leave_days'],
+            'leave_payout_amount' => $leavePayout,
             'severance_paid' => $request->boolean('severance_paid'),
         ]);
 
