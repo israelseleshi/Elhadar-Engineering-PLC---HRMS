@@ -66,6 +66,35 @@ class StatutoryCalculationsTest extends TestCase
         $this->assertNotEquals(Carbon::SUNDAY, $target->dayOfWeek);
     }
 
+    public function test_probation_service_auto_confirms_expired_probations(): void
+    {
+        $dept = Department::create(['name' => 'IT Dept']);
+        $expiredDate = Carbon::parse('2026-09-01');
+
+        $emp = Employee::create([
+            'file_no' => 'T-999',
+            'full_name' => 'Test Employee',
+            'gender' => 'Male',
+            'department_id' => $dept->id,
+            'position' => 'Developer',
+            'employment_type' => 'Non-Managerial',
+            'contract_type' => 'Permanent',
+            'employment_date_ec' => '01/01/2018',
+            'employment_date' => '2026-06-01',
+            'status' => 'Probation',
+            'probation_status' => 'Pending',
+            'probation_end_date' => $expiredDate->toDateString(),
+        ]);
+
+        $confirmed = $this->probationService->autoConfirmExpiredProbations(Carbon::parse('2026-09-15'));
+
+        $this->assertCount(1, $confirmed);
+        $emp->refresh();
+        $this->assertEquals('Permanent', $emp->status);
+        $this->assertEquals('Passed', $emp->probation_status);
+        $this->assertEquals('2026-09-01', $emp->permanent_status_date->toDateString());
+    }
+
     public function test_tenure_calculation_breaks_down_into_years_months_days(): void
     {
         Carbon::setTestNow(Carbon::parse('2023-05-25'));

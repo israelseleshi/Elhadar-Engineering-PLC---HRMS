@@ -185,6 +185,9 @@ jobs:
             # Provision department chat channels & enroll staff
             \$PHP artisan db:seed --class=DepartmentChatSeeder --force || true
 
+            # Automatically confirm expired probationary employees per Art. 11
+            \$PHP artisan hrms:auto-confirm-probation --no-interaction || true
+
             # Ensure storage symlink exists
             [ -L public/storage ] || \$PHP artisan storage:link || true
 

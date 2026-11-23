@@ -63,7 +63,9 @@ class DashboardController extends Controller
         $totalPensionCompany = (float) (clone $currentSalaries)->sum('pension_company');
 
         // Statutory Alerts
-        // 1. Probation alerts
+        // 1. Probation alerts (auto-confirm any expired periods first)
+        $this->probationService->autoConfirmExpiredProbations();
+
         $probationCandidates = Employee::where('status', 'Probation')
             ->with('department')
             ->get()

@@ -21,6 +21,9 @@ class ProbationController extends Controller
      */
     public function index(Request $request): Response
     {
+        // Enforce statutory automatic permanent conversion for expired probations per Art. 11
+        $this->probationService->autoConfirmExpiredProbations();
+
         $statusFilter = $request->input('status', 'Probation');
 
         $query = Employee::with(['department', 'currentSalary']);

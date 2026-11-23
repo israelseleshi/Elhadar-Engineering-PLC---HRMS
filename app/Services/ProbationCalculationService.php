@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\AuditLog;
 use App\Models\Employee;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Collection;
 
 class ProbationCalculationService
 {
@@ -75,6 +77,57 @@ class ProbationCalculationService
         }
 
         return $count;
+    }
+
+    /**
+     * Automatically confirm employees whose statutory probation period has expired
+     * without prior adverse separation action, per Ethiopian Labour Proclamation 1156/2019 (Art. 11).
+     *
+     * @return Collection<int, Employee>
+     */
+    public function autoConfirmExpiredProbations(?Carbon $asOfDate = null): Collection
+    {
+        $cutoffDate = ($asOfDate ?? Carbon::today())->toDateString();
+
+        $candidates = Employee::where('status', 'Probation')
+            ->where('probation_status', '!=', 'Failed')
+            ->whereNotNull('probation_end_date')
+            ->where('probation_end_date', '<=', $cutoffDate)
+            ->get();
+
+        if ($candidates->isEmpty()) {
+            return collect();
+        }
+
+        $confirmed = collect();
+
+        foreach ($candidates as $employee) {
+            $oldValues = $employee->toArray();
+            $effectiveDate = $employee->probation_end_date
+                ? Carbon::parse($employee->probation_end_date)->toDateString()
+                : $cutoffDate;
+
+            $employee->update([
+                'status' => 'Permanent',
+                'probation_status' => 'Passed',
+                'permanent_status_date' => $effectiveDate,
+            ]);
+
+            AuditLog::create([
+                'user_id' => auth()->id() ?? null,
+                'action' => 'PROBATION_AUTO_CONFIRMED',
+                'auditable_type' => Employee::class,
+                'auditable_id' => $employee->id,
+                'old_values' => $oldValues,
+                'new_values' => $employee->fresh()->toArray(),
+                'ip_address' => request()?->ip() ?? '127.0.0.1',
+                'user_agent' => request()?->userAgent() ?? 'System / CLI Auto-Scheduler',
+            ]);
+
+            $confirmed->push($employee);
+        }
+
+        return $confirmed;
     }
 
     /**
