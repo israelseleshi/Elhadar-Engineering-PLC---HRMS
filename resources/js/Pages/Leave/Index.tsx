@@ -334,43 +334,6 @@ export default function Index({
 
                 {/* TAB 1: STAFF LEAVE BALANCES LEDGER */}
                 <TabsContent value="balances" className="space-y-4 focus-visible:outline-none">
-                    {/* Key Metrics Banner */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <Card className="border-border bg-card shadow-xs">
-                            <CardContent className="p-4">
-                                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Active Staff Tracked</p>
-                                <div className="flex items-baseline justify-between mt-1">
-                                    <span className="text-2xl font-bold text-foreground">{stats.staff_tracked_count}</span>
-                                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-                                        <CheckCircle2 className="w-3.5 h-3.5" />
-                                        Active Roster Only
-                                    </span>
-                                </div>
-                                <p className="text-[11px] text-muted-foreground mt-1">Excludes separated personnel</p>
-                            </CardContent>
-                        </Card>
-                        <Card className="border-border bg-card shadow-xs">
-                            <CardContent className="p-4">
-                                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Total Leave Liability</p>
-                                <div className="flex items-baseline justify-between mt-1">
-                                    <span className="text-2xl font-bold text-foreground">{stats.total_leave_liability_days.toLocaleString()} <span className="text-sm font-normal text-muted-foreground">Days</span></span>
-                                    <span className="text-xs text-muted-foreground font-mono">{currentYear} Cycle</span>
-                                </div>
-                                <p className="text-[11px] text-muted-foreground mt-1">Capped at statutory 2-year carryover</p>
-                            </CardContent>
-                        </Card>
-                        <Card className="border-border bg-card shadow-xs">
-                            <CardContent className="p-4">
-                                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Average Entitlement</p>
-                                <div className="flex items-baseline justify-between mt-1">
-                                    <span className="text-2xl font-bold text-foreground">{stats.average_entitlement} <span className="text-sm font-normal text-muted-foreground">Days / Staff</span></span>
-                                    <span className="text-xs text-primary font-medium">Art. 77 Statutory Base</span>
-                                </div>
-                                <p className="text-[11px] text-muted-foreground mt-1">16 days + 1 day per 2 years of service</p>
-                            </CardContent>
-                        </Card>
-                    </div>
-
                     {/* Filter and Command Strip */}
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="inline-flex rounded-lg border border-border bg-muted/40 p-1 text-xs">
