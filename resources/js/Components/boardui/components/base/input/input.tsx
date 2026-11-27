@@ -135,9 +135,9 @@ const inputStyles = sortCx({
   field: [
     "relative flex w-full items-center",
     "rounded-xl",
-    "bg-background border border-border text-foreground",
-    "ring-2 ring-inset ring-transparent",
-    "transition-[background-color,box-shadow,color] duration-[var(--input-transition-ms,150ms)] ease",
+    "bg-card border border-border text-foreground shadow-2xs",
+    "ring-2 ring-transparent",
+    "transition-[background-color,border-color,box-shadow,color] duration-[var(--input-transition-ms,150ms)] ease",
   ].join(" "),
 
   fieldSize: {
@@ -155,7 +155,8 @@ const inputStyles = sortCx({
   leftSection: "flex flex-1 items-center gap-1.5 min-w-0",
 
   input: [
-    "min-w-0 flex-1 bg-transparent border-0 outline-none p-0 m-0",
+    "appearance-none min-w-0 flex-1 bg-transparent border-0 shadow-none ring-0 outline-none p-0 m-0",
+    "focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none",
     "font-sans text-xs text-foreground",
     "placeholder:text-muted-foreground",
     "focus:placeholder:text-foreground",
@@ -217,6 +218,7 @@ export function InputBase({
   return (
     <AriaGroup
       ref={groupRef}
+      data-boardui-field=""
       className={(state) => cx(inputFieldClassName(state, size, hasAddon), ctx.fieldClassName, fieldClassName)}
     >
       <div className={inputStyles.content}>

@@ -439,16 +439,16 @@ export default function Index({ groupedSettings, departments = [], workplaces = 
             <div className="mx-auto max-w-6xl space-y-6 pb-16">
                 {/* Header & Segmented Control */}
                 <div className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-end lg:justify-between">
-                    <div className="space-y-1">
+                    <div className="min-w-0 flex-1 space-y-1">
                         <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                             Settings
                         </h1>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="max-w-lg text-sm text-muted-foreground">
                             Manage project workplaces, organizational departments, and Ethiopian labor rules.
                         </p>
                     </div>
 
-                    <div className="max-w-full overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="max-w-full shrink-0 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                         <SegmentedControl
                             aria-label="Settings sections"
                             selectedKeys={[activeTab]}

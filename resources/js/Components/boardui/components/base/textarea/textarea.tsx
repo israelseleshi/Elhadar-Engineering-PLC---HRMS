@@ -74,9 +74,9 @@ const textareaStyles = sortCx({
   field: [
     "relative flex w-full flex-col",
     "rounded-xl",
-    "bg-background border border-border text-foreground",
-    "ring-2 ring-inset ring-transparent",
-    "transition-[background-color,box-shadow,color] duration-[var(--input-transition-ms,150ms)] ease",
+    "bg-card border border-border text-foreground shadow-2xs",
+    "ring-2 ring-transparent",
+    "transition-[background-color,border-color,box-shadow,color] duration-[var(--input-transition-ms,150ms)] ease",
   ].join(" "),
 
   // Matches Input's insets, so a stacked input and textarea share one edge:
@@ -87,7 +87,8 @@ const textareaStyles = sortCx({
   },
 
   textarea: [
-    "block w-full min-w-0 bg-transparent border-0 outline-none m-0 p-0",
+    "appearance-none block w-full min-w-0 bg-transparent border-0 shadow-none ring-0 outline-none m-0 p-0",
+    "focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none",
     "font-sans text-xs text-foreground",
     "placeholder:text-muted-foreground",
     "focus:placeholder:text-foreground",
@@ -160,6 +161,7 @@ export function TextareaBase({
   return (
     <AriaGroup
       ref={groupRef}
+      data-boardui-field=""
       className={({ isFocusWithin, isHovered, isDisabled, isInvalid }) =>
         cx(
           textareaStyles.field,

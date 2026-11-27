@@ -398,3 +398,26 @@
   .to-switch-off-chip-end { --tw-gradient-to: #e4e4e7 var(--tw-gradient-to-position); }
   .ring-border-focus-ring { --tw-ring-color: #0066cc; }
 }
+
+/* Strip @tailwindcss/forms inner border, fill, padding, and focus ring inside BoardUI composite fields */
+[data-boardui-field] input,
+[data-boardui-field] textarea {
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+}
+[data-boardui-field] input:focus,
+[data-boardui-field] textarea:focus {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+}
