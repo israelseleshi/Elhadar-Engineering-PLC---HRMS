@@ -144,6 +144,7 @@ interface Props {
         salaries?: SalaryRecord[];
     };
     departments: { id: number; name: string }[];
+    workplaces?: { id: number | null; name: string; type: string; code?: string | null }[];
 }
 
 const ETHIOPIAN_BANKS = [
@@ -181,7 +182,30 @@ const SECTIONS = [
     { id: 'compensation', label: '7. Wage & Remarks', icon: TrendingUp, color: 'text-emerald-600 dark:text-emerald-400' },
 ];
 
-export default function Edit({ employee, departments }: Props) {
+export default function Edit({ employee, departments, workplaces = [] }: Props) {
+    const workplaceOptions = useMemo(() => {
+        const mapped = workplaces.map((wp) => ({
+            value: wp.name,
+            label: wp.code && wp.code !== wp.name ? `${wp.name} (${wp.code})` : wp.name,
+        }));
+
+        if (employee.work_place && !mapped.some((wp) => wp.value === employee.work_place)) {
+            mapped.push({
+                value: employee.work_place,
+                label: employee.work_place,
+            });
+        }
+
+        if (mapped.length === 0) {
+            return [
+                { value: 'H.O', label: 'Head Office (H.O)' },
+                { value: 'Project', label: 'Project Site' },
+            ];
+        }
+
+        return mapped;
+    }, [workplaces, employee.work_place]);
+
     const initialValues = useMemo(() => ({
         file_no: employee.file_no || '',
         employee_id_no: employee.employee_id_no || '',
@@ -913,20 +937,21 @@ export default function Edit({ employee, departments }: Props) {
 
                             <div>
                                 <Label className="text-sm font-semibold text-foreground">Work Place / Site Station *</Label>
-                                <Input
-                                    list="workplace-list"
+                                <Select
                                     value={data.work_place}
-                                    onChange={(e) => setData('work_place', e.target.value)}
-                                    placeholder="Head Office or Site Name"
-                                    className="mt-1.5 h-11 text-xs border-border rounded-xl"
-                                />
-                                <datalist id="workplace-list">
-                                    <option value="Head Office">Addis Ababa Head Office</option>
-                                    <option value="Project">Regional Project Site</option>
-                                    <option value="Lalibela Water Works">Lalibela Water Works Project</option>
-                                    <option value="Mekelle Project">Mekelle Road Project</option>
-                                    <option value="Dire Dawa Site">Dire Dawa Substation</option>
-                                </datalist>
+                                    onValueChange={(v) => setData('work_place', v)}
+                                >
+                                    <SelectTrigger className="mt-1.5 w-full h-11 text-xs bg-background border-border rounded-xl">
+                                        <SelectValue placeholder="Select workplace or project site" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {workplaceOptions.map((wp) => (
+                                            <SelectItem key={wp.value} value={wp.value}>
+                                                {wp.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                                 {errors.work_place && <p className="text-[11px] text-destructive mt-1">{errors.work_place}</p>}
                             </div>
 

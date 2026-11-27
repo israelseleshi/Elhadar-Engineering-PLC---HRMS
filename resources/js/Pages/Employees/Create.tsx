@@ -50,11 +50,35 @@ interface Department {
     name: string;
 }
 
-interface Props {
-    departments: Department[];
+interface WorkplaceOption {
+    id: number | null;
+    name: string;
+    type: string;
+    code?: string | null;
 }
 
-export default function Create({ departments }: Props) {
+interface Props {
+    departments: Department[];
+    workplaces?: WorkplaceOption[];
+}
+
+export default function Create({ departments, workplaces = [] }: Props) {
+    const workplaceOptions = workplaces.length > 0
+        ? workplaces.map((wp) => ({
+              value: wp.name,
+              label: wp.code && wp.code !== wp.name ? `${wp.name} (${wp.code})` : wp.name,
+              type: wp.type,
+          }))
+        : WORKPLACE_OPTIONS.map((wp) => ({
+              value: wp.value,
+              label: wp.label,
+              type: wp.value === 'H.O' ? 'Head Office' : 'Project',
+          }));
+
+    const defaultWorkplace =
+        workplaceOptions.find((wp) => wp.type === 'Head Office')?.value ??
+        workplaceOptions[0]?.value ??
+        'H.O';
     const [step, setStep] = useState(1);
     const [stepAttempted, setStepAttempted] = useState(false);
 
@@ -90,7 +114,7 @@ export default function Create({ departments }: Props) {
         file_no: '',
         department_id: departments.length > 0 ? String(departments[0].id) : '',
         position: '',
-        work_place: 'H.O',
+        work_place: defaultWorkplace,
         employment_type: 'Non-Managerial' as 'Non-Managerial' | 'Managerial',
         contract_type: 'Permanent' as 'Permanent' | 'Contract' | 'Daily',
         status: 'Probation' as 'Probation' | 'Permanent' | 'Contract',
@@ -775,7 +799,7 @@ export default function Create({ departments }: Props) {
                                             <SelectValue placeholder="Select workplace" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {WORKPLACE_OPTIONS.map((wp) => (
+                                            {workplaceOptions.map((wp) => (
                                                 <SelectItem key={wp.value} value={wp.value}>
                                                     {wp.label}
                                                 </SelectItem>

@@ -8,6 +8,7 @@ use App\Models\Department;
 use App\Models\Employee;
 use App\Models\LeaveBalance;
 use App\Models\LeaveRequest;
+use App\Models\Workplace;
 use App\Services\AnnualLeaveCalculationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -109,12 +110,7 @@ class LeaveBalanceController extends Controller
             ->get();
 
         $departments = Department::orderBy('name')->get(['id', 'name']);
-        $workplaces = Employee::active()
-            ->whereNotNull('work_place')
-            ->where('work_place', '!=', '')
-            ->distinct()
-            ->orderBy('work_place')
-            ->pluck('work_place');
+        $workplaces = Workplace::allDistinctNames();
 
         return Inertia::render('Leave/Index', [
             'employees' => $employees,

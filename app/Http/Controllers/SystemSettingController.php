@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
+use App\Models\Department;
 use App\Models\SystemSetting;
+use App\Models\Workplace;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -176,8 +178,26 @@ class SystemSettingController extends Controller
             ];
         }
 
+        $departments = Department::withCount([
+            'employees as total_employees_count' => fn ($q) => $q->withTrashed(),
+            'employees as active_employees_count' => fn ($q) => $q->where('status', '!=', 'Separated'),
+        ])
+            ->with('chatChannelMetadata:id,department_id,slug')
+            ->orderBy('name')
+            ->get();
+
+        $workplaces = Workplace::withCount([
+            'employees as total_employees_count' => fn ($q) => $q->withTrashed(),
+            'employees as active_employees_count' => fn ($q) => $q->where('status', '!=', 'Separated'),
+        ])
+            ->orderByRaw("CASE WHEN type = 'Head Office' THEN 0 ELSE 1 END")
+            ->orderBy('name')
+            ->get();
+
         return Inertia::render('Settings/Index', [
             'groupedSettings' => $grouped,
+            'departments' => $departments,
+            'workplaces' => $workplaces,
         ]);
     }
 

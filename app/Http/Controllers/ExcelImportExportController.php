@@ -205,7 +205,7 @@ class ExcelImportExportController extends Controller
             'records.*.full_name' => ['required', 'string'],
             'records.*.department_id' => ['required', 'exists:departments,id'],
             'records.*.position' => ['required', 'string'],
-            'records.*.work_place' => ['required', 'in:Project,Head Office'],
+            'records.*.work_place' => ['required', 'string', 'max:100'],
             'records.*.gender' => ['required', 'in:Male,Female'],
             'records.*.basic_salary' => ['required', 'numeric', 'min:0'],
         ]);

@@ -57,7 +57,7 @@ export function ScrollFade({ progress, surfaceClassName = "from-background-prima
         className="absolute inset-x-0 top-0 h-4 backdrop-blur-[4px] [mask-image:linear-gradient(to_bottom,black,transparent)]"
         style={{ opacity: progress }}
       />
-      <div className={cx("absolute inset-0 bg-linear-to-b to-transparent", surfaceClassName)} style={{ opacity: progress }} />
+      <div className={cx("absolute inset-0 bg-gradient-to-b to-transparent", surfaceClassName)} style={{ opacity: progress }} />
     </div>
   );
 }

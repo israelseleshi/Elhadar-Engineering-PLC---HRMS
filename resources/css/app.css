@@ -256,6 +256,8 @@
 }
 
 @layer utilities {
+  .text-title-3-medium { font-size: 1.125rem; line-height: 1.5rem; font-weight: 600; letter-spacing: -0.02em; }
+  .text-headline-medium { font-size: 1rem; line-height: 1.375rem; font-weight: 600; letter-spacing: -0.015em; }
   .text-body-medium { font-size: 0.8125rem; line-height: 1.25rem; font-weight: 500; }
   .text-body-regular { font-size: 0.8125rem; line-height: 1.25rem; font-weight: 400; }
   .text-body-2-medium { font-size: 0.75rem; line-height: 1rem; font-weight: 500; }
@@ -264,6 +266,8 @@
   .text-caption-1-semibold { font-size: 0.6875rem; line-height: 0.875rem; font-weight: 600; }
 
   /* Board UI Surfaces */
+  .bg-background-full { background-color: hsl(var(--card)); }
+  .from-background-full { --tw-gradient-from: hsl(var(--card)) var(--tw-gradient-from-position); --tw-gradient-to: hsl(var(--card) / 0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
   .bg-background-primary-default { background-color: hsl(var(--card)); }
   .bg-background-primary-hover:hover { background-color: hsl(var(--muted)); }
   .bg-background-primary-active:active { background-color: hsl(var(--accent)); }
@@ -298,11 +302,35 @@
     background-color: #0066cc;
     color: #ffffff;
   }
-  .bg-button-primary:hover {
+  .bg-button-primary:hover:not(:disabled) {
     background-color: #0071e3;
+  }
+  .bg-button-primary:disabled {
+    opacity: 0.55;
   }
   .bg-button-primary-hover { background-color: #0071e3; }
   .bg-button-primary-active { background-color: #005bb5; }
+  .bg-button-danger {
+    background-color: #dc2626;
+    color: #ffffff;
+  }
+  .bg-button-danger:hover:not(:disabled) {
+    background-color: #b91c1c;
+  }
+  .bg-button-danger:disabled {
+    opacity: 0.5;
+  }
+  .bg-button-ghost-background { background-color: transparent; }
+  .bg-button-ghost-hover:hover { background-color: hsl(var(--muted)); }
+  .bg-button-ghost-active:active { background-color: hsl(var(--accent)); }
+  .bg-button-ghost-disabled { background-color: transparent; opacity: 0.5; }
+  .text-button-ghost-foreground { color: hsl(var(--foreground)); }
+  .text-button-ghost-disabled-foreground { color: hsl(var(--muted-foreground)); }
+  .text-button-primary-disabled-foreground { color: rgba(255, 255, 255, 0.75); }
+  .text-foreground-disabled-danger { color: rgba(255, 255, 255, 0.75); }
+  .bg-notification-error-background { background-color: hsl(var(--destructive) / 0.12); }
+  .text-notification-error-foreground { color: hsl(var(--destructive)); }
+  .border-border-error-default { border-color: hsl(var(--destructive)); }
   .bg-background-primary-disabled { background-color: hsl(var(--muted)); }
   .text-text-disabled { color: hsl(var(--muted-foreground)); }
   .button-press-motion {
@@ -348,11 +376,25 @@
   /* Board UI Tabs & Segmented Control */
   .border-separator-border { border-color: hsl(var(--border)); }
   .bg-tab-count-selected-background { background-color: rgba(0, 102, 204, 0.12); }
+  .bg-pill-tab-blue-selected-background { background-color: rgba(0, 102, 204, 0.12); }
+  .bg-pill-tab-blue-hover-background { background-color: hsl(var(--muted)); }
   .bg-segmented-control-selected-background { background-color: hsl(var(--card)); }
   .bg-badge-neutral-background { background-color: hsl(var(--muted)); }
+  .text-accent-500 { color: #0066cc; }
+  .dark .text-accent-500 { color: #2997ff; }
   .text-accent-600 { color: #0066cc; }
   .dark .text-accent-600 { color: #2997ff; }
+  .bg-accent-400 { background-color: #0071e3; }
   .bg-accent-600 { background-color: #0066cc; }
   .dark .bg-accent-600 { background-color: #2997ff; }
+  .border-accent-600 { border-color: #0066cc; }
+  .from-accent-500 { --tw-gradient-from: #0071e3 var(--tw-gradient-from-position); --tw-gradient-to: rgba(0, 113, 227, 0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+  .to-accent-600 { --tw-gradient-to: #0066cc var(--tw-gradient-to-position); }
+  .from-control-indicator-background { --tw-gradient-from: #ffffff var(--tw-gradient-from-position); --tw-gradient-to: rgba(255, 255, 255, 0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+  .to-control-indicator-background-subtle { --tw-gradient-to: #f4f4f5 var(--tw-gradient-to-position); }
+  .from-switch-on-chip-start { --tw-gradient-from: #0071e3 var(--tw-gradient-from-position); --tw-gradient-to: rgba(0, 113, 227, 0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+  .to-switch-on-chip-end { --tw-gradient-to: #005bb5 var(--tw-gradient-to-position); }
+  .from-switch-off-chip-start { --tw-gradient-from: #ffffff var(--tw-gradient-from-position); --tw-gradient-to: rgba(255, 255, 255, 0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+  .to-switch-off-chip-end { --tw-gradient-to: #e4e4e7 var(--tw-gradient-to-position); }
   .ring-border-focus-ring { --tw-ring-color: #0066cc; }
 }

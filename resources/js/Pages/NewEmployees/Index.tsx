@@ -454,7 +454,7 @@ export default function Index({ newHires, filters, stats, departments, workplace
                 <p>
                     This roster is scoped to employees whose employment date is on or after{' '}
                     <strong className="text-foreground/90">{formatDate(cutoff)}</strong> (Hamle 1, 2018 E.C.).
-                    Change the cutoff from <strong className="text-foreground/90">Statutory Settings</strong> by
+                    Change the cutoff from <strong className="text-foreground/90">Settings</strong> by
                     editing the <code className="px-1 py-0.5 bg-muted/40 border border-border/60 rounded-xl">new_hire_cutoff_date</code> parameter.
                 </p>
             </div>

@@ -5,6 +5,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeePhotoController;
 use App\Http\Controllers\EmployeeSalaryController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\SeparationController;
 use App\Http\Controllers\SystemSettingController;
 use App\Http\Controllers\TrainingController;
+use App\Http\Controllers\WorkplaceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -111,9 +113,15 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
         Route::get('/import/template', [ExcelImportExportController::class, 'downloadTemplate'])->name('import.template');
         Route::get('/export/employees', [ExcelImportExportController::class, 'export'])->name('export.employees');
 
-        // System Settings & Statutory Parameter Registry
+        // System Settings & Organizational Registries
         Route::get('/settings', [SystemSettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [SystemSettingController::class, 'update'])->name('settings.update');
+        Route::post('/settings/departments', [DepartmentController::class, 'store'])->name('settings.departments.store');
+        Route::put('/settings/departments/{department}', [DepartmentController::class, 'update'])->name('settings.departments.update');
+        Route::delete('/settings/departments/{department}', [DepartmentController::class, 'destroy'])->name('settings.departments.destroy');
+        Route::post('/settings/workplaces', [WorkplaceController::class, 'store'])->name('settings.workplaces.store');
+        Route::put('/settings/workplaces/{workplace}', [WorkplaceController::class, 'update'])->name('settings.workplaces.update');
+        Route::delete('/settings/workplaces/{workplace}', [WorkplaceController::class, 'destroy'])->name('settings.workplaces.destroy');
 
         // Announcements - HR Admin & SysAdmin management
         Route::get('/announcements/create', [AnnouncementController::class, 'create'])->name('announcements.create');

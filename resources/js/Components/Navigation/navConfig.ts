@@ -229,13 +229,13 @@ export const getNavItems = (): NavItemConfig[] => {
         // Category 3: System Governance & Compliance
         {
             id: 'settings',
-            name: 'Statutory Settings',
-            shortName: 'Statutory',
+            name: 'Settings',
+            shortName: 'Settings',
             href: route('settings.index'),
             routeName: 'settings.*',
             icon: Sliders,
             category: 'governance',
-            description: 'Tax brackets, pension rates & labor statutory rules',
+            description: 'Departments, workplaces & statutory labor rules',
             activeBg: 'bg-slate-700',
             squircleColor: {
                 bg: 'bg-slate-700 dark:bg-slate-600 text-white',

@@ -10,8 +10,8 @@ use App\Models\AnnouncementReaction;
 use App\Models\AnnouncementRead;
 use App\Models\AuditLog;
 use App\Models\Department;
-use App\Models\Employee;
 use App\Models\User;
+use App\Models\Workplace;
 use App\Services\NotificationCenterService;
 use App\Services\SmsNotificationService;
 use Illuminate\Http\RedirectResponse;
@@ -96,8 +96,8 @@ class AnnouncementController extends Controller
     public function create(): Response
     {
         return Inertia::render('Announcements/Create', [
-            'departments' => Department::select('id', 'name')->orderBy('name')->get(),
-            'work_places' => Employee::whereNotNull('work_place')->distinct()->pluck('work_place')->sort()->values(),
+            'departments' => Department::active()->select('id', 'name')->orderBy('name')->get(),
+            'work_places' => Workplace::allDistinctNames(),
             'roles' => ['Managerial', 'Non-Managerial'],
             'contract_types' => ['Permanent', 'Contract', 'Daily', 'Probation'],
             'employees' => User::where('is_active', true)->select('id', 'name', 'role')->orderBy('name')->get(),
@@ -189,7 +189,7 @@ class AnnouncementController extends Controller
         return Inertia::render('Announcements/Edit', [
             'announcement' => $announcement,
             'departments' => Department::select('id', 'name')->orderBy('name')->get(),
-            'work_places' => Employee::whereNotNull('work_place')->distinct()->pluck('work_place')->sort()->values(),
+            'work_places' => Workplace::allDistinctNames(),
             'roles' => ['Managerial', 'Non-Managerial'],
             'contract_types' => ['Permanent', 'Contract', 'Daily', 'Probation'],
             'employees' => User::where('is_active', true)->select('id', 'name', 'role')->orderBy('name')->get(),

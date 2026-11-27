@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateEmployeeRequest;
 use App\Models\AuditLog;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\Workplace;
 use App\Services\AnnualLeaveCalculationService;
 use App\Services\ProbationCalculationService;
 use App\Services\RetirementCalculationService;
@@ -28,10 +29,12 @@ class EmployeeController extends Controller
 
     public function create(): Response
     {
-        $departments = Department::orderBy('name')->get(['id', 'name']);
+        $departments = Department::active()->orderBy('name')->get(['id', 'name']);
+        $workplaces = Workplace::selectableOptions();
 
         return Inertia::render('Employees/Create', [
             'departments' => $departments,
+            'workplaces' => $workplaces,
         ]);
     }
 
@@ -116,11 +119,17 @@ class EmployeeController extends Controller
             'salaries' => fn ($q) => $q->orderByDesc('effective_date'),
         ]);
 
-        $departments = Department::orderBy('name')->get(['id', 'name']);
+        $departments = Department::where(function ($q) use ($employee) {
+            $q->where('is_active', true)
+                ->orWhere('id', $employee->department_id);
+        })->orderBy('name')->get(['id', 'name']);
+
+        $workplaces = Workplace::selectableOptions($employee->work_place);
 
         return Inertia::render('Employees/Edit', [
             'employee' => $employee,
             'departments' => $departments,
+            'workplaces' => $workplaces,
         ]);
     }
 
@@ -231,12 +240,7 @@ class EmployeeController extends Controller
         ];
 
         $departments = Department::orderBy('name')->get(['id', 'name']);
-        $workplaces = Employee::where('status', 'Permanent')
-            ->whereNotNull('work_place')
-            ->where('work_place', '!=', '')
-            ->distinct()
-            ->orderBy('work_place')
-            ->pluck('work_place');
+        $workplaces = Workplace::allDistinctNames();
 
         $positions = Employee::where('status', 'Permanent')
             ->whereNotNull('position')

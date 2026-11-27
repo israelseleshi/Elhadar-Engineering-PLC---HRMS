@@ -101,7 +101,7 @@ export function SwitchTrack({
         s.track,
         s.trackRadius[shape],
         state.isSelected
-          ? cx("bg-linear-to-b from-accent-500 to-accent-600", s.onShadow)
+          ? cx("bg-gradient-to-b from-accent-500 to-accent-600", s.onShadow)
           : "bg-background-tertiary-default",
         state.isDisabled && "opacity-50",
         state.isFocusVisible && "ring-2 ring-border-focus-ring ring-offset-2",
@@ -111,7 +111,7 @@ export function SwitchTrack({
       <span
         className={cx(
           "absolute flex items-center justify-center",
-          "bg-linear-to-b from-control-indicator-background from-[43.837%] to-control-indicator-background-subtle",
+          "bg-gradient-to-b from-control-indicator-background from-[43.837%] to-control-indicator-background-subtle",
           "shadow-[0_3px_3px_0_rgb(0_0_0/0.03),0_0.75px_0_0_rgb(0_0_0/0.05)]",
           "transition-transform duration-200 ease",
           s.thumb,
@@ -126,7 +126,7 @@ export function SwitchTrack({
             sizes) and its drop shadow points down instead of up. */}
         <span
           className={cx(
-            "border-solid bg-linear-to-t from-[43.837%]",
+            "border-solid bg-gradient-to-t from-[43.837%]",
             s.chip,
             s.chipRadius[shape],
             state.isSelected

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\SystemSetting;
+use App\Models\Workplace;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -82,13 +83,7 @@ class NewEmployeeController extends Controller
 
         $departments = Department::orderBy('name')->get(['id', 'name']);
 
-        $workplaces = Employee::active()
-            ->where('employment_date', '>=', $cutoff)
-            ->whereNotNull('work_place')
-            ->where('work_place', '!=', '')
-            ->distinct()
-            ->orderBy('work_place')
-            ->pluck('work_place');
+        $workplaces = Workplace::allDistinctNames();
 
         return Inertia::render('NewEmployees/Index', [
             'newHires' => $newHires,
